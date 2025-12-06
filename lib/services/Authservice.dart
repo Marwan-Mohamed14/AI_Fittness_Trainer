@@ -20,4 +20,21 @@ class AuthService {
 
     return response.user;
   }
+  Future<User?> signIn({required String email, required String password}) async {
+    final response = await supabase.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+
+    return response.user;
+  }
+  Future<void> signOut() async {
+    await supabase.auth.signOut();
+  }
+  User? getCurrentUser(){
+    return supabase.auth.currentUser;
+  }
+  bool isLoggedin(){
+    return supabase.auth.currentUser != null;
+  }
 }

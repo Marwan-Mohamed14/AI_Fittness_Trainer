@@ -1,3 +1,4 @@
+import 'package:ai_personal_trainer/controllers/Authcontroller.dart';
 import 'package:ai_personal_trainer/screens/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,15 +11,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
-  // --- 1. LOCAL STATE (No external Controller) ---
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  
   bool _isPasswordHidden = true;
 
   late AnimationController _animController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
+
+  final Authcontroller authController = Get.put(Authcontroller());
 
   @override
   void initState() {
@@ -42,12 +41,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   void dispose() {
     _animController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
-  // --- 3. UI BUILD ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,7 +57,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               const SizedBox(height: 40),
 
               // ========================================================
-              // INLINE DYNAMIC LOGO (No separate class)
+              // INLINE DYNAMIC LOGO
               // ========================================================
               AnimatedBuilder(
                 animation: _animController,
@@ -144,18 +140,18 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
               const SizedBox(height: 40),
 
-              // Email Input
+              // Email Input - USING authController.emailController
               _buildTextField(
-                controller: _emailController,
-                hintText: "Email or Username",
+                controller: authController.emailController,
+                hintText: "Email",
                 icon: Icons.person_outline,
               ),
 
               const SizedBox(height: 20),
 
-              // Password Input
+              // Password Input - USING authController.passwordController
               _buildTextField(
-                controller: _passwordController,
+                controller: authController.passwordController,
                 hintText: "Password",
                 icon: Icons.lock_outline,
                 isPassword: true,
@@ -164,20 +160,15 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               const SizedBox(height: 20),
 
               // Login Button
-              SizedBox(
+              Obx(() => SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Simple UI feedback without controller logic
-                    Get.snackbar(
-                      "UI Demo", 
-                      "Login button pressed",
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.blueAccent,
-                      colorText: Colors.white,
-                    );
-                  },
+                  onPressed: authController.isLoading.value
+                      ? null
+                      : () async {
+                          await authController.signIn();
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     shape: RoundedRectangleBorder(
@@ -186,16 +177,25 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     elevation: 5,
                     shadowColor: Colors.blueAccent.withOpacity(0.4),
                   ),
-                  child: const Text(
-                    "Log In",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: authController.isLoading.value
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          "Log In",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
-              ),
+              )),
 
               const SizedBox(height: 20),
 
@@ -221,8 +221,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   ),
                 ],
               ),
-                const SizedBox(height: 10),
-
+              const SizedBox(height: 10),
             ],
           ),
         ),

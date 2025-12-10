@@ -1,7 +1,9 @@
+import 'package:ai_personal_trainer/screens/UserDataPages/AgeScreen.dart';
 import 'package:ai_personal_trainer/screens/loginpage.dart';
 import 'package:ai_personal_trainer/supabase_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +36,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const LoginPage(),
+      home: AgeScreen(),
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:ai_personal_trainer/screens/UserDataPages/AgeScreen.dart';
-import 'package:ai_personal_trainer/screens/loginpage.dart';
 import 'package:ai_personal_trainer/supabase_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

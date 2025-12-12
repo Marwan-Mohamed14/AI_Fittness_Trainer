@@ -1,17 +1,16 @@
 import 'package:ai_personal_trainer/screens/UserDataPages/AgeScreen.dart';
 import 'package:ai_personal_trainer/screens/loginpage.dart';
+import 'package:ai_personal_trainer/screens/signup.dart';
 import 'package:ai_personal_trainer/supabase_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Supabase using the static method
   try {
-    await SupabaseConfig.initializeSupabase(); 
-
+    await SupabaseConfig.initializeSupabase();
   } catch (e) {
     debugPrint("Supabase Initialization Failed: $e");
     // You can show an error screen or run the app anyway
@@ -36,7 +35,29 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: AgeScreen(),
+      // Set initial route
+      initialRoute: '/login',
+      
+      // Define all routes
+      getPages: [
+        GetPage(
+          name: '/login',
+          page: () => const LoginPage(),
+        ),
+        GetPage(
+          name: '/signup',
+          page: () => const SignupPage(),
+        ),
+        GetPage(
+          name: '/age-screen',
+          page: () =>  AgeScreen(),
+        ),
+        // Add more routes as needed
+        // GetPage(
+        //   name: '/home',
+        //   page: () => const HomePage(),
+        // ),
+      ],
     );
   }
 }

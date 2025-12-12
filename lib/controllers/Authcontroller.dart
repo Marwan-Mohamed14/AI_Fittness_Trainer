@@ -67,22 +67,26 @@ class Authcontroller extends GetxController {
 
       // Check if signup was successful
       if (response.user != null && response.session != null) {
+        // Clear the form first
+        usernameController.clear();
+        emailController.clear();
+        passwordController.clear();
+
+        // Show success message
         Get.snackbar(
           "Success",
           "Account created successfully!",
           backgroundColor: Colors.green.withOpacity(0.7),
           colorText: Colors.white,
+          duration: Duration(seconds: 2),
         );
 
-        // Clear the form
-        usernameController.clear();
-        emailController.clear();
-        passwordController.clear();
-
-        // Navigate to next page (uncomment when ready)
-        // Get.offAllNamed('/home');
-        // or Get.offAllNamed('/profile-setup');
+        // Navigate after a short delay to ensure snackbar is shown
+        Future.delayed(Duration(milliseconds: 500), () {
+          Get.offAllNamed('/age-screen');
+        });
       } else {
+      
         // Signup failed
         Get.snackbar(
           "Error",
@@ -127,6 +131,9 @@ class Authcontroller extends GetxController {
     }
   }
 
+  // ---------------------------
+  // SIGN IN (IMPROVED)
+  // ---------------------------
   Future<void> signIn() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();

@@ -1,6 +1,9 @@
 import 'package:ai_personal_trainer/screens/UserDataPages/AgeScreen.dart';
+<<<<<<< HEAD
 import 'package:ai_personal_trainer/screens/loginpage.dart';
 import 'package:ai_personal_trainer/screens/signup.dart';
+=======
+>>>>>>> aa6366ad52d918fb72c9a95911c2f602440b4d49
 import 'package:ai_personal_trainer/supabase_config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

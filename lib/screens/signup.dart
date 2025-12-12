@@ -19,7 +19,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   final TextEditingController _confirmPasswordController = TextEditingController();
   
   bool _isPasswordHidden = true;
-  bool _isConfirmPasswordHidden = true;
+  final bool _isConfirmPasswordHidden = true;
 
   // --- 2. ANIMATION STATE (New Logo Logic) ---
   late AnimationController _animController;

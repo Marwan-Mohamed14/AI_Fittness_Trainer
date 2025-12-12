@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../models/onboarding_data.dart';
-import 'WorkoutQuestionsScreen.dart';
+import 'package:get/get.dart';
+import '../../controllers/Profilecontroller.dart';
 
 class HeightScreen extends StatefulWidget {
-  final OnboardingData data;
-
-  const HeightScreen({super.key, required this.data});
+  const HeightScreen({super.key});
 
   @override
   _HeightScreenState createState() => _HeightScreenState();
@@ -18,11 +16,17 @@ class _HeightScreenState extends State<HeightScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
+  final ProfileController _profileController = Get.put(ProfileController());
   double height = 170;
 
   @override
   void initState() {
     super.initState();
+
+    // Load existing height if available
+    if (_profileController.onboardingData.value.height != null) {
+      height = _profileController.onboardingData.value.height!.toDouble();
+    }
 
     _animController = AnimationController(
       vsync: this,
@@ -182,15 +186,8 @@ class _HeightScreenState extends State<HeightScreen>
                       ),
                     ),
                     onPressed: () {
-                      widget.data.height = height.toInt();
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              WorkoutQuestionsScreen(data: widget.data),
-                        ),
-                      );
+                      // Save height using ProfileController
+                      _profileController.saveHeight(height.toInt());
                     },
                     child: const Text(
                       "Next",

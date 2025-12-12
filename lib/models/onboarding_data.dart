@@ -45,6 +45,33 @@ class OnboardingData {
   });
 
   // ================================
+  // Convert from Supabase JSON
+  // ================================
+  factory OnboardingData.fromJson(Map<String, dynamic> json) {
+    return OnboardingData(
+      age: json['age'] as int?,
+      height: json['height'] as int?,
+      gender: json['gender'] as String?,
+      workoutGoal: json['workout_goal'] as String?,
+      workoutLevel: json['workout_level'] as String?,
+      trainingDays: json['training_days'] as int?,
+      trainingLocation: json['training_location'] as String?,
+      dietPreference: json['diet_preference'] as String?,
+      mealsPerDay: json['meals_per_day'] as int?,
+      budget: json['budget'] as String?,
+      weight: json['weight'] as int?,
+      targetWeight: json['target_weight'] as int?,
+      activityLevel: json['activity_level'] as String?,
+      allergies: json['allergies'] != null 
+          ? List<String>.from(json['allergies'] as List) 
+          : null,
+      dislikes: json['dislikes'] != null 
+          ? List<String>.from(json['dislikes'] as List) 
+          : null,
+    );
+  }
+
+  // ================================
   // Convert to Map for Supabase JSON
   // ================================
   Map<String, dynamic> toJson() {

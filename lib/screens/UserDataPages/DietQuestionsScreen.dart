@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../models/onboarding_data.dart';
+import 'package:get/get.dart';
+import '../../controllers/Profilecontroller.dart';
 
 class DietQuestionsScreen extends StatefulWidget {
-  final OnboardingData data;
-
-  const DietQuestionsScreen({super.key, required this.data});
+  const DietQuestionsScreen({super.key});
 
   @override
   _DietQuestionsScreenState createState() => _DietQuestionsScreenState();
@@ -26,14 +25,30 @@ class _DietQuestionsScreenState extends State<DietQuestionsScreen>
   double targetWeight = 75;
 
   final TextEditingController _allergyController = TextEditingController();
+  final ProfileController _profileController = Get.put(ProfileController());
 
   @override
   void initState() {
     super.initState();
 
+    // Load existing values if available
+    final data = _profileController.onboardingData.value;
+    dietPreference = data.dietPreference;
+    meals = data.mealsPerDay ?? 3;
+    budget = data.budget ?? "Medium";
+    currentWeight = data.weight?.toDouble() ?? 80;
+    targetWeight = data.targetWeight?.toDouble() ?? 75;
+    
+    // Load allergies/dislikes
+    if (data.allergies != null && data.allergies!.isNotEmpty) {
+      _allergyController.text = data.allergies!.join(', ');
+    } else if (data.dislikes != null && data.dislikes!.isNotEmpty) {
+      _allergyController.text = data.dislikes!.join(', ');
+    }
+
     _animController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
 
     _fadeAnimation = Tween<double>(begin: 0.3, end: 1)
@@ -46,6 +61,7 @@ class _DietQuestionsScreenState extends State<DietQuestionsScreen>
   @override
   void dispose() {
     _animController.dispose();
+    _allergyController.dispose();
     super.dispose();
   }
 
@@ -252,7 +268,7 @@ class _DietQuestionsScreenState extends State<DietQuestionsScreen>
                     hintText: "Example: milk, peanuts, fish...",
                     hintStyle: TextStyle(color: Colors.white38),
                     filled: true,
-                    fillColor: Color(0xFF1E2230),
+                    fillColor: const Color(0xFF1E2230),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
@@ -275,18 +291,33 @@ class _DietQuestionsScreenState extends State<DietQuestionsScreen>
                           borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: () {
-                      if (dietPreference == null) return;
+                      if (dietPreference == null) {
+                        Get.snackbar(
+                          "Error",
+                          "Please select a diet preference",
+                          backgroundColor: Colors.red.withOpacity(0.7),
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
 
-                      widget.data.dietPreference = dietPreference;
-                      widget.data.mealsPerDay = meals;
-                      widget.data.weight = currentWeight.toInt();
-                      widget.data.targetWeight = targetWeight.toInt();
-                      widget.data.budget = budget;
-                      widget.data.allergies =
-                          _allergyController.text.split(",").map((e) => e.trim()).toList();
+                      // Parse allergies/dislikes from text field
+                      List<String> allergiesList = [];
+                      if (_allergyController.text.isNotEmpty) {
+                        allergiesList = _allergyController.text
+                            .split(',')
+                            .map((e) => e.trim())
+                            .where((e) => e.isNotEmpty)
+                            .toList();
+                      }
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Generating diet & workout...")),
+                      _profileController.saveDietData(
+                        dietPreference: dietPreference!,
+                        mealsPerDay: meals,
+                        budget: budget!,
+                        currentWeight: currentWeight.toInt(),
+                        targetWeight: targetWeight.toInt(),
+                        allergies: allergiesList,
                       );
                     },
                     child: Text("Generate Diet",

@@ -188,7 +188,7 @@ class _AgeScreenState extends State<AgeScreen>
                     : () async {
                         // Save age to Supabase and navigate
                        await profileController.saveAge(_age.toInt());
-Get.to(() => const GenderScreen());
+//Get.to(() => const GenderScreen());
 
                       },
                 child: profileController.isLoading.value

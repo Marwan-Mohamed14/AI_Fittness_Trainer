@@ -81,15 +81,8 @@ class ProfileController extends GetxController {
         duration: Duration(seconds: 1),
       );
       
-      // Try to navigate to next screen
-      // If route doesn't exist, just show success (data is already saved)
-      try {
-        Get.toNamed('/gender-screen');
-      } catch (navError) {
-        // Route doesn't exist yet - that's okay, data is saved
-        print('⚠️ Navigation route not found: /gender-screen');
-        // You can add the route later or navigate to a different screen
-      }
+      // Navigate to next screen
+      Get.toNamed('/gender-screen');
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -119,7 +112,7 @@ class ProfileController extends GetxController {
       );
       
       // Navigate to next screen
-      Get.toNamed('/workout-goal-screen');
+      Get.toNamed('/workout-screen');
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -132,55 +125,37 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Generic save method for any field
-  Future<void> saveField(String fieldName, dynamic value, String nextRoute) async {
+  // Save workout data
+  Future<void> saveWorkoutData({
+    required String goal,
+    required String level,
+    required int days,
+    required String location,
+  }) async {
     isLoading.value = true;
     
     try {
-      // Update the field dynamically
-      switch (fieldName) {
-        case 'age':
-          onboardingData.value.age = value as int;
-          break;
-        case 'height':
-          onboardingData.value.height = value as int;
-          break;
-        case 'gender':
-          onboardingData.value.gender = value as String;
-          break;
-        case 'workoutGoal':
-          onboardingData.value.workoutGoal = value as String;
-          break;
-        case 'workoutLevel':
-          onboardingData.value.workoutLevel = value as String;
-          break;
-        case 'trainingDays':
-          onboardingData.value.trainingDays = value as int;
-          break;
-        case 'weight':
-          onboardingData.value.weight = value as int;
-          break;
-        // Add more cases as needed
-      }
+      onboardingData.value.workoutGoal = goal;
+      onboardingData.value.workoutLevel = level;
+      onboardingData.value.trainingDays = days;
+      onboardingData.value.trainingLocation = location;
       
       await _profileService.saveProfile(onboardingData.value);
       
       Get.snackbar(
         'Saved',
-        '$fieldName saved successfully!',
+        'Workout preferences saved successfully!',
         backgroundColor: Colors.green.withOpacity(0.7),
         colorText: Colors.white,
         duration: Duration(seconds: 1),
       );
       
-      // Navigate to next screen
-      if (nextRoute.isNotEmpty) {
-        Get.toNamed(nextRoute);
-      }
+      // Navigate to next screen (diet screen)
+      Get.toNamed('/diet-screen');
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to save $fieldName: $e',
+        'Failed to save workout data: $e',
         backgroundColor: Colors.red.withOpacity(0.7),
         colorText: Colors.white,
       );
@@ -189,6 +164,48 @@ class ProfileController extends GetxController {
     }
   }
 
+  // Save diet data
+  Future<void> saveDietData({
+    required String dietPreference,
+    required int mealsPerDay,
+    required String budget,
+    required int currentWeight,
+    required int targetWeight,
+    List<String>? allergies,
+  }) async {
+    isLoading.value = true;
+    
+    try {
+      onboardingData.value.dietPreference = dietPreference;
+      onboardingData.value.mealsPerDay = mealsPerDay;
+      onboardingData.value.budget = budget;
+      onboardingData.value.weight = currentWeight;
+      onboardingData.value.targetWeight = targetWeight;
+      onboardingData.value.allergies = allergies;
+      
+      await _profileService.saveProfile(onboardingData.value);
+      
+      Get.snackbar(
+        'Saved',
+        'Diet preferences saved successfully!',
+        backgroundColor: Colors.green.withOpacity(0.7),
+        colorText: Colors.white,
+        duration: Duration(seconds: 1),
+      );
+      
+      // Navigate to home or complete onboarding
+      completeOnboarding();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to save diet data: $e',
+        backgroundColor: Colors.red.withOpacity(0.7),
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
   // Complete onboarding and go to home
   Future<void> completeOnboarding() async {
     isLoading.value = true;

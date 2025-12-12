@@ -234,7 +234,7 @@ class _GenderScreenState extends State<GenderScreen>
       _profileController.saveGender(selectedGender!);
 
       // 👉 Go to height screen
-      Get.to(() => const HeightScreen());
+      //Get.to(() => const HeightScreen());
     },
     child: const Text(
       "Next",

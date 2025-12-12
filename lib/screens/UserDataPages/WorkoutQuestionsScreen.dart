@@ -1,11 +1,13 @@
+import 'package:ai_personal_trainer/controllers/Profilecontroller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import '../../models/onboarding_data.dart';
 import 'DietQuestionsScreen.dart';
 
 class WorkoutQuestionsScreen extends StatefulWidget {
-  final OnboardingData data;
 
-  const WorkoutQuestionsScreen({super.key, required this.data});
+  const WorkoutQuestionsScreen({super.key});
 
   @override
   _WorkoutQuestionsScreenState createState() => _WorkoutQuestionsScreenState();
@@ -23,6 +25,7 @@ class _WorkoutQuestionsScreenState extends State<WorkoutQuestionsScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
+  final ProfileController profileController = Get.put(ProfileController());
   @override
   void initState() {
     super.initState();
@@ -262,25 +265,26 @@ class _WorkoutQuestionsScreenState extends State<WorkoutQuestionsScreen>
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12))),
                   onPressed: () {
-                    if (selectedGoal == null ||
-                        selectedLevel == null ||
-                        selectedDays == null ||
-                        selectedLocation == null) {
-                      return;
-                    }
-
-                    widget.data.workoutGoal = selectedGoal;
-                    widget.data.workoutLevel = selectedLevel;
-                    widget.data.trainingDays = selectedDays;
-                    widget.data.trainingLocation = selectedLocation;
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DietQuestionsScreen(data: widget.data),
-                      ),
-                    );
-                  },
+  if (selectedGoal == null ||
+      selectedLevel == null ||
+      selectedDays == null ||
+      selectedLocation == null) {
+    Get.snackbar(
+      "Error",
+      "Please fill all fields",
+      backgroundColor: Colors.red.withOpacity(0.7),
+      colorText: Colors.white,
+    );
+    return;
+  }
+  
+  profileController.saveWorkoutData(
+    goal: selectedGoal!,
+    level: selectedLevel!,
+    days: selectedDays!,
+    location: selectedLocation!,
+  );
+},
                   child: const Text("Next",
                       style: TextStyle(color: Colors.white, fontSize: 18)),
                 ),

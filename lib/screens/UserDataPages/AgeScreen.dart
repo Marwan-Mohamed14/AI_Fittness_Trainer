@@ -1,6 +1,7 @@
 import 'package:ai_personal_trainer/controllers/Profilecontroller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'GenderScreen.dart';
 
 class AgeScreen extends StatefulWidget {
   @override
@@ -186,7 +187,9 @@ class _AgeScreenState extends State<AgeScreen>
                     ? null
                     : () async {
                         // Save age to Supabase and navigate
-                        await profileController.saveAge(_age.toInt());
+                       await profileController.saveAge(_age.toInt());
+Get.to(() => const GenderScreen());
+
                       },
                 child: profileController.isLoading.value
                     ? const SizedBox(

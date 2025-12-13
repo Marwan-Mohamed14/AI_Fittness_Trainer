@@ -1,3 +1,4 @@
+import 'package:ai_personal_trainer/services/Ai_plan_service.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/models/onboarding_data.dart';
 import 'package:ai_personal_trainer/services/ProfileService.dart';
@@ -164,49 +165,103 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Save diet data
-  Future<void> saveDietData({
-    required String dietPreference,
-    required int mealsPerDay,
-    required String budget,
-    required int currentWeight,
-    required int targetWeight,
-    List<String>? allergies,
-  }) async {
-    isLoading.value = true;
+  // Update this function in ProfileController
+Future<void> saveDietData({
+  required String dietPreference,
+  required int mealsPerDay,
+  required String budget,
+  required int currentWeight,
+  required int targetWeight,
+  List<String>? allergies,
+}) async {
+  isLoading.value = true;
+  
+  try {
+    // Save diet data to local model
+    onboardingData.value.dietPreference = dietPreference;
+    onboardingData.value.mealsPerDay = mealsPerDay;
+    onboardingData.value.budget = budget;
+    onboardingData.value.weight = currentWeight;
+    onboardingData.value.targetWeight = targetWeight;
+    onboardingData.value.allergies = allergies;
     
-    try {
-      onboardingData.value.dietPreference = dietPreference;
-      onboardingData.value.mealsPerDay = mealsPerDay;
-      onboardingData.value.budget = budget;
-      onboardingData.value.weight = currentWeight;
-      onboardingData.value.targetWeight = targetWeight;
-      onboardingData.value.allergies = allergies;
-      
-      await _profileService.saveProfile(onboardingData.value);
-      
-      Get.snackbar(
-        'Saved',
-        'Diet preferences saved successfully!',
-        backgroundColor: Colors.green.withOpacity(0.7),
-        colorText: Colors.white,
-        duration: Duration(seconds: 1),
-      );
-      
-      // Navigate to home or complete onboarding
-      completeOnboarding();
-    } catch (e) {
+    await _profileService.saveProfile(onboardingData.value);
+    
+    print('✅ Diet data saved to Supabase successfully!');
+    
+    Get.snackbar(
+      'Saved',
+      'Diet preferences saved! Generating your plan...',
+      backgroundColor: Colors.green.withOpacity(0.7),
+      colorText: Colors.white,
+      duration: Duration(seconds: 2),
+    );
+    
+    await Future.delayed(Duration(milliseconds: 500));
+    
+    // 🎯 NOW GENERATE THE AI PLANS
+    print('\n🎯 Triggering AI plan generation...\n');
+    await generateAiPlans();
+    
+    // After generating plans, go to home
+    // Get.offAllNamed('/home');
+    
+  } catch (e) {
+    print('❌ Error saving diet data: $e');
+    Get.snackbar(
+      'Error',
+      'Failed to save diet data: $e',
+      backgroundColor: Colors.red.withOpacity(0.7),
+      colorText: Colors.white,
+    );
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+
+Future<void>generateAiPlans() async{
+ isLoading.value = true;
+ try{
+    print('\n🔄 Step 1: Fetching user profile from Supabase...');
+    final userprofile = await _profileService.getProfile();
+    if(userprofile == null) {
       Get.snackbar(
         'Error',
-        'Failed to save diet data: $e',
+        'No profile found. Please complete your profile first.',
         backgroundColor: Colors.red.withOpacity(0.7),
         colorText: Colors.white,
       );
-    } finally {
-      isLoading.value = false;
+      return;
     }
+    print('✅ Profile loaded successfully!');
+    print('\n🔄 Step 2: Generating AI plans...');
+    final plans = await AiPlanService().generateWeeklyPlan(userprofile);
+     print('✅ Step 2 Complete: Plans generated');
+    print('\n🎉 SUCCESS! Your personalized plans are ready!\n');
+    
+    Get.snackbar(
+      'Success!',
+      'Your personalized plans are ready! Check the terminal.',
+      backgroundColor: Colors.green.withOpacity(0.7),
+      colorText: Colors.white,
+      duration: Duration(seconds: 3),
+    );
+
+ }catch(e){
+   Get.snackbar(
+     'Error',
+     'Failed to generate AI plans: $e',
+     backgroundColor: Colors.red.withOpacity(0.7),
+     colorText: Colors.white,
+   );
+
+}finally {
+    isLoading.value = false;
   }
-  // Complete onboarding and go to home
+}
+
+
   Future<void> completeOnboarding() async {
     isLoading.value = true;
     

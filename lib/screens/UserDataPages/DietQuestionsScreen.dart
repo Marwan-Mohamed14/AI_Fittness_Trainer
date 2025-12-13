@@ -281,49 +281,75 @@ class _DietQuestionsScreenState extends State<DietQuestionsScreen>
                 // ============================
                 // Button
                 // ============================
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      padding: EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: () {
-                      if (dietPreference == null) {
-                        Get.snackbar(
-                          "Error",
-                          "Please select a diet preference",
-                          backgroundColor: Colors.red.withOpacity(0.7),
-                          colorText: Colors.white,
-                        );
-                        return;
-                      }
+                // Replace your button with this in DietQuestionsScreen
+Obx(() => SizedBox(
+  width: double.infinity,
+  child: ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.deepPurple,
+      padding: EdgeInsets.symmetric(vertical: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    onPressed: _profileController.isLoading.value
+        ? null // Disable button while loading
+        : () {
+            if (dietPreference == null) {
+              Get.snackbar(
+                "Error",
+                "Please select a diet preference",
+                backgroundColor: Colors.red.withOpacity(0.7),
+                colorText: Colors.white,
+              );
+              return;
+            }
 
-                      // Parse allergies/dislikes from text field
-                      List<String> allergiesList = [];
-                      if (_allergyController.text.isNotEmpty) {
-                        allergiesList = _allergyController.text
-                            .split(',')
-                            .map((e) => e.trim())
-                            .where((e) => e.isNotEmpty)
-                            .toList();
-                      }
+            // Parse allergies/dislikes from text field
+            List<String> allergiesList = [];
+            if (_allergyController.text.isNotEmpty) {
+              allergiesList = _allergyController.text
+                  .split(',')
+                  .map((e) => e.trim())
+                  .where((e) => e.isNotEmpty)
+                  .toList();
+            }
 
-                      _profileController.saveDietData(
-                        dietPreference: dietPreference!,
-                        mealsPerDay: meals,
-                        budget: budget!,
-                        currentWeight: currentWeight.toInt(),
-                        targetWeight: targetWeight.toInt(),
-                        allergies: allergiesList,
-                      );
-                    },
-                    child: Text("Generate Diet",
-                        style: TextStyle(color: Colors.white, fontSize: 18)),
-                  ),
+            // This will save data AND generate AI plans
+            _profileController.saveDietData(
+              dietPreference: dietPreference!,
+              mealsPerDay: meals,
+              budget: budget!,
+              currentWeight: currentWeight.toInt(),
+              targetWeight: targetWeight.toInt(),
+              allergies: allergiesList,
+            );
+          },
+    child: _profileController.isLoading.value
+        ? Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
                 ),
+              ),
+              SizedBox(width: 12),
+              Text(
+                "Generating...",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ],
+          )
+        : Text(
+            "Generate Diet",
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+  ),
+)),
 
                 SizedBox(height: 40),
               ],

@@ -216,6 +216,12 @@ class _WeeklyCheckInCard extends StatelessWidget {
                 const SizedBox(height: 14),
                 ElevatedButton(
                   onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   child: const Text('Log Stats'),
                 ),
               ],

@@ -3,6 +3,7 @@ import 'package:ai_personal_trainer/screens/UserDataPages/DietQuestionsScreen.da
 import 'package:ai_personal_trainer/screens/UserDataPages/GenderScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/HeightScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/WorkoutQuestionsScreen.dart';
+import 'package:ai_personal_trainer/screens/HomePage.dart';
 import 'package:ai_personal_trainer/screens/loginpage.dart';
 import 'package:ai_personal_trainer/screens/signup.dart';
 import 'package:ai_personal_trainer/supabase_config.dart';
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // Set initial route
-      initialRoute: '/login',
+      initialRoute: '/home',
       
       // Define all routes
       getPages: [
@@ -72,12 +73,12 @@ class MyApp extends StatelessWidget {
           name: '/diet-screen',
           page: () => const DietQuestionsScreen(),
         ),
-        // Add more routes as needed
-        // GetPage(
-        //   name: '/home',
-        //   page: () => const HomePage(),
-        // ),
+        GetPage(
+          name: '/home',
+          page: () => const HomePage(),
+        ),
       ],
     );
   }
 }
+

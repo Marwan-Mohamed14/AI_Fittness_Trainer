@@ -236,9 +236,19 @@ Future<void>generateAiPlans() async{
     }
     print('✅ Profile loaded successfully!');
     print('\n🔄 Step 2: Generating AI plans...');
+
     final plans = await AiPlanService().generateWeeklyPlan(userprofile);
+
      print('✅ Step 2 Complete: Plans generated');
     print('\n🎉 SUCCESS! Your personalized plans are ready!\n');
+
+     print('\n🔄 Step 3: Saving plans to Supabase...');
+    userprofile.dietPlan = plans['diet'];
+    userprofile.workoutPlan = plans['workout'];
+
+    await _profileService.saveProfile(userprofile);
+    print('Plans saved to Supabase!');
+
     
     Get.snackbar(
       'Success!',
@@ -247,7 +257,7 @@ Future<void>generateAiPlans() async{
       colorText: Colors.white,
       duration: Duration(seconds: 3),
     );
-
+   Get.offAllNamed('/home');
  }catch(e){
    Get.snackbar(
      'Error',
@@ -262,31 +272,31 @@ Future<void>generateAiPlans() async{
 }
 
 
-  Future<void> completeOnboarding() async {
-    isLoading.value = true;
+  // Future<void> completeOnboarding() async {
+  //   isLoading.value = true;
     
-    try {
-      await _profileService.saveProfile(onboardingData.value);
+  //   try {
+  //     await _profileService.saveProfile(onboardingData.value);
       
-      Get.snackbar(
-        'Complete',
-        'Profile setup completed!',
-        backgroundColor: Colors.green.withOpacity(0.7),
-        colorText: Colors.white,
-        duration: Duration(seconds: 2),
-      );
+  //     Get.snackbar(
+  //       'Complete',
+  //       'Profile setup completed!',
+  //       backgroundColor: Colors.green.withOpacity(0.7),
+  //       colorText: Colors.white,
+  //       duration: Duration(seconds: 2),
+  //     );
       
-      // Navigate to home screen
-      Get.offAllNamed('/home');
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to complete onboarding: $e',
-        backgroundColor: Colors.red.withOpacity(0.7),
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
+  //     // Navigate to home screen
+  //     Get.offAllNamed('/home');
+  //   } catch (e) {
+  //     Get.snackbar(
+  //       'Error',
+  //       'Failed to complete onboarding: $e',
+  //       backgroundColor: Colors.red.withOpacity(0.7),
+  //       colorText: Colors.white,
+  //     );
+  //   } finally {
+  //     isLoading.value = false;
+  //   }
+  // }
 }

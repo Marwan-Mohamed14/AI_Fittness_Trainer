@@ -39,12 +39,7 @@ class _DietQuestionsScreenState extends State<DietQuestionsScreen>
     currentWeight = data.weight?.toDouble() ?? 80;
     targetWeight = data.targetWeight?.toDouble() ?? 75;
     
-    // Load allergies/dislikes
-    if (data.allergies != null && data.allergies!.isNotEmpty) {
-      _allergyController.text = data.allergies!.join(', ');
-    } else if (data.dislikes != null && data.dislikes!.isNotEmpty) {
-      _allergyController.text = data.dislikes!.join(', ');
-    }
+   
 
     _animController = AnimationController(
       vsync: this,
@@ -258,7 +253,7 @@ class _DietQuestionsScreenState extends State<DietQuestionsScreen>
                 // ============================
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text("Foods you don't eat (allergies/dislikes):",
+                  child: Text("Additional notes (For perfect diet plan):",
                       style: TextStyle(color: Colors.white70)),
                 ),
                 TextField(
@@ -278,10 +273,7 @@ class _DietQuestionsScreenState extends State<DietQuestionsScreen>
 
                 SizedBox(height: 30),
 
-                // ============================
-                // Button
-                // ============================
-                // Replace your button with this in DietQuestionsScreen
+               
 Obx(() => SizedBox(
   width: double.infinity,
   child: ElevatedButton(

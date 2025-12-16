@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ai_personal_trainer/supabase_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   final SupabaseClient supabase = SupabaseConfig.client;
@@ -37,4 +38,15 @@ class AuthService {
   bool isLoggedin(){
     return supabase.auth.currentUser != null;
   }
+   String? getCurrentUserId() {
+    return supabase.auth.currentUser?.id;
+  }
+  //   Future<bool> hasCompletedOnboarding() async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     return prefs.getBool('onboarding_completed') ?? false;
+  //   } catch (e) {
+  //     return false;
+  //   }
+  // }
 }

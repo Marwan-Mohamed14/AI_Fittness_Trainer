@@ -22,9 +22,10 @@ class OnboardingData {
   // Lifestyle
   String? activityLevel;      // low / medium / high
 
-  // Restrictions
-  List<String>? allergies;    // things they cannot eat
-  List<String>? dislikes;     // things they don’t like
+  List<String>? allergies;    
+
+  String? dietPlan;
+  String? workoutPlan;
 
   OnboardingData({
     this.age,
@@ -41,7 +42,8 @@ class OnboardingData {
     this.targetWeight,
     this.activityLevel,
     this.allergies,
-    this.dislikes,
+    this.dietPlan,
+    this.workoutPlan,
   });
 
   // ================================
@@ -62,6 +64,9 @@ class OnboardingData {
       "weight": weight,
       "target_weight": targetWeight,
       "allergies": allergies,
+      "diet_plan": dietPlan,
+      "workout_plan": workoutPlan,
+
     };
   }
   // Add this to your OnboardingData class
@@ -82,7 +87,8 @@ factory OnboardingData.fromJson(Map<String, dynamic> json) {
     allergies: json['allergies'] != null 
         ? List<String>.from(json['allergies']) 
         : null,
-   
+   dietPlan: json['diet_plan'],
+   workoutPlan: json['workout_plan'],
   );
 }
 }

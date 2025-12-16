@@ -178,19 +178,16 @@ class Authcontroller extends GetxController {
           colorText: Colors.white,
         );
 
-        // Clear the form
         emailController.clear();
         passwordController.clear();
 
-        // Navigate to home or profile setup
+        final hasprofile = await hasCompletedOnboarding();
+        if(hasprofile){
          Get.offAllNamed('/home');
+         }
+         
       } else {
-        Get.snackbar(
-          "Error",
-          "Login failed. Please try again.",
-          backgroundColor: Colors.red.withOpacity(0.7),
-          colorText: Colors.white,
-        );
+        Get.offAllNamed('/age-screen');  
       }
     } on AuthException catch (e) {
       isLoading.value = false;
@@ -226,6 +223,25 @@ class Authcontroller extends GetxController {
         colorText: Colors.white,
       );
     }
+  }
+  Future<bool>hasCompletedOnboarding() async{
+    final user=supabase.auth.currentUser;
+    if(user==null){
+      return false;
+    }
+      try {
+    final response = await supabase
+        .from('profiles')
+        .select('user_id')  
+        .eq('user_id', user.id)
+        .maybeSingle();     
+
+    return response != null;
+  } catch (e) {
+    print("Error checking profile: $e");
+    return false;
+  }
+
   }
 
   @override

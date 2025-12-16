@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // Set initial route
-      initialRoute: '/home',
+      initialRoute: '/login',
       
       // Define all routes
       getPages: [

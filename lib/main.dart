@@ -1,8 +1,10 @@
+import 'package:ai_personal_trainer/layout/MainLayout.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/AgeScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/DietQuestionsScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/GenderScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/HeightScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/WorkoutQuestionsScreen.dart';
+import 'package:ai_personal_trainer/screens/DietPage.dart';
 import 'package:ai_personal_trainer/screens/HomePage.dart';
 import 'package:ai_personal_trainer/screens/loginpage.dart';
 import 'package:ai_personal_trainer/screens/signup.dart';
@@ -75,10 +77,13 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: '/home',
-          page: () => const HomePage(),
+          page: () => const MainLayout(),
+        ),
+        GetPage(
+          name: '/show-diet-page',
+          page: () => const DietPlanScreen(),
         ),
       ],
     );
   }
 }
-

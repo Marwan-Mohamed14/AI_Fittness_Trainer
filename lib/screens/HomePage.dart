@@ -1,20 +1,5 @@
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomePage(),
-    );
-  }
-}
+import '../widgets/BottomNavigation.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -38,14 +23,10 @@ class HomePage extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
-                Text(
-                  'Welcome, Alex!',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  "Let's crush today's goals.",
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
+                Text('Welcome, Alex!',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                Text("Let's crush today's goals.",
+                    style: TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
           ],
@@ -60,7 +41,8 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: const _BottomNav(),
+
+
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -372,29 +354,6 @@ class _ActionCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-// =============================
-// Bottom Navigation
-// =============================
-class _BottomNav extends StatelessWidget {
-  const _BottomNav();
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      backgroundColor: const Color(0xFF0F111A),
-      selectedItemColor: Colors.deepPurple,
-      unselectedItemColor: Colors.grey,
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.fitness_center), label: 'Workout'),
-        BottomNavigationBarItem(icon: Icon(Icons.restaurant), label: 'Diet'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
-      ],
     );
   }
 }

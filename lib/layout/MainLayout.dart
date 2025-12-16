@@ -1,7 +1,10 @@
+import 'package:ai_personal_trainer/screens/SettingsPage.dart';
 import 'package:flutter/material.dart';
 import '../screens/HomePage.dart';
 import '../screens/DietPage.dart';
 import '../widgets/bottomNavigation.dart';
+import'../screens/WorkoutPage.dart';
+
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -15,9 +18,9 @@ class _MainLayoutState extends State<MainLayout> {
 
   final List<Widget> _screens = const [
     HomePage(),
-    Placeholder(),        // Workout (لسه)
+    WorkoutPlanScreen(),        // Workout (لسه)
     DietPlanScreen(),
-    Placeholder(),        // Settings (لسه)
+    SettingsScreen(),        // Settings (لسه)
   ];
 
   @override

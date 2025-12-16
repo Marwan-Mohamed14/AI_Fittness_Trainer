@@ -39,6 +39,11 @@ dependencies:
   dartx: ^1.2.0
   http: ^1.1.0
   shared_preferences: ^2.2.2
+  flutter_map: ^6.1.0 # For the free map
+  latlong2: ^0.9.0 # For handling coordinates
+  geolocator: ^11.0.0
+  permission_handler: ^11.3.0 # Better permission management
+  url_launcher: ^6.2.5 # To launch Google Maps navigation
 
 dev_dependencies:
   flutter_test:

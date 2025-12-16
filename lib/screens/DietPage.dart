@@ -17,7 +17,13 @@ class DietPlanScreen extends StatelessWidget {
           children: const [
             Icon(Icons.restaurant_menu, color: Colors.deepPurple),
             SizedBox(width: 8),
-            Text('Diet Plan'),
+            Text('Diet Plan', style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+            
           ],
         ),
       ),

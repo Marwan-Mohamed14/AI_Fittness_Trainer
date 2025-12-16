@@ -1,3 +1,4 @@
+import 'package:ai_personal_trainer/screens/NearbyGymsPage.dart';
 import 'package:flutter/material.dart';
 import '../widgets/BottomNavigation.dart';
 import 'UpdatePlans.dart';
@@ -231,7 +232,14 @@ class _NearestGymCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-      onTap: () {},
+       onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NearbyGymsScreen(),
+                ),
+              );
+            },
       child: Container(
         height: 160,
         decoration: BoxDecoration(
@@ -260,6 +268,7 @@ class _NearestGymCard extends StatelessWidget {
               CircleAvatar(
                 backgroundColor: Colors.white,
                 child: Icon(Icons.arrow_forward, color: Colors.black),
+                
               ),
             ],
           ),
@@ -282,7 +291,7 @@ class _BottomActions extends StatelessWidget {
         Expanded(
           child: _ActionCard(
             icon: Icons.next_plan,
-            title: 'Update Plan',
+            title: 'Regenerate Plan',
             subtitle: 'Adjust your plan on demand or Monthly as Required',
             onTap: () {
               Navigator.push(

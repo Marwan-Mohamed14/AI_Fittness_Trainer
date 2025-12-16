@@ -1,11 +1,14 @@
 import 'package:ai_personal_trainer/layout/MainLayout.dart';
+import 'package:ai_personal_trainer/screens/NearbyGymsPage.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/AgeScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/DietQuestionsScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/GenderScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/HeightScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/WorkoutQuestionsScreen.dart';
+import 'package:ai_personal_trainer/screens/WorkoutPage.dart';
 import 'package:ai_personal_trainer/screens/DietPage.dart';
 import 'package:ai_personal_trainer/screens/HomePage.dart';
+import 'package:ai_personal_trainer/screens/SettingsPage.dart';
 import 'package:ai_personal_trainer/screens/Auth/loginpage.dart';
 import 'package:ai_personal_trainer/screens/Auth/signup.dart';
 import 'package:ai_personal_trainer/supabase_config.dart';
@@ -44,44 +47,29 @@ class MyApp extends StatelessWidget {
       ),
       // Set initial route
       initialRoute: '/login',
-      
+
       // Define all routes
       getPages: [
-        GetPage(
-          name: '/login',
-          page: () => const LoginPage(),
-        ),
-        GetPage(
-          name: '/signup',
-          page: () => const SignupPage(),
-        ),
-        GetPage(
-          name: '/age-screen',
-          page: () =>  AgeScreen(),
-        ),
-        GetPage(
-          name: '/height-screen',
-          page: () => const HeightScreen(),
-        ),
-        GetPage(
-          name: '/gender-screen',
-          page: () => const GenderScreen(),
-        ),
+        GetPage(name: '/login', page: () => const LoginPage()),
+        GetPage(name: '/signup', page: () => const SignupPage()),
+        GetPage(name: '/age-screen', page: () => AgeScreen()),
+        GetPage(name: '/height-screen', page: () => const HeightScreen()),
+        GetPage(name: '/gender-screen', page: () => const GenderScreen()),
         GetPage(
           name: '/workout-screen',
           page: () => const WorkoutQuestionsScreen(),
         ),
+        GetPage(name: '/diet-screen', page: () => const DietQuestionsScreen()),
+        GetPage(name: '/home', page: () => const MainLayout()),
+        GetPage(name: '/show-diet-page', page: () => const DietPlanScreen()),
         GetPage(
-          name: '/diet-screen',
-          page: () => const DietQuestionsScreen(),
+          name: '/show-workout-page',
+          page: () => const WorkoutPlanScreen(),
         ),
+        GetPage(name: '/settings-page', page: () => const SettingsScreen()),
         GetPage(
-          name: '/home',
-          page: () => const MainLayout(),
-        ),
-        GetPage(
-          name: '/show-diet-page',
-          page: () => const DietPlanScreen(),
+          name: '/nearby-gyms-page',
+          page: () => const NearbyGymsScreen(),
         ),
       ],
     );

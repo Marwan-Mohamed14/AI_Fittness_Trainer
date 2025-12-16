@@ -183,7 +183,7 @@ class Authcontroller extends GetxController {
         passwordController.clear();
 
         // Navigate to home or profile setup
-        // Get.offAllNamed('/home');
+         Get.offAllNamed('/home');
       } else {
         Get.snackbar(
           "Error",

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../controllers/Profilecontroller.dart';
 import '../models/onboarding_data.dart';
 import '../services/ProfileService.dart';
+import '../services/Ai_plan_service.dart';
 
 class UpdatePlans extends StatefulWidget {
   const UpdatePlans({super.key});
@@ -584,11 +585,11 @@ class _UpdatePlansState extends State<UpdatePlans>
             .toList();
       }
 
-      // Get current profile data to preserve dietPlan and workoutPlan
+      // Get current profile data
       await _profileController.loadExistingProfile();
       final currentData = _profileController.onboardingData.value;
 
-      // Update the existing data object
+      // Update the existing data object with new values
       currentData.age = int.tryParse(_ageController.text);
       currentData.height = int.tryParse(_heightController.text);
       currentData.gender = _selectedGender;
@@ -602,7 +603,22 @@ class _UpdatePlansState extends State<UpdatePlans>
       currentData.targetWeight = int.tryParse(_targetWeightController.text);
       currentData.activityLevel = _selectedActivityLevel;
       currentData.allergies = allergies;
-      // dietPlan and workoutPlan are preserved automatically
+
+      // Generate new plans using AI service
+      Get.snackbar(
+        'Generating Plan',
+        'Creating your personalized fitness and diet plan...',
+        backgroundColor: Colors.deepPurple.withOpacity(0.7),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+
+      final aiPlanService = AiPlanService();
+      final generatedPlans = await aiPlanService.generateWeeklyPlan(currentData);
+
+      // Update the data with newly generated plans
+      currentData.dietPlan = generatedPlans['diet'];
+      currentData.workoutPlan = generatedPlans['workout'];
 
       // Save to database using ProfileService
       final profileService = ProfileService();

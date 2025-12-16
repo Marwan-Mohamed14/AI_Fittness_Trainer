@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../controllers/Profilecontroller.dart';
+import '../models/onboarding_data.dart';
+import '../services/ProfileService.dart';
 
 class UpdatePlans extends StatefulWidget {
   const UpdatePlans({super.key});
@@ -10,7 +13,9 @@ class UpdatePlans extends StatefulWidget {
 
 class _UpdatePlansState extends State<UpdatePlans>
     with SingleTickerProviderStateMixin {
+  final ProfileController _profileController = Get.put(ProfileController());
   late TabController _tabController;
+  bool _isLoading = false;
 
   // Controllers for text fields
   late TextEditingController _ageController;
@@ -34,6 +39,7 @@ class _UpdatePlansState extends State<UpdatePlans>
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _initializeControllers();
+    _loadProfileData();
   }
 
   void _initializeControllers() {
@@ -44,6 +50,68 @@ class _UpdatePlansState extends State<UpdatePlans>
     _mealsPerDayController = TextEditingController(text: '3');
     _allergiesController = TextEditingController();
   }
+
+  void _loadProfileData() {
+    // Ensure profile is loaded
+    _profileController.loadExistingProfile().then((_) {
+      if (mounted) {
+        setState(() {
+          final data = _profileController.onboardingData.value;
+          _ageController.text = data.age?.toString() ?? '';
+          _heightController.text = data.height?.toString() ?? '';
+          _weightController.text = data.weight?.toString() ?? '';
+          _targetWeightController.text = data.targetWeight?.toString() ?? '';
+          _mealsPerDayController.text = data.mealsPerDay?.toString() ?? '3';
+          _allergiesController.text = data.allergies?.join(', ') ?? '';
+          _selectedGender = data.gender;
+          _selectedWorkoutGoal = data.workoutGoal;
+          _selectedWorkoutLevel = data.workoutLevel;
+          _selectedTrainingDays = data.trainingDays;
+          _selectedTrainingLocation = data.trainingLocation;
+          _selectedDietPreference = data.dietPreference;
+          _selectedActivityLevel = data.activityLevel;
+        });
+      }
+    });
+  }
+  void _showSuccessDialog() {
+  Get.dialog(
+    AlertDialog(
+      backgroundColor: const Color(0xFF1A1F2E),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      title: const Text(
+        'Success 🎉',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: const Text(
+        'Your profile has been updated successfully.',
+        style: TextStyle(color: Colors.white70),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Get.back(); // close dialog
+            Get.offAllNamed('/home'); // go to Home page
+          },
+          child: const Text(
+            'Go to Home',
+            style: TextStyle(
+              color: Colors.deepPurple,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    ),
+    barrierDismissible: false, // user must click button
+  );
+}
+
 
   @override
   void dispose() {
@@ -266,29 +334,7 @@ class _UpdatePlansState extends State<UpdatePlans>
               ],
             ),
           ),
-          _buildInputCard(
-            label: 'Activity Level',
-            icon: Icons.directions_run,
-            child: Wrap(
-              children: [
-                _buildChip(
-                  'Low',
-                  _selectedActivityLevel == 'Low',
-                  () => setState(() => _selectedActivityLevel = 'Low'),
-                ),
-                _buildChip(
-                  'Medium',
-                  _selectedActivityLevel == 'Medium',
-                  () => setState(() => _selectedActivityLevel = 'Medium'),
-                ),
-                _buildChip(
-                  'High',
-                  _selectedActivityLevel == 'High',
-                  () => setState(() => _selectedActivityLevel = 'High'),
-                ),
-              ],
-            ),
-          ),
+         
         ],
       ),
     );
@@ -522,9 +568,65 @@ class _UpdatePlansState extends State<UpdatePlans>
     );
   }
 
-  void _saveProfile() {
-    // Just navigate back - no backend saving
-    Get.back();
+  Future<void> _saveProfile() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Parse allergies
+      List<String>? allergies;
+      if (_allergiesController.text.trim().isNotEmpty) {
+        allergies = _allergiesController.text
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+
+      // Get current profile data to preserve dietPlan and workoutPlan
+      await _profileController.loadExistingProfile();
+      final currentData = _profileController.onboardingData.value;
+
+      // Update the existing data object
+      currentData.age = int.tryParse(_ageController.text);
+      currentData.height = int.tryParse(_heightController.text);
+      currentData.gender = _selectedGender;
+      currentData.workoutGoal = _selectedWorkoutGoal;
+      currentData.workoutLevel = _selectedWorkoutLevel;
+      currentData.trainingDays = _selectedTrainingDays;
+      currentData.trainingLocation = _selectedTrainingLocation;
+      currentData.dietPreference = _selectedDietPreference;
+      currentData.mealsPerDay = int.tryParse(_mealsPerDayController.text);
+      currentData.weight = int.tryParse(_weightController.text);
+      currentData.targetWeight = int.tryParse(_targetWeightController.text);
+      currentData.activityLevel = _selectedActivityLevel;
+      currentData.allergies = allergies;
+      // dietPlan and workoutPlan are preserved automatically
+
+      // Save to database using ProfileService
+      final profileService = ProfileService();
+      await profileService.saveProfile(currentData);
+
+      // Update controller
+      _profileController.onboardingData.value = currentData;
+
+      _showSuccessDialog();
+
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to update profile: ${e.toString()}',
+        backgroundColor: Colors.red.withOpacity(0.7),
+        colorText: Colors.white,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -598,22 +700,31 @@ class _UpdatePlansState extends State<UpdatePlans>
                     ),
                     elevation: 5,
                   ),
-                  onPressed: _saveProfile,
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.save, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text(
-                        'Save All Changes',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  onPressed: _isLoading ? null : _saveProfile,
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.save, color: Colors.white),
+                            SizedBox(width: 8),
+                            Text(
+                              'Save All Changes',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ),

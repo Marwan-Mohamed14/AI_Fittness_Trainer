@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/BottomNavigation.dart';
 import 'UpdatePlans.dart';
+import 'edit_user_info_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,11 +15,21 @@ class HomePage extends StatelessWidget {
         elevation: 0,
         title: Row(
           children: [
-            const Padding(
-              padding: EdgeInsets.only(right: 10),
-              child: CircleAvatar(
-                backgroundColor: Color(0xFF1E2230),
-                child: Icon(Icons.account_box_rounded, color: Colors.white),
+            Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const EditUserInfoPage(),
+                    ),
+                  );
+                },
+                child: const CircleAvatar(
+                  backgroundColor: Color(0xFF1E2230),
+                  child: Icon(Icons.account_box_rounded, color: Colors.white),
+                ),
               ),
             ),
             Column(

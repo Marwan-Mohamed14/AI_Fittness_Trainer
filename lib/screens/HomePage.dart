@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/BottomNavigation.dart';
+import 'UpdatePlans.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -23,10 +24,14 @@ class HomePage extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
-                Text('Welcome, Alex!',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                Text("Let's crush today's goals.",
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  'Welcome, Alex!',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  "Let's crush today's goals.",
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
           ],
@@ -41,7 +46,6 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-
 
       body: SafeArea(
         child: SingleChildScrollView(
@@ -165,7 +169,6 @@ class _WeeklyCheckInCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: const [
@@ -175,15 +178,12 @@ class _WeeklyCheckInCard extends StatelessWidget {
                       child: Icon(Icons.auto_graph, size: 12, color: Colors.white),
                     ),
                     SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        'Weekly Check-in',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      'Weekly Check-in',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -192,31 +192,16 @@ class _WeeklyCheckInCard extends StatelessWidget {
                 const Text(
                   'Log your weight & height to refine your AI plan.',
                   style: TextStyle(color: Colors.grey, fontSize: 13),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 14),
                 ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
                   ),
                   child: const Text('Log Stats'),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(width: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: Image.network(
-              'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b',
-              width: 90,
-              height: double.infinity,
-              fit: BoxFit.cover,
             ),
           ),
         ],
@@ -226,7 +211,7 @@ class _WeeklyCheckInCard extends StatelessWidget {
 }
 
 // =============================
-// Nearest Gym (BUTTON)
+// Nearest Gym
 // =============================
 class _NearestGymCard extends StatelessWidget {
   const _NearestGymCard();
@@ -235,9 +220,7 @@ class _NearestGymCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-      onTap: () {
-        // Navigate to gym map
-      },
+      onTap: () {},
       child: Container(
         height: 160,
         decoration: BoxDecoration(
@@ -258,20 +241,9 @@ class _NearestGymCard extends StatelessWidget {
           child: Row(
             children: const [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Find Nearest Gym',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      '1.2 mi away • Open until 11 PM',
-                      style: TextStyle(color: Colors.grey, fontSize: 13),
-                    ),
-                  ],
+                child: Text(
+                  'Find Nearest Gym',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
               CircleAvatar(
@@ -287,7 +259,7 @@ class _NearestGymCard extends StatelessWidget {
 }
 
 // =============================
-// Bottom Actions (BUTTONS)
+// Bottom Actions (NAVIGATION)
 // =============================
 class _BottomActions extends StatelessWidget {
   const _BottomActions();
@@ -295,20 +267,36 @@ class _BottomActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: const [
+      children: [
         Expanded(
           child: _ActionCard(
-            icon: Icons.restaurant,
-            title: 'Update Diet',
-            subtitle: 'Adjust calories',
+            icon: Icons.next_plan,
+            title: 'Update Plan',
+            subtitle: 'Adjust your plan on demand or Monthly as Required',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const UpdatePlans(),
+                ),
+              );
+            },
           ),
         ),
-        SizedBox(width: 14),
+        const SizedBox(width: 14),
         Expanded(
           child: _ActionCard(
             icon: Icons.groups,
             title: 'Community',
-            subtitle: "See what's new",
+            subtitle: "See what's new in the AI Fitness Trainer community",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CommunityScreen(),
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -320,20 +308,20 @@ class _ActionCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final VoidCallback onTap;
 
   const _ActionCard({
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-      onTap: () {
-        // Handle navigation
-      },
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -354,6 +342,23 @@ class _ActionCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// =============================
+// DESTINATION SCREENS
+// =============================
+
+
+class CommunityScreen extends StatelessWidget {
+  const CommunityScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Community')),
+      body: const Center(child: Text('Community Page')),
     );
   }
 }

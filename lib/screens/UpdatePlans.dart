@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({super.key});
+class UpdatePlans extends StatefulWidget {
+  const UpdatePlans({super.key});
 
   @override
-  State<EditProfilePage> createState() => _EditProfilePageState();
+  State<UpdatePlans> createState() => _UpdatePlansState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage>
+class _UpdatePlansState extends State<UpdatePlans>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -536,7 +536,7 @@ class _EditProfilePageState extends State<EditProfilePage>
         elevation: 0,
         leading: const BackButton(color: Colors.white),
         title: const Text(
-          'Edit Profile',
+          'Update Plans',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

@@ -1,5 +1,5 @@
 import 'package:ai_personal_trainer/controllers/Authcontroller.dart';
-import 'package:ai_personal_trainer/screens/signup.dart';
+import 'package:ai_personal_trainer/screens/Auth/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

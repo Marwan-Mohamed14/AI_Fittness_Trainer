@@ -68,7 +68,7 @@ darkTheme: ThemeData(
           // ✅ NOW this line is VALID
           themeMode: themeController.themeMode,
 
-          initialRoute: '/home',
+          initialRoute: '/login',
           getPages: [
             GetPage(name: '/login', page: () => const LoginPage()),
             GetPage(name: '/signup', page: () => const SignupPage()),

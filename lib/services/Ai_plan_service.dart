@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:ai_personal_trainer/models/onboarding_data.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 class AiPlanService {
   final String _baseUrl = 'https://api.groq.com/openai/v1/chat/completions';  
-  final String _apiKey = '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'; 
+final String _apiKey = dotenv.env['GROQ_API_KEY'] ?? '';
     static const String _model = 'llama-3.3-70b-versatile';
   
   Future<Map<String, String>> generateWeeklyPlan(OnboardingData userData) async {

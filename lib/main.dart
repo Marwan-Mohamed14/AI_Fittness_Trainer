@@ -13,11 +13,12 @@ import 'package:ai_personal_trainer/screens/Auth/loginpage.dart';
 import 'package:ai_personal_trainer/screens/Auth/signup.dart';
 import 'package:ai_personal_trainer/supabase_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await dotenv.load(fileName: ".env");
   // Initialize Supabase using the static method
   try {
     await SupabaseConfig.initializeSupabase();

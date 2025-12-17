@@ -49,22 +49,38 @@ String _buildWeeklyPlanPrompt(OnboardingData userData) {
 Create a ${userData.trainingDays}-day fitness plan. Use this EXACT format:
 
 ===DIET PLAN===
-BREAKFAST (Daily): [eggs dish] - XXX kcal | P: XXg C: XXg F: XXg
-LUNCH (Daily): [meal] - XXX kcal | P: XXg C: XXg F: XXg
-DINNER (Daily): [chicken dish] - XXX kcal | P: XXg C: XXg F: XXg
-DAILY TOTAL: XXXX kcal | P: XXXg C: XXXg F: XXXg
+[BREAKFAST]
+Name: [dish name]
+Portions: [e.g., 3 eggs, 1 tbsp oil]
+Calories: [number] kcal
+Protein: [number]g
+Carbs: [number]g
+Fat: [number]g
+
+[LUNCH]
+Name: [dish name]
+Portions: [portions]
+Calories: [number] kcal
+Protein: [number]g
+Carbs: [number]g
+Fat: [number]g
+
+[DINNER]
+Name: [dish name]
+Portions: [portions]
+Calories: [number] kcal
+Protein: [number]g
+Carbs: [number]g
+Fat: [number]g
+
+[DAILY_TOTAL]
+Calories: [number] kcal
+Protein: [number]g
+Carbs: [number]g
+Fat: [number]g
 
 ===WORKOUT PLAN===
-DAY 1: PUSH
-1. Exercise - Sets x Reps
-2. Exercise - Sets x Reps
-[continue for all exercises]
-
-DAY 2: PULL
-1. Exercise - Sets x Reps
-[continue...]
-
-[Continue for all ${userData.trainingDays} days]
+[Continue as before...]
 
 USER:
 Age: ${userData.age}, ${userData.gender}
@@ -72,13 +88,13 @@ Weight: ${userData.weight}kg → ${userData.targetWeight}kg
 Goal: ${userData.workoutGoal}
 Level: ${userData.workoutLevel}
 Training: ${userData.trainingDays} days/week at ${userData.trainingLocation}
-Diet: ${userData.dietPreference}, Allergies: ${userData.allergies?.join(', ') ?? 'None'}
+Allergies: ${userData.allergies?.join(', ') ?? 'None'}
 
-IMPORTANT:
-- Be CONCISE - no explanations, just the plan
+RULES:
+- Be CONCISE
+- Breakfast: eggs only, Dinner: chicken only
+- ${userData.trainingLocation == 'Gym' ? 'Use gym equipment' : 'Bodyweight/dumbbells'}
 - Include ALL ${userData.trainingDays} workout days
-- Breakfast: eggs, Dinner: chicken (always)
-- ${userData.trainingLocation == 'Gym' ? 'Use gym equipment' : 'Use bodyweight/dumbbells'}
 
 START WITH "===DIET PLAN===":
 ''';

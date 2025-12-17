@@ -1,3 +1,4 @@
+import 'package:ai_personal_trainer/controllers/Profilecontroller.dart';
 import 'package:ai_personal_trainer/layout/MainLayout.dart';
 import 'package:ai_personal_trainer/screens/NearbyGymsPage.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/AgeScreen.dart';
@@ -26,6 +27,7 @@ void main() async {
     debugPrint("Supabase Initialization Failed: $e");
     // You can show an error screen or run the app anyway
   }
+  Get.put(ProfileController());
 
   runApp(const MyApp());
 }

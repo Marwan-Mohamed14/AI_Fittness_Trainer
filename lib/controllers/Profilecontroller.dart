@@ -1,3 +1,4 @@
+import 'package:ai_personal_trainer/models/MealData.dart';
 import 'package:ai_personal_trainer/services/Ai_plan_service.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/models/onboarding_data.dart';
@@ -270,33 +271,21 @@ Future<void>generateAiPlans() async{
     isLoading.value = false;
   }
 }
+Future<DailyMealPlan?> loadDietPlan()async{
+  try{
+    print('\n🔄 Loading diet plan from profile...');
+    final profile=await _profileService.getProfile();
+ if (profile?.dietPlan == null || profile!.dietPlan!.isEmpty) {
+      print('⚠️ No diet plan found');
+      return null;
+    } 
+  print('diet plan found, parsing...');
+    return DietPlanParser.parseDietPlan(profile.dietPlan!);
+  } catch (e) {
+    print('❌ Error loading diet plan: $e');
+    return null;
+  }
+}
 
-
-  // Future<void> completeOnboarding() async {
-  //   isLoading.value = true;
-    
-  //   try {
-  //     await _profileService.saveProfile(onboardingData.value);
-      
-  //     Get.snackbar(
-  //       'Complete',
-  //       'Profile setup completed!',
-  //       backgroundColor: Colors.green.withOpacity(0.7),
-  //       colorText: Colors.white,
-  //       duration: Duration(seconds: 2),
-  //     );
-      
-  //     // Navigate to home screen
-  //     Get.offAllNamed('/home');
-  //   } catch (e) {
-  //     Get.snackbar(
-  //       'Error',
-  //       'Failed to complete onboarding: $e',
-  //       backgroundColor: Colors.red.withOpacity(0.7),
-  //       colorText: Colors.white,
-  //     );
-  //   } finally {
-  //     isLoading.value = false;
-  //   }
-  // }
+  
 }

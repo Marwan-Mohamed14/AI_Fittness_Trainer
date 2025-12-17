@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:ai_personal_trainer/controllers/themecontroller.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -8,7 +10,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _darkMode = true;
+
   bool _mealReminders = true;
   bool _workoutPrompts = true;
   bool _hydrationTracking = false;
@@ -16,9 +18,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F111A),
+     
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+      
         elevation: 0,
         centerTitle: true,
         title: Row(
@@ -27,7 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icon(Icons.settings, color: Colors.deepPurple),
             SizedBox(width: 8),
             Text('Settings', style: TextStyle(
-                          color: Colors.white,
+                    
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                         ),
@@ -56,12 +58,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onTap: () {},
                   ),
                   const _Divider(),
-                  _SwitchSettingsTile(
-                    icon: Icons.dark_mode_outlined,
-                    title: 'Dark Mode',
-                    value: _darkMode,
-                    onChanged: (val) => setState(() => _darkMode = val),
-                  ),
+             GetBuilder<ThemeController>(
+  builder: (themeController) {
+    return _SwitchSettingsTile(
+      icon: Icons.dark_mode_outlined,
+      title: 'Dark Mode',
+      value: themeController.isDarkMode,
+      onChanged: themeController.toggleTheme,
+    );
+  },
+),
+
+
                 ],
               ),
               const SizedBox(height: 24),

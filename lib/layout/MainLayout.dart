@@ -4,6 +4,9 @@ import '../screens/HomePage.dart';
 import '../screens/DietPage.dart';
 import '../widgets/bottomNavigation.dart';
 import'../screens/WorkoutPage.dart';
+import 'package:get/get.dart';
+import 'package:ai_personal_trainer/controllers/themecontroller.dart';
+
 
 
 class MainLayout extends StatefulWidget {
@@ -24,17 +27,33 @@ class _MainLayoutState extends State<MainLayout> {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: MainBottomNav(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
-    );
-  }
+Widget build(BuildContext context) {
+  final themeController = Get.find<ThemeController>();
+
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('AI Personal Trainer'),
+      actions: [
+       GetBuilder<ThemeController>(
+      builder: (controller) {
+        return Switch(
+          value: controller.isDarkMode,
+          onChanged: controller.toggleTheme,
+        );
+      },
+    ),
+      ],
+    ),
+    body: _screens[_currentIndex],
+    bottomNavigationBar: MainBottomNav(
+      currentIndex: _currentIndex,
+      onTap: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+    ),
+  );
+}
+
 }

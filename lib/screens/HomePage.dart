@@ -9,10 +9,12 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context); // cache theme
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F111A),
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: theme.colorScheme.background,
         elevation: 0,
         title: Row(
           children: [
@@ -27,38 +29,37 @@ class HomePage extends StatelessWidget {
                     ),
                   );
                 },
-                child: const CircleAvatar(
-                  backgroundColor: Color(0xFF1E2230),
-                  child: Icon(Icons.account_box_rounded, color: Colors.white),
+                child: CircleAvatar(
+                  backgroundColor: theme.colorScheme.surface,
+                  child: Icon(Icons.account_box_rounded, color: theme.colorScheme.onSurface),
                 ),
               ),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'Welcome, Alex!',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 Text(
                   "Let's crush today's goals.",
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.6)),
                 ),
               ],
             ),
           ],
         ),
-        actions: const [
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: 12),
             child: CircleAvatar(
-              backgroundColor: Color(0xFF1E2230),
-              child: Icon(Icons.notifications, color: Colors.white),
+              backgroundColor: theme.colorScheme.surface,
+              child: Icon(Icons.notifications, color: theme.colorScheme.onSurface),
             ),
           ),
         ],
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -90,17 +91,19 @@ class _CalendarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2230),
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'October 2023',
-            style: TextStyle(color: Colors.white, fontSize: 16),
+            style: theme.textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
           Row(
@@ -138,23 +141,37 @@ class _DayItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    Color bgColor;
+    Color textColor = theme.colorScheme.onSurface;
+
+    switch (status) {
+      case DayStatus.active:
+        bgColor = theme.colorScheme.primary;
+        break;
+      case DayStatus.done:
+      case DayStatus.missed:
+      default:
+        bgColor = theme.colorScheme.surfaceVariant;
+        break;
+    }
+
     return Column(
       children: [
         CircleAvatar(
           radius: 15,
-          backgroundColor: status == DayStatus.active
-              ? Colors.deepPurple
-              : const Color(0xFF0F111A),
+          backgroundColor: bgColor,
           child: Text(
             day,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
+            style: theme.textTheme.bodySmall?.copyWith(color: textColor),
           ),
         ),
         const SizedBox(height: 6),
         if (status == DayStatus.done)
-          const Icon(Icons.check, color: Colors.green, size: 14)
+          Icon(Icons.check, color: Colors.green, size: 14)
         else if (status == DayStatus.missed)
-          const Icon(Icons.close, color: Colors.red, size: 14),
+          Icon(Icons.close, color: Colors.red, size: 14),
       ],
     );
   }
@@ -168,11 +185,13 @@ class _WeeklyCheckInCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       height: 170,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2230),
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
@@ -183,35 +202,31 @@ class _WeeklyCheckInCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
-                  children: const [
+                  children: [
                     CircleAvatar(
                       radius: 10,
-                      backgroundColor: Colors.deepPurple,
-                      child: Icon(Icons.auto_graph, size: 12, color: Colors.white),
+                      backgroundColor: theme.colorScheme.primary,
+                      child: Icon(Icons.auto_graph, size: 12, color: theme.colorScheme.onPrimary),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'Weekly Check-in',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Log your weight & height to refine your AI plan.',
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.6)),
                 ),
                 const SizedBox(height: 14),
                 ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
+                    backgroundColor: theme.colorScheme.primary,
                   ),
-                  child: const Text('Log Stats'),
+                  child: Text('Log Stats', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
                 ),
               ],
             ),
@@ -230,16 +245,18 @@ class _NearestGymCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-       onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const NearbyGymsScreen(),
-                ),
-              );
-            },
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const NearbyGymsScreen(),
+          ),
+        );
+      },
       child: Container(
         height: 160,
         decoration: BoxDecoration(
@@ -255,20 +272,19 @@ class _NearestGymCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            color: Colors.black.withOpacity(0.55),
+            color: theme.colorScheme.onBackground.withOpacity(0.55),
           ),
           child: Row(
-            children: const [
+            children: [
               Expanded(
                 child: Text(
                   'Find Nearest Gym',
-                  style: TextStyle(color: Colors.white, fontSize: 18),
+                  style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onPrimary),
                 ),
               ),
               CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Icon(Icons.arrow_forward, color: Colors.black),
-                
+                backgroundColor: theme.colorScheme.surface,
+                child: Icon(Icons.arrow_forward, color: theme.colorScheme.onSurface),
               ),
             ],
           ),
@@ -279,13 +295,15 @@ class _NearestGymCard extends StatelessWidget {
 }
 
 // =============================
-// Bottom Actions (NAVIGATION)
+// Bottom Actions
 // =============================
 class _BottomActions extends StatelessWidget {
   const _BottomActions();
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Row(
       children: [
         Expanded(
@@ -339,25 +357,27 @@ class _ActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E2230),
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: Colors.deepPurple),
+            Icon(icon, color: theme.colorScheme.primary),
             const SizedBox(height: 14),
-            Text(title, style: const TextStyle(color: Colors.white)),
+            Text(title, style: theme.textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.6)),
             ),
           ],
         ),
@@ -367,18 +387,20 @@ class _ActionCard extends StatelessWidget {
 }
 
 // =============================
-// DESTINATION SCREENS
+// Destination Screens
 // =============================
-
-
 class CommunityScreen extends StatelessWidget {
   const CommunityScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Community')),
-      body: const Center(child: Text('Community Page')),
+      appBar: AppBar(title: Text('Community', style: theme.textTheme.titleMedium)),
+      body: Center(
+        child: Text('Community Page', style: theme.textTheme.bodyMedium),
+      ),
     );
   }
 }

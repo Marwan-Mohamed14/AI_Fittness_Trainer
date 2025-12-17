@@ -2,7 +2,6 @@ import 'package:ai_personal_trainer/models/MealData.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/controllers/Profilecontroller.dart';
-import 'package:ai_personal_trainer/models/MealData.dart';
 
 class DietPlanScreen extends StatefulWidget {
   const DietPlanScreen({super.key});
@@ -24,9 +23,7 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
 
   Future<void> _loadDietPlan() async {
     setState(() => _isLoading = true);
-    
     final plan = await _profileController.loadDietPlan();
-    
     setState(() {
       _mealPlan = plan;
       _isLoading = false;
@@ -35,30 +32,28 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F111A),
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: theme.colorScheme.background,
         elevation: 0,
         centerTitle: true,
         title: Row(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.restaurant_menu, color: Colors.deepPurple),
-            SizedBox(width: 8),
+          children: [
+            Icon(Icons.restaurant_menu, color: theme.colorScheme.primary),
+            const SizedBox(width: 8),
             Text(
               'Diet Plan',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: theme.colorScheme.primary),
             onPressed: _loadDietPlan,
             tooltip: 'Refresh',
           ),
@@ -69,11 +64,11 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(color: Colors.deepPurple),
-                  SizedBox(height: 16),
+                  CircularProgressIndicator(color: theme.colorScheme.primary),
+                  const SizedBox(height: 16),
                   Text(
                     'Loading your diet plan...',
-                    style: TextStyle(color: Colors.white70),
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.7)),
                   ),
                 ],
               ),
@@ -83,25 +78,24 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.restaurant_menu_outlined,
-                          size: 64, color: Colors.grey),
-                      SizedBox(height: 16),
+                      Icon(Icons.restaurant_menu_outlined, size: 64, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      const SizedBox(height: 16),
                       Text(
                         'No diet plan found',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
+                        style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onBackground),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         'Complete your profile to generate one',
-                        style: TextStyle(color: Colors.grey),
+                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.7)),
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: () => Get.toNamed('/age-screen'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
+                          backgroundColor: theme.colorScheme.primary,
                         ),
-                        child: Text('Set Up Profile'),
+                        child: Text('Set Up Profile', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
                       ),
                     ],
                   ),
@@ -114,25 +108,25 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _DailyGoalCard(mealPlan: _mealPlan!),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
                         _MealCard(
                           title: 'Breakfast',
                           icon: Icons.wb_sunny_outlined,
                           meal: _mealPlan!.breakfast,
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         _MealCard(
                           title: 'Lunch',
                           icon: Icons.lunch_dining_outlined,
                           meal: _mealPlan!.lunch,
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         _MealCard(
                           title: 'Dinner',
                           icon: Icons.dinner_dining_outlined,
                           meal: _mealPlan!.dinner,
                         ),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
                         _NotesCard(),
                       ],
                     ),
@@ -142,7 +136,9 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
   }
 }
 
-// Daily Goal Card - Shows actual totals from AI plan
+// ============================
+// Daily Goal Card
+// ============================
 class _DailyGoalCard extends StatelessWidget {
   final DailyMealPlan mealPlan;
 
@@ -150,48 +146,41 @@ class _DailyGoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.deepPurple, Colors.deepPurple.shade700],
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.primaryContainer
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.deepPurple.withOpacity(0.3),
+            color: theme.colorScheme.primary.withOpacity(0.3),
             blurRadius: 20,
-            offset: Offset(0, 10),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Today\'s Nutrition',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            '${mealPlan.totalCalories} kcal',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 24),
+          Text('Today\'s Nutrition',
+              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onPrimary.withOpacity(0.7))),
+          const SizedBox(height: 8),
+          Text('${mealPlan.totalCalories} kcal',
+              style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onPrimary)),
+          const SizedBox(height: 24),
           _MacroRow(label: 'Protein', grams: '${mealPlan.totalProtein}g', color: Colors.blue),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           _MacroRow(label: 'Carbs', grams: '${mealPlan.totalCarbs}g', color: Colors.green),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           _MacroRow(label: 'Fat', grams: '${mealPlan.totalFat}g', color: Colors.orange),
         ],
       ),
@@ -199,20 +188,20 @@ class _DailyGoalCard extends StatelessWidget {
   }
 }
 
-// Simple row for each macro (no progress bar needed since it's exact daily intake)
+// ============================
+// Macro Row
+// ============================
 class _MacroRow extends StatelessWidget {
   final String label;
   final String grams;
   final Color color;
 
-  const _MacroRow({
-    required this.label,
-    required this.grams,
-    required this.color,
-  });
+  const _MacroRow({required this.label, required this.grams, required this.color});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Row(
       children: [
         Container(
@@ -223,93 +212,55 @@ class _MacroRow extends StatelessWidget {
             shape: BoxShape.circle,
           ),
         ),
-        SizedBox(width: 12),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Spacer(),
-        Text(
-          grams,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        const SizedBox(width: 12),
+        Text(label, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onPrimary.withOpacity(0.8))),
+        const Spacer(),
+        Text(grams, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onPrimary)),
       ],
     );
   }
 }
 
+// ============================
 // Meal Card
+// ============================
 class _MealCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final MealData meal;
 
-  const _MealCard({
-    required this.title,
-    required this.icon,
-    required this.meal,
-  });
+  const _MealCard({required this.title, required this.icon, required this.meal});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
-      padding: EdgeInsets.all(18),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Color(0xFF1E2230),
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: Colors.deepPurple, size: 24),
-              SizedBox(width: 12),
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Spacer(),
-              Text(
-                '${meal.calories} kcal',
-                style: TextStyle(
-                  color: Colors.deepPurple,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Icon(icon, color: theme.colorScheme.primary, size: 24),
+              const SizedBox(width: 12),
+              Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const Spacer(),
+              Text('${meal.calories} kcal', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.w600)),
             ],
           ),
-          SizedBox(height: 12),
-          Divider(color: Colors.white10),
-          SizedBox(height: 12),
-          Text(
-            meal.name,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            meal.portions,
-            style: TextStyle(color: Colors.grey, fontSize: 14),
-          ),
-          SizedBox(height: 16),
+          const SizedBox(height: 12),
+          Divider(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+          const SizedBox(height: 12),
+          Text(meal.name, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
+          Text(meal.portions, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7))),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -324,21 +275,22 @@ class _MealCard extends StatelessWidget {
   }
 }
 
+// ============================
+// Macro Chip
+// ============================
 class _MacroChip extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
 
-  const _MacroChip({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
+  const _MacroChip({required this.label, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(12),
@@ -347,42 +299,37 @@ class _MacroChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(width: 6),
-          Text(
-            value,
-            style: TextStyle(color: Colors.white, fontSize: 13),
-          ),
+          Text(label, style: theme.textTheme.bodySmall?.copyWith(color: color, fontWeight: FontWeight.bold)),
+          const SizedBox(width: 6),
+          Text(value, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface)),
         ],
       ),
     );
   }
 }
 
+// ============================
+// Notes Card
+// ============================
 class _NotesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xFF1E2230),
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, color: Colors.deepPurple, size: 20),
-          SizedBox(width: 12),
+          Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 20),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               'This is your personalized weekly plan. Same meals every day for consistency.',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7)),
             ),
           ),
         ],

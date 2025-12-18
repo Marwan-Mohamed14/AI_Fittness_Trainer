@@ -8,13 +8,12 @@ import 'package:ai_personal_trainer/screens/UserDataPages/HeightScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/WorkoutQuestionsScreen.dart';
 import 'package:ai_personal_trainer/screens/WorkoutPage.dart';
 import 'package:ai_personal_trainer/screens/DietPage.dart';
-import 'package:ai_personal_trainer/screens/HomePage.dart';
 import 'package:ai_personal_trainer/screens/SettingsPage.dart';
 import 'package:ai_personal_trainer/screens/Auth/loginpage.dart';
-import 'package:ai_personal_trainer/controllers/themecontroller.dart';
-
 import 'package:ai_personal_trainer/screens/Auth/signup.dart';
+import 'package:ai_personal_trainer/controllers/themecontroller.dart';
 import 'package:ai_personal_trainer/supabase_config.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
@@ -22,15 +21,16 @@ import 'package:get/get.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  // Initialize Supabase using the static method
+
   try {
     await SupabaseConfig.initializeSupabase();
   } catch (e) {
     debugPrint("Supabase Initialization Failed: $e");
-    // You can show an error screen or run the app anyway
   }
+
   Get.put(ProfileController());
   Get.put(ThemeController());
+
   runApp(const MyApp());
 }
 
@@ -45,27 +45,70 @@ class MyApp extends StatelessWidget {
           title: 'AI Personal Trainer',
           debugShowCheckedModeBanner: false,
 
-          // 🌞 Light Theme
-        theme: ThemeData(
-  useMaterial3: true,
-  colorScheme: ColorScheme.fromSeed(
-    seedColor: Colors.deepPurple,
-    brightness: Brightness.light,
-  ),
-  scaffoldBackgroundColor: Colors.white,  // default background
-  textTheme: Typography.material2021().black, // default text
-),
-darkTheme: ThemeData(
-  useMaterial3: true,
-  colorScheme: ColorScheme.fromSeed(
-    seedColor: Colors.deepPurple,
-    brightness: Brightness.dark,
-  ),
-  scaffoldBackgroundColor: Color (0xFF121212),  // dark background
-  textTheme: Typography.material2021().white,
-),
+          // 🌞 LIGHT THEME (IMPROVED)
+          theme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.light,
 
-          // ✅ NOW this line is VALID
+            scaffoldBackgroundColor: const Color(0xFFF1F3F8),
+
+            cardColor: Colors.white,
+
+            colorScheme: const ColorScheme.light(
+              primary: Colors.deepPurple,
+              secondary: Colors.deepPurpleAccent,
+              background: Color(0xFFF1F3F8),
+              surface: Colors.white,
+            ),
+
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              elevation: 0,
+            ),
+
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: Colors.white,
+              selectedItemColor: Colors.deepPurple,
+              unselectedItemColor: Colors.grey,
+            ),
+
+            shadowColor: Colors.black12,
+
+            textTheme: Typography.material2021().black,
+          ),
+
+          // 🌙 DARK THEME (PERFECT – NO CHANGES)
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.dark,
+
+            scaffoldBackgroundColor: const Color(0xFF0F111A),
+
+            cardColor: const Color(0xFF1C222E),
+
+            colorScheme: const ColorScheme.dark(
+              primary: Colors.deepPurple,
+              secondary: Colors.deepPurpleAccent,
+              background: Color(0xFF0F111A),
+              surface: Color(0xFF1C222E),
+            ),
+
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF0F111A),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: Color(0xFF0F111A),
+              selectedItemColor: Colors.deepPurple,
+              unselectedItemColor: Colors.grey,
+            ),
+
+            textTheme: Typography.material2021().white,
+          ),
+
           themeMode: themeController.themeMode,
 
           initialRoute: '/login',
@@ -79,9 +122,15 @@ darkTheme: ThemeData(
               name: '/workout-screen',
               page: () => const WorkoutQuestionsScreen(),
             ),
-            GetPage(name: '/diet-screen', page: () => const DietQuestionsScreen()),
+            GetPage(
+              name: '/diet-screen',
+              page: () => const DietQuestionsScreen(),
+            ),
             GetPage(name: '/home', page: () => const MainLayout()),
-            GetPage(name: '/show-diet-page', page: () => const DietPlanScreen()),
+            GetPage(
+              name: '/show-diet-page',
+              page: () => const DietPlanScreen(),
+            ),
             GetPage(
               name: '/show-workout-page',
               page: () => const WorkoutPlanScreen(),

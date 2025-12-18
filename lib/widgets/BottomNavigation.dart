@@ -18,10 +18,11 @@ class MainBottomNav extends StatelessWidget {
         highlightColor: Colors.transparent,     // remove highlight
       ),
       child: BottomNavigationBar(
+        // Use theme colors for background and item colors
+        backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+        selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor,
+        unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
         currentIndex: currentIndex,
-        backgroundColor: const Color(0xFF0F111A),
-        selectedItemColor: Colors.deepPurple,
-        unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         selectedFontSize: 14,    // same size for both to reduce animation
         unselectedFontSize: 14,  // same size for both to reduce animation

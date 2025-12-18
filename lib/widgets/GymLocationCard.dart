@@ -12,7 +12,8 @@ class GymCard extends StatelessWidget {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      final webUri = Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${gym.lat},${gym.lon}");
+      // Fixed the typo from 0{gym.lat} to ${gym.lat}
+      final webUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=${gym.lat},${gym.lon}");
       await launchUrl(webUri);
     }
   }
@@ -32,15 +33,12 @@ class GymCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Gym Image loaded from Internet
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: SizedBox(
                   width: 80,
                   height: 80,
                   child: Image.network(
-                    // Using a random placeholder service with 'gym' keyword
-                    // We add the gym ID to the URL to ensure different gyms get different random images
                     'https://loremflickr.com/320/320/gym,fitness?random=${gym.id}',
                     fit: BoxFit.cover,
                     loadingBuilder: (context, child, loadingProgress) {
@@ -62,8 +60,6 @@ class GymCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              
-              // 2. Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,13 +78,6 @@ class GymCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.deepPurple,
-                            borderRadius: BorderRadius.circular(6),
-                          )
-                        )
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -121,8 +110,6 @@ class GymCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          
-          // 3. Navigate Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(

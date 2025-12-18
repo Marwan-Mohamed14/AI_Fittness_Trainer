@@ -24,17 +24,15 @@ class GymModel {
         distanceKm: distanceKm ?? this.distanceKm,
       );
 
-  factory GymModel.fromOverpassJson(Map<String, dynamic> json) {
-    final tags = json['tags'] ?? {};
-
+  factory GymModel.fromJson(Map<String, dynamic> json) {
+    final props = json['properties'] ?? {};
     return GymModel(
-      id: json['id'].toString(),
-      name: tags['name'] ?? tags['brand'] ?? 'Local Gym',
-      address: tags['addr:street'] ??
-          tags['addr:city'] ??
-          'Near you',
-      lat: json['lat'],
-      lon: json['lon'],
+      id: props['place_id']?.toString() ?? DateTime.now().toString(),
+      name: props['name'] ?? props['address_line1'] ?? 'Local Gym',
+      address: props['address_line2'] ?? props['city'] ?? 'Near you',
+      lat: props['lat']?.toDouble() ?? 0.0,
+      lon: props['lon']?.toDouble() ?? 0.0,
+      distanceKm: (props['distance'] ?? 0) / 1000.0,
     );
   }
 }

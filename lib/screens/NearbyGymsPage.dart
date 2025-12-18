@@ -43,7 +43,6 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
     }
   }
 
-
   Future<void> _fetchGyms() async {
     if (_currentPosition == null) return;
     try {
@@ -65,14 +64,11 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F111A),
-      extendBodyBehindAppBar: true, // This makes the map go behind the App Bar
-      
-      // 1. Standard App Bar with Back Button
+      extendBodyBehindAppBar: true, 
       appBar: AppBar(
-       backgroundColor: const Color(0xFF0F111A),
+        backgroundColor: const Color(0xFF0F111A),
         elevation: 0,
         centerTitle: true,
-        // Back button is automatically added by Flutter here
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -93,10 +89,8 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
           ],
         ),
       ),
-
       body: Stack(
         children: [
-          // 2. Full Screen Map Layer
           if (_currentPosition != null)
             FlutterMap(
               mapController: _mapController,
@@ -107,20 +101,17 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
               ),
               children: [
                 TileLayer(
-                  // Dark Mode Map Tiles
                   urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                   subdomains: const ['a', 'b', 'c', 'd'],
                 ),
                 MarkerLayer(
                   markers: [
-                    // User Marker
                     Marker(
                       point: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
                       width: 60,
                       height: 60,
                       child: const Icon(Icons.my_location, color: Colors.deepPurple, size: 30),
                     ),
-                    // Gym Markers
                     ..._gyms.map((gym) => Marker(
                       point: LatLng(gym.lat, gym.lon),
                       width: 40,
@@ -136,8 +127,6 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
               ? Text(_errorMessage, style: const TextStyle(color: Colors.white))
               : const CircularProgressIndicator(color: Colors.deepPurple)
             ),
-
-          // 3. Bottom Sheet (Gym List) - No Search Bar above it
           DraggableScrollableSheet(
             initialChildSize: 0.35,
             minChildSize: 0.2,
@@ -155,7 +144,6 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Handle Bar
                     Center(
                       child: Container(
                         width: 40,
@@ -181,8 +169,6 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    
-                    // List
                     Expanded(
                       child: _gyms.isEmpty 
                         ? Center(child: Text(_isLoading ? "Scanning area..." : "No gyms found nearby.", style: const TextStyle(color: Colors.grey))) 

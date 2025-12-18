@@ -4,100 +4,57 @@ import 'package:http/http.dart' as http;
 import '../models/GymLocationModel.dart';
 
 class GymService {
+  final String apiKey = "3deb7ebe1b3d4f0aadbb6eff278cc9a8";
 
-final List<String> _servers = [
-  'https://overpass.kumi.systems/api/interpreter',
-  'https://overpass.nchc.org.tw/api/interpreter',
-  'https://overpass-api.de/api/interpreter',
-  'https://overpass.openstreetmap.ru/api/interpreter',
-];
-
-
-  // ✅ LOCATION (SAFE)
-  Future<Position> determinePosition() async {
+  Future<Position?> determinePosition() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw Exception('Location services are disabled');
-    }
+    if (!serviceEnabled) return null;
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        throw Exception('Location permission denied');
-      }
+      if (permission == LocationPermission.denied) return null;
     }
-
-    if (permission == LocationPermission.deniedForever) {
-      throw Exception('Location permission permanently denied');
-    }
-
-    return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+    return await Geolocator.getCurrentPosition();
   }
 
-  // ✅ FETCH GYMS (FAST)
-  Future<List<GymModel>> fetchNearbyGyms(
-    double lat,
-    double lon, {
-    int radiusMeters = 2500,
-  }) async {
+  Future<List<GymModel>> fetchNearbyGyms(double lat, double lon, {int radiusMeters = 15000}) async {
+    // We search for multiple keywords to ensure we don't miss anything in El Shorouk
+    final List<String> queries = ["gym", "fitness", "gold's gym"];
+    Map<String, GymModel> uniqueGyms = {};
 
-    final query = '''
-[out:json][timeout:8];
-(
-  node["amenity"="gyms"](around:$radiusMeters,$lat,$lon);
-  node["leisure"="fitness_centre"](around:$radiusMeters,$lat,$lon);
-);
-out;
-''';
+    try {
+      final futures = queries.map((q) => _querySearchAPI(lat, lon, q, radiusMeters));
+      final results = await Future.wait(futures);
 
-    for (final server in _servers) {
-      try {
-        final response = await http.post(
-          Uri.parse(server),
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: query,
-        ).timeout(const Duration(seconds: 8));
-
-        if (response.statusCode == 200) {
-          return _parseGyms(response.body, lat, lon);
+      for (var list in results) {
+        for (var gym in list) {
+          uniqueGyms[gym.id] = gym;
         }
-      } catch (_) {
-        continue;
       }
-    }
 
-    return [];
+      final sortedList = uniqueGyms.values.toList();
+      sortedList.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+      return sortedList;
+    } catch (e) {
+      return [];
+    }
   }
 
-  List<GymModel> _parseGyms(
-      String responseBody, double userLat, double userLon) {
-    final data = json.decode(responseBody);
-    final List elements = data['elements'];
+  Future<List<GymModel>> _querySearchAPI(double lat, double lon, String text, int radius) async {
+    // Using Autocomplete API as suggested for better coverage in sparse areas
+    // bias=proximity ensures results near El Shorouk come first
+    // filter=circle ensures we stay within the 15km range
+    final String url = 
+      "https://api.geoapify.com/v1/geocode/autocomplete?text=$text&bias=proximity:$lon,$lat&filter=circle:$lon,$lat,$radius&limit=15&apiKey=$apiKey";
 
-    final Map<String, GymModel> gyms = {};
+    final response = await http.get(Uri.parse(url));
 
-    for (final e in elements) {
-      if (e['lat'] == null || e['lon'] == null) continue;
-
-      final gym = GymModel.fromOverpassJson(e);
-
-      final dist = Geolocator.distanceBetween(
-        userLat,
-        userLon,
-        gym.lat,
-        gym.lon,
-      );
-
-      gyms[gym.id] = gym.copyWith(distanceKm: dist / 1000);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List features = data['features'] ?? [];
+      return features.map((f) => GymModel.fromJson(f)).toList();
     }
-
-    final list = gyms.values.toList();
-    list.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
-    return list;
+    return [];
   }
 }

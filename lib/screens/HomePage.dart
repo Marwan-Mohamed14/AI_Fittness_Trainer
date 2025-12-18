@@ -1,15 +1,15 @@
-import 'package:ai_personal_trainer/screens/NearbyGymsPage.dart';
 import 'package:flutter/material.dart';
-import '../widgets/BottomNavigation.dart';
-import 'UpdatePlans.dart';
+// Note: Ensure these paths match your actual project structure
 import 'edit_user_info_page.dart';
+import 'UpdatePlans.dart';
+import 'NearbyGymsPage.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // cache theme
+    final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
@@ -24,9 +24,7 @@ class HomePage extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const EditUserInfoPage(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const EditUserInfoPage()),
                   );
                 },
                 child: CircleAvatar(
@@ -67,9 +65,9 @@ class HomePage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
               children: const [
-                _CalendarCard(),
+                _ConsistencyTracker(), 
                 SizedBox(height: 20),
-                _WeeklyCheckInCard(),
+                _DailyCheckUpCard(),
                 SizedBox(height: 20),
                 _NearestGymCard(),
                 SizedBox(height: 20),
@@ -84,46 +82,124 @@ class HomePage extends StatelessWidget {
 }
 
 // =============================
-// Calendar Card
+// Consistency Tracker 
 // =============================
-class _CalendarCard extends StatelessWidget {
-  const _CalendarCard();
+class _ConsistencyTracker extends StatelessWidget {
+  const _ConsistencyTracker();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Consistency Tracker",
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.local_fire_department, color: Colors.orange, size: 18),
+                  SizedBox(width: 4),
+                  Text("12 Day Streak", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 12)),
+                ],
+              ),
+            )
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _GoalProgressCard(
+                label: "Workout",
+                icon: Icons.fitness_center,
+                progress: 0.8, 
+                progressText: "24/30",
+                color: Colors.blue,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _GoalProgressCard(
+                label: "Diet Plan",
+                icon: Icons.apple,
+                progress: 0.95, 
+                progressText: "28/30",
+                color: Colors.tealAccent.shade700,
+              ),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+}
+
+class _GoalProgressCard extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final double progress;
+  final String progressText;
+  final Color color;
+
+  const _GoalProgressCard({
+    required this.label,
+    required this.icon,
+    required this.progress,
+    required this.progressText,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'October 2023',
-            style: theme.textTheme.titleMedium,
-          ),
-          const SizedBox(height: 12),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-                .map((e) => Text(e, style: TextStyle(color: Colors.grey)))
-                .toList(),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              _DayItem(day: '29', status: DayStatus.done),
-              _DayItem(day: '30', status: DayStatus.done),
-              _DayItem(day: '1', status: DayStatus.done),
-              _DayItem(day: '2', status: DayStatus.missed),
-              _DayItem(day: '3', status: DayStatus.done),
-              _DayItem(day: '4', status: DayStatus.done),
-              _DayItem(day: '5', status: DayStatus.active),
+            children: [
+              CircleAvatar(
+                radius: 14,
+                backgroundColor: color.withOpacity(0.1),
+                child: Icon(icon, color: color, size: 16),
+              ),
+              const SizedBox(width: 8),
+              Text(label, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
             ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Monthly Goal", style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey, fontSize: 10)),
+              Text(progressText, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey, fontSize: 10)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              backgroundColor: theme.colorScheme.background,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
           ),
         ],
       ),
@@ -131,106 +207,95 @@ class _CalendarCard extends StatelessWidget {
   }
 }
 
-enum DayStatus { done, missed, active }
-
-class _DayItem extends StatelessWidget {
-  final String day;
-  final DayStatus status;
-
-  const _DayItem({required this.day, required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    Color bgColor;
-    Color textColor = theme.colorScheme.onSurface;
-
-    switch (status) {
-      case DayStatus.active:
-        bgColor = theme.colorScheme.primary;
-        break;
-      case DayStatus.done:
-      case DayStatus.missed:
-      default:
-        bgColor = theme.colorScheme.surfaceVariant;
-        break;
-    }
-
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 15,
-          backgroundColor: bgColor,
-          child: Text(
-            day,
-            style: theme.textTheme.bodySmall?.copyWith(color: textColor),
-          ),
-        ),
-        const SizedBox(height: 6),
-        if (status == DayStatus.done)
-          Icon(Icons.check, color: Colors.green, size: 14)
-        else if (status == DayStatus.missed)
-          Icon(Icons.close, color: Colors.red, size: 14),
-      ],
-    );
-  }
-}
-
 // =============================
-// Weekly Check-in
+// Daily Check-up
 // =============================
-class _WeeklyCheckInCard extends StatelessWidget {
-  const _WeeklyCheckInCard();
+class _DailyCheckUpCard extends StatelessWidget {
+  const _DailyCheckUpCard();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Container(
-      height: 170,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.assignment_turned_in, color: theme.colorScheme.primary),
+              const SizedBox(width: 10),
+              Text(
+                "Daily Check-up",
+                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "Confirm your diet & workout for today.",
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(child: _SelectionTile(label: "Diet")),
+              const SizedBox(width: 12),
+              Expanded(child: _SelectionTile(label: "Workout")),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 55,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              ),
+              onPressed: () {
+                // You can add logic here to save progress
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text("Log Daily Progress", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 10),
+                  Icon(Icons.arrow_forward, color: Colors.white),
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class _SelectionTile extends StatelessWidget {
+  final String label;
+  const _SelectionTile({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.background.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Row(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 10,
-                      backgroundColor: theme.colorScheme.primary,
-                      child: Icon(Icons.auto_graph, size: 12, color: theme.colorScheme.onPrimary),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Weekly Check-in',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Log your weight & height to refine your AI plan.',
-                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.6)),
-                ),
-                const SizedBox(height: 14),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                  ),
-                  child: Text('Log Stats', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
-                ),
-              ],
-            ),
-          ),
+          Icon(Icons.radio_button_off, size: 18, color: Colors.grey.withOpacity(0.5)),
+          const SizedBox(width: 10),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
         ],
       ),
     );
@@ -252,9 +317,7 @@ class _NearestGymCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => const NearbyGymsScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const NearbyGymsScreen()),
         );
       },
       child: Container(
@@ -262,9 +325,7 @@ class _NearestGymCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           image: const DecorationImage(
-            image: NetworkImage(
-              'https://images.unsplash.com/photo-1534438327276-14e5300c3a48',
-            ),
+            image: NetworkImage('https://images.unsplash.com/photo-1534438327276-14e5300c3a48'),
             fit: BoxFit.cover,
           ),
         ),
@@ -272,14 +333,14 @@ class _NearestGymCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            color: theme.colorScheme.onBackground.withOpacity(0.55),
+            color: Colors.black.withOpacity(0.5),
           ),
           child: Row(
             children: [
               Expanded(
                 child: Text(
                   'Find Nearest Gym',
-                  style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onPrimary),
+                  style: theme.textTheme.titleMedium?.copyWith(color: Colors.white),
                 ),
               ),
               CircleAvatar(
@@ -302,21 +363,17 @@ class _BottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Row(
       children: [
         Expanded(
           child: _ActionCard(
             icon: Icons.next_plan,
             title: 'Regenerate Plan',
-            subtitle: 'Adjust your plan on demand or Monthly as Required',
+            subtitle: 'Adjust your plan on demand',
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const UpdatePlans(),
-                ),
+                MaterialPageRoute(builder: (_) => const UpdatePlans()),
               );
             },
           ),
@@ -326,13 +383,11 @@ class _BottomActions extends StatelessWidget {
           child: _ActionCard(
             icon: Icons.groups,
             title: 'Community',
-            subtitle: "See what's new in the AI Fitness Trainer community",
+            subtitle: "See what's new",
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const CommunityScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const CommunityScreen()),
               );
             },
           ),
@@ -348,20 +403,14 @@ class _ActionCard extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
 
-  const _ActionCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
+  const _ActionCard({required this.icon, required this.title, required this.subtitle, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
       onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -372,12 +421,14 @@ class _ActionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, color: theme.colorScheme.primary),
-            const SizedBox(height: 14),
-            Text(title, style: theme.textTheme.titleMedium),
+            const SizedBox(height: 12),
+            Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text(
-              subtitle,
-              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.6)),
+              subtitle, 
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 10), 
+              maxLines: 2, 
+              overflow: TextOverflow.ellipsis
             ),
           ],
         ),
@@ -391,16 +442,11 @@ class _ActionCard extends StatelessWidget {
 // =============================
 class CommunityScreen extends StatelessWidget {
   const CommunityScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(title: Text('Community', style: theme.textTheme.titleMedium)),
-      body: Center(
-        child: Text('Community Page', style: theme.textTheme.bodyMedium),
-      ),
+      appBar: AppBar(title: const Text('Community')),
+      body: const Center(child: Text('Community Page')),
     );
   }
 }

@@ -21,39 +21,23 @@ class _MainLayoutState extends State<MainLayout> {
 
   final List<Widget> _screens = const [
     HomePage(),
-    WorkoutPlanScreen(),        // Workout (لسه)
+    WorkoutPlanScreen(),
     DietPlanScreen(),
-    SettingsScreen(),        // Settings (لسه)
+    SettingsScreen(),
   ];
 
   @override
-Widget build(BuildContext context) {
-  final themeController = Get.find<ThemeController>();
-
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text('AI Personal Trainer'),
-      actions: [
-       GetBuilder<ThemeController>(
-      builder: (controller) {
-        return Switch(
-          value: controller.isDarkMode,
-          onChanged: controller.toggleTheme,
-        );
-      },
-    ),
-      ],
-    ),
-    body: _screens[_currentIndex],
-    bottomNavigationBar: MainBottomNav(
-      currentIndex: _currentIndex,
-      onTap: (index) {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
-    ),
-  );
-}
-
+ Widget build(BuildContext context) {
+    return Scaffold(
+      body: _screens[_currentIndex],
+      bottomNavigationBar: MainBottomNav(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
+    );
+ }
 }

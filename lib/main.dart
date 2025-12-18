@@ -61,7 +61,7 @@ darkTheme: ThemeData(
     seedColor: Colors.deepPurple,
     brightness: Brightness.dark,
   ),
-  scaffoldBackgroundColor: Colors.black,
+  scaffoldBackgroundColor: Color (0xFF121212),  // dark background
   textTheme: Typography.material2021().white,
 ),
 

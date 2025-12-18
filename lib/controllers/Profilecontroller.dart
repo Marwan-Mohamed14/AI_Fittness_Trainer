@@ -1,4 +1,5 @@
 import 'package:ai_personal_trainer/models/MealData.dart';
+import 'package:ai_personal_trainer/models/WorkoutData.dart';
 import 'package:ai_personal_trainer/services/Ai_plan_service.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/models/onboarding_data.dart';
@@ -283,6 +284,22 @@ Future<DailyMealPlan?> loadDietPlan()async{
     return DietPlanParser.parseDietPlan(profile.dietPlan!);
   } catch (e) {
     print('❌ Error loading diet plan: $e');
+    return null;
+  }
+}
+
+Future<WorkoutPlan?> loadWorkoutPlan() async {
+  try {
+    print('\n🔄 Loading workout plan from profile...');
+    final profile = await _profileService.getProfile();
+    if (profile?.workoutPlan == null || profile!.workoutPlan!.isEmpty) {
+      print('⚠️ No workout plan found');
+      return null;
+    }
+    print('workout plan found, parsing...');
+    return WorkoutPlanParser.parseWorkoutPlan(profile.workoutPlan!);
+  } catch (e) {
+    print('❌ Error loading workout plan: $e');
     return null;
   }
 }

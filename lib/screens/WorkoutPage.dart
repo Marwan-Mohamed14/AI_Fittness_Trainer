@@ -1,7 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:ai_personal_trainer/controllers/Profilecontroller.dart';
+import 'package:ai_personal_trainer/models/WorkoutData.dart';
 
-class WorkoutPlanScreen extends StatelessWidget {
+class WorkoutPlanScreen extends StatefulWidget {
   const WorkoutPlanScreen({super.key});
+
+  @override
+  State<WorkoutPlanScreen> createState() => _WorkoutPlanScreenState();
+}
+
+class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
+  final ProfileController _profileController = Get.find<ProfileController>();
+  WorkoutPlan? _workoutPlan;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWorkoutPlan();
+  }
+
+  Future<void> _loadWorkoutPlan() async {
+    setState(() => _isLoading = true);
+    final plan = await _profileController.loadWorkoutPlan();
+    setState(() {
+      _workoutPlan = plan;
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,57 +51,110 @@ class WorkoutPlanScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              SizedBox(height: 24),
-              _WeeklyFocusCard(),
-              SizedBox(height: 24),
-              _DaySection(
-                dayTitle: 'Push Day',
-                muscles: 'CHEST • SHOULDERS • TRICEPS',
-                duration: '45 Min',
-                iconColor: Colors.orange,
-                iconData: Icons.fitness_center,
-                exercises: [
-                  _ExerciseItem(name: 'Barbell Bench Press', sets: '4 Sets', reps: '8-10 Reps'),
-                  _ExerciseItem(name: 'Overhead Press', sets: '3 Sets', reps: '10-12 Reps'),
-                  _ExerciseItem(name: 'Tricep Pushdowns', sets: '3 Sets', reps: '15 Reps'),
-                ],
-              ),
-              SizedBox(height: 24),
-              _DaySection(
-                dayTitle: 'Pull Day',
-                muscles: 'BACK • BICEPS • REAR DELT',
-                duration: '50 Min',
-                iconColor: Colors.blueAccent,
-                iconData: Icons.rowing,
-                exercises: [
-                  _ExerciseItem(name: 'Deadlift', sets: '3 Sets', reps: '5 Reps'),
-                  _ExerciseItem(name: 'Lat Pulldown', sets: '4 Sets', reps: '12 Reps'),
-                ],
-              ),
-              SizedBox(height: 24),
-              _DaySection(
-                dayTitle: 'Leg Day',
-                muscles: 'QUADS • HAMS • CALVES',
-                duration: '60 Min',
-                iconColor: Colors.purpleAccent,
-                iconData: Icons.directions_run,
-                exercises: [
-                  _ExerciseItem(name: 'Barbell Squat', sets: '4 Sets', reps: '8 Reps'),
-                  _ExerciseItem(name: 'Bulgarian Split Squat', sets: '3 Sets', reps: '10 Reps'),
-                ],
-              ),
-            ],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh, color: theme.colorScheme.primary),
+            onPressed: _loadWorkoutPlan,
+            tooltip: 'Refresh',
           ),
-        ),
+        ],
       ),
+      body: _isLoading
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: theme.colorScheme.primary),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading your workout plan...',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.7)),
+                  ),
+                ],
+              ),
+            )
+          : _workoutPlan == null || _workoutPlan!.days.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.fitness_center_outlined, size: 64, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No workout plan found',
+                        style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onBackground),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Complete your profile to generate one',
+                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.7)),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () => Get.toNamed('/age-screen'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                        ),
+                        child: Text('Set Up Profile', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
+                      ),
+                    ],
+                  ),
+                )
+              : SafeArea(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
+                        if (_workoutPlan!.weeklyFocus != null)
+                          _WeeklyFocusCard(focus: _workoutPlan!.weeklyFocus!),
+                        if (_workoutPlan!.weeklyFocus != null) const SizedBox(height: 24),
+                        ..._workoutPlan!.days.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final day = entry.value;
+                          final iconColors = [
+                            Colors.orange,
+                            Colors.blueAccent,
+                            Colors.purpleAccent,
+                            Colors.greenAccent,
+                            Colors.redAccent,
+                            Colors.tealAccent,
+                            Colors.pinkAccent,
+                          ];
+                          final iconDataList = [
+                            Icons.fitness_center,
+                            Icons.rowing,
+                            Icons.directions_run,
+                            Icons.sports_mma,
+                            Icons.pool,
+                            Icons.directions_bike,
+                            Icons.self_improvement,
+                          ];
+                          
+                          return Column(
+                            children: [
+                              if (index > 0) const SizedBox(height: 24),
+                              _DaySection(
+                                dayTitle: day.dayTitle,
+                                muscles: day.muscles,
+                                duration: day.duration,
+                                iconColor: iconColors[index % iconColors.length],
+                                iconData: iconDataList[index % iconDataList.length],
+                                exercises: day.exercises.map((e) => _ExerciseItem(
+                                  name: e.name,
+                                  sets: e.sets,
+                                  reps: e.reps,
+                                )).toList(),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  ),
+                ),
     );
   }
 }
@@ -83,7 +163,9 @@ class WorkoutPlanScreen extends StatelessWidget {
 // Weekly Focus Card
 // ==========================================
 class _WeeklyFocusCard extends StatelessWidget {
-  const _WeeklyFocusCard();
+  final String focus;
+
+  const _WeeklyFocusCard({required this.focus});
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +218,7 @@ class _WeeklyFocusCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Prioritize compound movements in your Push Day routine to maximize strength gains this week.',
+                focus,
                 style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7)),
               ),
             ],
@@ -228,7 +310,7 @@ class _ExerciseItem {
   final String sets;
   final String reps;
 
-  const _ExerciseItem({
+  _ExerciseItem({
     required this.name,
     required this.sets,
     required this.reps,
@@ -254,22 +336,24 @@ class _ExerciseCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.name,
-                style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  _InfoBadge(text: item.sets),
-                  const SizedBox(width: 8),
-                  _InfoBadge(text: item.reps),
-                ],
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name,
+                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _InfoBadge(text: item.sets),
+                    const SizedBox(width: 8),
+                    _InfoBadge(text: item.reps),
+                  ],
+                ),
+              ],
+            ),
           ),
           Column(
             children: [

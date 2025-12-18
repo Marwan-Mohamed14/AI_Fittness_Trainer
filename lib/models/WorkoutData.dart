@@ -15,12 +15,14 @@ class WorkoutDay {
   final String muscles;
   final String duration;
   final List<Exercise> exercises;
+  final String? weeklyFocus;
 
   WorkoutDay({
     required this.dayTitle,
     required this.muscles,
     required this.duration,
     required this.exercises,
+    this.weeklyFocus,
   });
 }
 
@@ -308,10 +310,260 @@ class WorkoutPlanParser {
     if (exercises.isNotEmpty) {
       return exercises;
     }
+    
+    // If we found exercises with numbered pattern, return them
+    if (exercises.isNotEmpty) {
+      return exercises;
+    }
+    
+    // Pattern 2: Exercise name on one line, sets/reps on next line(s)
+    // Example:
+    // Barbell Bench Press
+    // Sets: 4, Reps: 8-10
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      if (line.isEmpty) continue;
+
+      // Check if this line contains an exercise name (not a header/metadata)
+      if (_isExerciseNameLine(line)) {
+        String originalName = line;
+        
+        // First, try to extract sets/reps from the line itself
+        String? sets;
+        String? reps;
+        
+        // Pattern: "Exercise Name: 4 sets, 8 reps" or "Exercise Name - 4 sets x 8 reps"
+        final combinedPattern = RegExp(
+          r'(.+?)[:\-]\s*(\d+)\s*(?:sets?|x)\s*([\d\-]+)\s*(?:reps?|repetitions?)',
+          caseSensitive: false,
+        );
+        final combinedMatch = combinedPattern.firstMatch(originalName);
+        if (combinedMatch != null) {
+          sets = '${combinedMatch.group(2)} Sets';
+          reps = '${combinedMatch.group(3)} Reps';
+          originalName = combinedMatch.group(1)?.trim() ?? originalName;
+        }
+        
+        // Pattern: "Exercise Name (4 sets, 8 reps)"
+        final parenPattern = RegExp(
+          r'(.+?)\s*\((\d+)\s*(?:sets?|x)\s*([\d\-]+)\s*(?:reps?|repetitions?)\)',
+          caseSensitive: false,
+        );
+        final parenMatch = parenPattern.firstMatch(originalName);
+        if (parenMatch != null && sets == null) {
+          sets = '${parenMatch.group(2)} Sets';
+          reps = '${parenMatch.group(3)} Reps';
+          originalName = parenMatch.group(1)?.trim() ?? originalName;
+        }
+        
+        String name = _cleanExerciseName(originalName);
+
+        // Look ahead up to 3 lines for sets/reps info
+        for (int j = i + 1; j < lines.length && j <= i + 3; j++) {
+          final nextLine = lines[j].trim();
+          if (nextLine.isEmpty) continue;
+          
+          // Try various patterns for sets/reps
+          final setsPatterns = [
+            RegExp(r'Sets?[:\-]?\s*(\d+)', caseSensitive: false),
+            RegExp(r'(\d+)\s*sets?', caseSensitive: false),
+            RegExp(r'(\d+)\s*x', caseSensitive: false),
+          ];
+          
+          final repsPatterns = [
+            RegExp(r'Reps?[:\-]?\s*([\d\-]+)', caseSensitive: false),
+            RegExp(r'(\d+[\-]?\d*)\s*reps?', caseSensitive: false),
+            RegExp(r'x\s*(\d+[\-]?\d*)', caseSensitive: false),
+          ];
+          
+          for (final pattern in setsPatterns) {
+            final match = pattern.firstMatch(nextLine);
+            if (match != null && sets == null) {
+              sets = '${match.group(1)} Sets';
+              print('✅ Found sets: ${sets}');
+              break;
+            }
+          }
+          
+          for (final pattern in repsPatterns) {
+            final match = pattern.firstMatch(nextLine);
+            if (match != null && reps == null) {
+              reps = '${match.group(1)} Reps';
+              print('✅ Found reps: ${reps}');
+              break;
+            }
+          }
+          
+          // If we found both, stop looking
+          if (sets != null && reps != null) break;
+        }
+
+        // Also check current line for sets/reps (in case it's all on one line)
+        if (sets == null || reps == null) {
+          final setsPatterns = [
+            RegExp(r'Sets?[:\-]?\s*(\d+)', caseSensitive: false),
+            RegExp(r'(\d+)\s*sets?', caseSensitive: false),
+            RegExp(r'(\d+)\s*x', caseSensitive: false),
+          ];
+          
+          final repsPatterns = [
+            RegExp(r'Reps?[:\-]?\s*([\d\-]+)', caseSensitive: false),
+            RegExp(r'(\d+[\-]?\d*)\s*reps?', caseSensitive: false),
+            RegExp(r'x\s*(\d+[\-]?\d*)', caseSensitive: false),
+          ];
+          
+          for (final pattern in setsPatterns) {
+            final match = pattern.firstMatch(originalName);
+            if (match != null && sets == null) {
+              sets = '${match.group(1)} Sets';
+              print('✅ Found sets inline: ${sets}');
+              break;
+            }
+          }
+          
+          for (final pattern in repsPatterns) {
+            final match = pattern.firstMatch(originalName);
+            if (match != null && reps == null) {
+              reps = '${match.group(1)} Reps';
+              print('✅ Found reps inline: ${reps}');
+              break;
+            }
+          }
+        }
+
+        // Only add if we have a valid name
+        if (name.isNotEmpty && !seenExercises.contains(name.toLowerCase())) {
+          exercises.add(Exercise(
+            name: name, 
+            sets: sets ?? '3 Sets', 
+            reps: reps ?? '10-12 Reps'
+          ));
+          seenExercises.add(name.toLowerCase());
+          print('✅ Added exercise: $name - ${sets ?? "3 Sets"} - ${reps ?? "10-12 Reps"}');
+        }
+      }
+    }
+
+    // Pattern 2: Exercise: Name, Sets: X, Reps: Y (all in one line)
+    // Try multiple variations
+    final exercisePatterns2 = [
+      RegExp(r'(.+?)[:\-]\s*(\d+)\s*(?:sets?|x)\s*([\d\-]+)\s*(?:reps?|repetitions?)', caseSensitive: false),
+      RegExp(r'(.+?)[,\-]\s*Sets?[:\-]?\s*(\d+).*?Reps?[:\-]?\s*([\d\-]+)', caseSensitive: false),
+      RegExp(r'(.+?)[,\-]\s*Reps?[:\-]?\s*([\d\-]+).*?Sets?[:\-]?\s*(\d+)', caseSensitive: false),
+      RegExp(r'(?:Exercise[:\-]?\s*)?(.+?)[,\-]\s*(?:Sets?[:\-]?\s*(\d+).*?Reps?[:\-]?\s*([\d\-]+)|Reps?[:\-]?\s*([\d\-]+).*?Sets?[:\-]?\s*(\d+))', caseSensitive: false),
+    ];
+
+    for (final pattern in exercisePatterns2) {
+      for (final match in pattern.allMatches(content)) {
+        try {
+          String name = _cleanExerciseName(match.group(1)?.trim() ?? '');
+          String? sets;
+          String? reps;
+
+          // Handle different group positions
+          if (match.groupCount >= 3) {
+            if (match.group(2) != null && match.group(3) != null) {
+              // Check if group 2 is sets or reps based on context
+              final group2 = match.group(2)!;
+              final group3 = match.group(3)!;
+              
+              // Try to determine which is sets and which is reps
+              // Default assumption: group 2 is sets, group 3 is reps
+              // But check the match text to be sure
+              try {
+                final matchText = match.group(0) ?? '';
+                if (matchText.toLowerCase().contains('rep') && 
+                    matchText.toLowerCase().indexOf('rep') < matchText.toLowerCase().indexOf('set')) {
+                  // Reps comes before sets in the text
+                  sets = '$group3 Sets';
+                  reps = '$group2 Reps';
+                } else {
+                  // Default: sets comes first
+                  sets = '$group2 Sets';
+                  reps = '$group3 Reps';
+                }
+              } catch (e) {
+                // Fallback to default
+                sets = '$group2 Sets';
+                reps = '$group3 Reps';
+              }
+            } else if (match.group(4) != null && match.group(5) != null) {
+              sets = '${match.group(5)} Sets';
+              reps = '${match.group(4)} Reps';
+            }
+          }
+
+          if (name.isNotEmpty && sets != null && reps != null && !seenExercises.contains(name.toLowerCase())) {
+            exercises.add(Exercise(name: name, sets: sets, reps: reps));
+            seenExercises.add(name.toLowerCase());
+            print('✅ Added exercise (pattern 2): $name - $sets - $reps');
+          }
+        } catch (e) {
+          print('⚠️ Error parsing exercise: $e');
+        }
+      }
+    }
+
+    // Pattern 3: Simple format: Name - X sets x Y reps
+    final exercisePattern3 = RegExp(
+      r'(.+?)[\-\–]\s*(\d+)\s*(?:sets?|x)\s*([\d\-]+)\s*(?:reps?|repetitions?)',
+      caseSensitive: false,
+    );
+
+    for (final match in exercisePattern3.allMatches(content)) {
+      try {
+        String name = _cleanExerciseName(match.group(1)?.trim() ?? '');
+        if (name.isNotEmpty && !seenExercises.contains(name.toLowerCase())) {
+          exercises.add(Exercise(
+            name: name,
+            sets: '${match.group(2)} Sets',
+            reps: '${match.group(3)} Reps',
+          ));
+          seenExercises.add(name.toLowerCase());
+        }
+      } catch (e) {
+        print('⚠️ Error parsing exercise: $e');
+      }
+    }
+
+    // Fallback: If no structured exercises found, try to extract exercise names
+    if (exercises.isEmpty) {
+      for (final line in lines) {
+        final trimmed = line.trim();
+        if (_isExerciseNameLine(trimmed) && trimmed.length > 3 && trimmed.length < 50) {
+          final name = _cleanExerciseName(trimmed);
+          if (name.isNotEmpty && !seenExercises.contains(name.toLowerCase())) {
+            exercises.add(Exercise(
+              name: name,
+              sets: '3 Sets',
+              reps: '10-12 Reps',
+            ));
+            seenExercises.add(name.toLowerCase());
+          }
+        }
+      }
+    }
 
     return exercises;
   }
 
+  /// Check if a line looks like an exercise name
+  static bool _isExerciseNameLine(String line) {
+    final lower = line.toLowerCase();
+    // Exclude headers and metadata
+    if (lower.contains('day') || 
+        lower.contains('muscle') || 
+        lower.contains('duration') ||
+        lower.contains('focus') ||
+        lower.contains('tip') ||
+        lower.startsWith('[') ||
+        lower.contains('===') ||
+        lower.length < 3) {
+      return false;
+    }
+    // Check if it looks like an exercise name (has capital letters, reasonable length)
+    return line.length >= 3 && line.length < 60 && RegExp(r'[A-Z]').hasMatch(line);
+  }
 
   /// Clean exercise name from common prefixes and sets/reps
   static String _cleanExerciseName(String name) {

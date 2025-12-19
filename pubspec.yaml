@@ -45,7 +45,7 @@ dependencies:
   permission_handler: ^11.3.0 # Better permission management
   url_launcher: ^6.2.5 # To launch Google Maps navigation
   flutter_dotenv: ^5.0.2
-
+  flutter_screenutil: ^5.9.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

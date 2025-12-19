@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'edit_user_info_page.dart';
 import 'UpdatePlans.dart';
 import 'NearbyGymsPage.dart';
-
+import'DailyCheckUpMealsScreen.dart';
+import'DailyCheckUpWorkoutScreen.dart';
+import 'package:get/get.dart';
+import'../controllers/dailycheckupcontroller.dart';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -211,92 +214,144 @@ class _GoalProgressCard extends StatelessWidget {
 // Daily Check-up
 // =============================
 class _DailyCheckUpCard extends StatelessWidget {
-  const _DailyCheckUpCard();
+  const _DailyCheckUpCard({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final controller = Get.put(DailyCheckupController());
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.assignment_turned_in, color: theme.colorScheme.primary),
-              const SizedBox(width: 10),
-              Text(
-                "Daily Check-up",
-                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Confirm your diet & workout for today.",
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(child: _SelectionTile(label: "Diet")),
-              const SizedBox(width: 12),
-              Expanded(child: _SelectionTile(label: "Workout")),
-            ],
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            height: 55,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              ),
-              onPressed: () {
-                // You can add logic here to save progress
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text("Log Daily Progress", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                  SizedBox(width: 10),
-                  Icon(Icons.arrow_forward, color: Colors.white),
-                ],
-              ),
+    return Obx(() {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.assignment_turned_in, color: theme.colorScheme.primary),
+                const SizedBox(width: 10),
+                Text(
+                  "Daily Check-up",
+                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
-          )
-        ],
-      ),
-    );
+            const SizedBox(height: 6),
+            Text(
+              controller.formattedDate,
+              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Confirm your diet & workout for today.",
+              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _SelectionTile(
+                    label: "Diet",
+                    // Only green if all meals are done
+                    completed: controller.dietDone,
+                    onTap: () {
+                      Get.to(() => const DailyCheckupMealsScreen());
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _SelectionTile(
+                    label: "Workout",
+                    // Only green if all exercises are done
+                    completed: controller.workoutDone,
+                    onTap: () {
+                      Get.to(() => const DailyCheckupWorkoutScreen());
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: Obx(() {
+                final canLog = controller.allDone;
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: canLog ? theme.colorScheme.primary : Colors.grey,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                  onPressed: canLog
+                      ? () {
+                          controller.logDayIfCompleted();
+                          Get.snackbar("Great Job!", "All tasks completed. Moving to next day.");
+                        }
+                      : null,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Text(
+                        "Log Daily Progress",
+                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(width: 10),
+                      Icon(Icons.arrow_forward, color: Colors.white),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 
 class _SelectionTile extends StatelessWidget {
   final String label;
-  const _SelectionTile({required this.label});
+  final bool completed;
+  final VoidCallback onTap;
+
+  const _SelectionTile({
+    required this.label,
+    required this.completed,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.background.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.radio_button_off, size: 18, color: Colors.grey.withOpacity(0.5)),
-          const SizedBox(width: 10),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
-        ],
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: completed 
+              ? Colors.green.withOpacity(0.2) 
+              : theme.colorScheme.background.withOpacity(0.5), // only green if fully completed
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              completed ? Icons.check_circle : Icons.radio_button_off,
+              size: 18,
+              color: completed ? Colors.green : Colors.grey.withOpacity(0.5),
+            ),
+            const SizedBox(width: 10),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+          ],
+        ),
       ),
     );
   }

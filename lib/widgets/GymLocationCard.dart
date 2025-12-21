@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/GymLocationModel.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GymCard extends StatelessWidget {
   final GymModel gym;
-  static const String googleKey = "AIzaSyDihfAQz0r4eirneNKMtv5QYhqWqktj054";
+  static final String googleKey = dotenv.env['GOOGLE_PLACES_API_KEY'] ?? "";
 
   const GymCard({super.key, required this.gym});
 

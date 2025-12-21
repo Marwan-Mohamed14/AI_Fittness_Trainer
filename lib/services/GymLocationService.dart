@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import '../models/GymLocationModel.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GymService {
-  final String googleKey = "AIzaSyDihfAQz0r4eirneNKMtv5QYhqWqktj054";
+  final String googleKey = dotenv.env['GOOGLE_PLACES_API_KEY'] ?? "";
 
   Future<Position?> determinePosition() async {
     if (!await Geolocator.isLocationServiceEnabled()) return null;

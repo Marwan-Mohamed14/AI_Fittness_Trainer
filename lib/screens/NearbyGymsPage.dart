@@ -49,7 +49,7 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
       final gyms = await _gymService.fetchNearbyGyms(
         _currentPosition!.latitude, 
         _currentPosition!.longitude,
-        radiusMeters: 2000, // Search accuracy set to 2km
+        radiusMeters: 5000, // Search accuracy set to 2km
       );
       setState(() {
         _gyms = gyms;

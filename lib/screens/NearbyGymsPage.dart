@@ -49,7 +49,7 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
       final gyms = await _gymService.fetchNearbyGyms(
         _currentPosition!.latitude, 
         _currentPosition!.longitude,
-        radiusMeters: 15000,
+        radiusMeters: 2000, // Search accuracy set to 2km
       );
       setState(() {
         _gyms = gyms;
@@ -66,28 +66,14 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
       backgroundColor: const Color(0xFF0F111A),
       extendBodyBehindAppBar: true, 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F111A),
+        backgroundColor: const Color(0xFF0F111A).withOpacity(0.8),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.location_on, color: Colors.deepPurple),
-            SizedBox(width: 8),
-            Text(
-              'Nearby Gyms',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
+        title: const Text('Nearby Gyms', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
       ),
       body: Stack(
         children: [
@@ -96,26 +82,25 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
               mapController: _mapController,
               options: MapOptions(
                 initialCenter: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                initialZoom: 14.0,
-                backgroundColor: const Color(0xFF0F111A),
+                initialZoom: 14.5,
+                backgroundColor: Colors.white,
               ),
               children: [
                 TileLayer(
                   urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                   subdomains: const ['a', 'b', 'c', 'd'],
+                  retinaMode: RetinaMode.isHighDensity(context), // FIX: Sharp map tiles
                 ),
                 MarkerLayer(
                   markers: [
                     Marker(
                       point: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                      width: 60,
-                      height: 60,
-                      child: const Icon(Icons.my_location, color: Colors.deepPurple, size: 30),
+                      width: 60, height: 60,
+                      child: const Icon(Icons.my_location, color: Colors.indigo, size: 30),
                     ),
                     ..._gyms.map((gym) => Marker(
                       point: LatLng(gym.lat, gym.lon),
-                      width: 40,
-                      height: 40,
+                      width: 40, height: 40,
                       child: const Icon(Icons.location_on, color: Colors.redAccent, size: 40),
                     )),
                   ],
@@ -123,10 +108,8 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
               ],
             )
           else
-            Center(child: _errorMessage.isNotEmpty 
-              ? Text(_errorMessage, style: const TextStyle(color: Colors.white))
-              : const CircularProgressIndicator(color: Colors.deepPurple)
-            ),
+            const Center(child: CircularProgressIndicator(color: Colors.deepPurple)),
+
           DraggableScrollableSheet(
             initialChildSize: 0.35,
             minChildSize: 0.2,
@@ -137,49 +120,26 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
                 decoration: const BoxDecoration(
                   color: Color(0xFF0F111A),
                   borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black45, blurRadius: 20, offset: Offset(0, -5))
-                  ]
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[700],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
+                    Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[700], borderRadius: BorderRadius.circular(2))),
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Found Gyms",
-                          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          "${_gyms.length} results", 
-                          style: const TextStyle(color: Colors.deepPurple)
-                        ),
+                        const Text("Found Gyms", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text("${_gyms.length} results", style: const TextStyle(color: Colors.deepPurple)),
                       ],
                     ),
                     const SizedBox(height: 10),
                     Expanded(
-                      child: _gyms.isEmpty 
-                        ? Center(child: Text(_isLoading ? "Scanning area..." : "No gyms found nearby.", style: const TextStyle(color: Colors.grey))) 
-                        : ListView.builder(
-                            controller: scrollController,
-                            itemCount: _gyms.length,
-                            padding: const EdgeInsets.only(bottom: 20),
-                            itemBuilder: (context, index) {
-                              return GymCard(gym: _gyms[index]);
-                            },
-                          ),
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: _gyms.length,
+                        padding: const EdgeInsets.only(bottom: 20),
+                        itemBuilder: (context, index) => GymCard(gym: _gyms[index]),
+                      ),
                     ),
                   ],
                 ),

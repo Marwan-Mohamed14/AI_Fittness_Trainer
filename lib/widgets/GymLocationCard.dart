@@ -4,6 +4,7 @@ import '../models/GymLocationModel.dart';
 
 class GymCard extends StatelessWidget {
   final GymModel gym;
+  static const String googleKey = "AIzaSyDihfAQz0r4eirneNKMtv5QYhqWqktj054";
 
   const GymCard({super.key, required this.gym});
 
@@ -12,7 +13,6 @@ class GymCard extends StatelessWidget {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      // Fixed the typo from 0{gym.lat} to ${gym.lat}
       final webUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=${gym.lat},${gym.lon}");
       await launchUrl(webUri);
     }
@@ -20,6 +20,11 @@ class GymCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Generate actual Google Places photo URL
+    final String imageUrl = gym.photoReference != null
+        ? "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${gym.photoReference}&key=$googleKey"
+        : 'https://loremflickr.com/320/320/gym,fitness?random=${gym.id}';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
@@ -39,7 +44,7 @@ class GymCard extends StatelessWidget {
                   width: 80,
                   height: 80,
                   child: Image.network(
-                    'https://loremflickr.com/320/320/gym,fitness?random=${gym.id}',
+                    imageUrl,
                     fit: BoxFit.cover,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
@@ -64,21 +69,14 @@ class GymCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            gym.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      gym.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -92,7 +90,7 @@ class GymCard extends StatelessWidget {
                       children: [
                         const Icon(Icons.star, color: Colors.amber, size: 14),
                         const SizedBox(width: 4),
-                        const Text("4.5", style: TextStyle(color: Colors.white, fontSize: 12)),
+                        Text("${gym.rating}", style: const TextStyle(color: Colors.white, fontSize: 12)),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -115,7 +113,7 @@ class GymCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: _launchMaps,
               style: ElevatedButton.styleFrom(
-                backgroundColor:  Colors.deepPurple,
+                backgroundColor: Colors.deepPurple,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),

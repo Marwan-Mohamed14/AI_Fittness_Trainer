@@ -4,57 +4,43 @@ import 'package:http/http.dart' as http;
 import '../models/GymLocationModel.dart';
 
 class GymService {
-  final String apiKey = "3deb7ebe1b3d4f0aadbb6eff278cc9a8";
+  final String googleKey = "AIzaSyDihfAQz0r4eirneNKMtv5QYhqWqktj054";
 
   Future<Position?> determinePosition() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return null;
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return null;
+    if (!await Geolocator.isLocationServiceEnabled()) return null;
+    LocationPermission perm = await Geolocator.checkPermission();
+    if (perm == LocationPermission.denied) {
+      perm = await Geolocator.requestPermission();
     }
-    return await Geolocator.getCurrentPosition();
+    if (perm == LocationPermission.deniedForever) return null;
+    return Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
   }
 
-  Future<List<GymModel>> fetchNearbyGyms(double lat, double lon, {int radiusMeters = 15000}) async {
-    // We search for multiple keywords to ensure we don't miss anything in El Shorouk
-    final List<String> queries = ["gym", "fitness", "gold's gym"];
-    Map<String, GymModel> uniqueGyms = {};
+  Future<List<GymModel>> fetchNearbyGyms(double lat, double lon, {int radiusMeters = 6000}) async {
+    final url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+        "?location=$lat,$lon"
+        "&radius=$radiusMeters"
+        "&type=gym"
+        "&key=$googleKey";
 
-    try {
-      final futures = queries.map((q) => _querySearchAPI(lat, lon, q, radiusMeters));
-      final results = await Future.wait(futures);
+   try {
+    final res = await http.get(Uri.parse(url));
+    if (res.statusCode != 200) return [];
 
-      for (var list in results) {
-        for (var gym in list) {
-          uniqueGyms[gym.id] = gym;
-        }
-      }
+    final data = json.decode(res.body);
+    final List results = data['results'] ?? [];
 
-      final sortedList = uniqueGyms.values.toList();
-      sortedList.sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
-      return sortedList;
-    } catch (e) {
-      return [];
-    }
-  }
-
-  Future<List<GymModel>> _querySearchAPI(double lat, double lon, String text, int radius) async {
-    // Using Autocomplete API as suggested for better coverage in sparse areas
-    // bias=proximity ensures results near El Shorouk come first
-    // filter=circle ensures we stay within the 15km range
-    final String url = 
-      "https://api.geoapify.com/v1/geocode/autocomplete?text=$text&bias=proximity:$lon,$lat&filter=circle:$lon,$lat,$radius&limit=15&apiKey=$apiKey";
-
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final List features = data['features'] ?? [];
-      return features.map((f) => GymModel.fromJson(f)).toList();
-    }
+    // Filter results locally to strictly match "gym" in types 
+    // This prevents accidental "Yoga" or "Parks" if they don't have gym services
+    return results
+        .map((g) => GymModel.fromGoogle(g, lat, lon))
+        .where((gym) => 
+            gym.name.toLowerCase().contains('gym') || 
+            gym.name.toLowerCase().contains('fitness') ||
+            gym.name.toLowerCase().contains('crossfit'))
+        .toList();
+  } catch (e) {
     return [];
+  }
   }
 }

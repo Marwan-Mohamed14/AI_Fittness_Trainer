@@ -24,7 +24,7 @@ class DailyCheckupController extends GetxController {
       mealCompletion.isNotEmpty && mealCompletion.values.every((v) => v);
 
   bool get workoutDone =>
-      workoutCompletion.isNotEmpty && workoutCompletion.values.every((v) => v);
+      workoutCompletion.isNotEmpty && workoutCompletion.values.any((v) => v);
 
   bool get canLog => dietDone || workoutDone;
 

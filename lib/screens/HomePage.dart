@@ -432,9 +432,7 @@ class _NearestGymCard extends StatelessWidget {
         height: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          image: const DecorationImage(
-            image: NetworkImage(
-                'https://images.unsplash.com/photo-1534438327276-14e5300c3a48'),
+          image: const DecorationImage(image: AssetImage('assets/GYMBG.png'),
             fit: BoxFit.cover,
           ),
         ),

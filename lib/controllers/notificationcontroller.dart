@@ -23,13 +23,13 @@ class NotificationController extends GetxController {
     if (_hydrationTimer != null) return; 
 
     _hydrationTimer = Timer.periodic(
-      const Duration(seconds: 10),
+      const Duration(minutes: 30),
       (_) => _showHydrationSnack(),
     );
 
     _showTopNotification(
       title: 'Hydration Enabled',
-      message: 'Water reminder is ON 💧',
+      message: 'Water reminder is ON every 30 Min 💧',
       icon: Icons.water_drop,
       color: Colors.green,
     );

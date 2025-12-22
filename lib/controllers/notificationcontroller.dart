@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 
 class NotificationController extends GetxController {
 
-  /// ================= Hydration Reminder =================
   RxBool hydrationEnabled = false.obs;
   Timer? _hydrationTimer;
 
@@ -30,7 +29,6 @@ class NotificationController extends GetxController {
       targetMinute,
     );
 
-    // If the scheduled time has already passed today, schedule for tomorrow
     if (scheduledTime.isBefore(now)) {
       scheduledTime = scheduledTime.add(const Duration(days: 1));
     }
@@ -90,10 +88,8 @@ void toogleWorkout(bool value) {
   void _startWorkoutReminder() {
     if (_workoutTimer != null) return;
 
-    // Schedule for 12 PM (noon) daily
     final delay = _calculateDelayUntil(12, 0);
     
-    // First notification after calculated delay
     _workoutTimer = Timer(delay, () {
       _showWorkoutNotification();
       
@@ -128,7 +124,6 @@ void toogleWorkout(bool value) {
 
 
 
-  /// Toggle method callable from UI
   void toggleHydration(bool value) {
     hydrationEnabled.value = value;
 
@@ -139,7 +134,6 @@ void toogleWorkout(bool value) {
     }
   }
 
-  /// Start the hydration reminder timer
   void _startHydrationReminder() {
     if (_hydrationTimer != null) return; 
 
@@ -156,7 +150,6 @@ void toogleWorkout(bool value) {
     );
   }
 
-  /// Stop the hydration reminder timer
   void _stopHydrationReminder() {
     _hydrationTimer?.cancel();
     _hydrationTimer = null;
@@ -169,7 +162,6 @@ void toogleWorkout(bool value) {
     );
   }
 
-  /// Show the actual hydration reminder notification
   void _showHydrationSnack() {
     if (!hydrationEnabled.value) return;
 
@@ -184,7 +176,6 @@ void toogleWorkout(bool value) {
     );
   }
 
-  /// Generic top notification helper
   void _showTopNotification({
     required String title,
     required String message,

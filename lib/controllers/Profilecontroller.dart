@@ -9,20 +9,16 @@ import 'package:flutter/material.dart';
 class ProfileController extends GetxController {
   final ProfileService _profileService = ProfileService();
   
-  // Observable onboarding data
   final Rx<OnboardingData> onboardingData = OnboardingData().obs;
 
-  // Loading state
   final RxBool isLoading = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    // Load existing profile if available
     loadExistingProfile();
   }
 
-  // Load existing profile from Supabase
   Future<void> loadExistingProfile() async {
     try {
       final existingProfile = await _profileService.getProfile();
@@ -35,15 +31,12 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Save age and move to next screen
   Future<void> saveAge(int age) async {
     isLoading.value = true;
     
     try {
-      // Update local data
       onboardingData.value.age = age;
       
-      // Save to Supabase
       await _profileService.saveProfile(onboardingData.value);
       
       Get.snackbar(
@@ -54,7 +47,6 @@ class ProfileController extends GetxController {
         duration: Duration(seconds: 1),
       );
       
-      // Navigate to next screen
       Get.toNamed('/height-screen');
     } catch (e) {
       Get.snackbar(
@@ -68,7 +60,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Save height
   Future<void> saveHeight(int height) async {
     isLoading.value = true;
     
@@ -84,7 +75,6 @@ class ProfileController extends GetxController {
         duration: Duration(seconds: 1),
       );
       
-      // Navigate to next screen
       Get.toNamed('/gender-screen');
     } catch (e) {
       Get.snackbar(
@@ -98,7 +88,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Save gender
   Future<void> saveGender(String gender) async {
     isLoading.value = true;
     
@@ -114,7 +103,6 @@ class ProfileController extends GetxController {
         duration: Duration(seconds: 1),
       );
       
-      // Navigate to next screen
       Get.toNamed('/workout-screen');
     } catch (e) {
       Get.snackbar(
@@ -128,7 +116,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Save workout data
   Future<void> saveWorkoutData({
     required String goal,
     required String level,
@@ -153,7 +140,6 @@ class ProfileController extends GetxController {
         duration: Duration(seconds: 1),
       );
       
-      // Navigate to next screen (diet screen)
       Get.toNamed('/diet-screen');
     } catch (e) {
       Get.snackbar(
@@ -167,7 +153,6 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Update this function in ProfileController
 Future<void> saveDietData({
   required String dietPreference,
   required int mealsPerDay,
@@ -179,7 +164,6 @@ Future<void> saveDietData({
   isLoading.value = true;
   
   try {
-    // Save diet data to local model
     onboardingData.value.dietPreference = dietPreference;
     onboardingData.value.mealsPerDay = mealsPerDay;
     onboardingData.value.budget = budget;
@@ -201,7 +185,6 @@ Future<void> saveDietData({
     
     await Future.delayed(Duration(milliseconds: 500));
     
-    // 🎯 NOW GENERATE THE AI PLANS
     print('\n🎯 Triggering AI plan generation...\n');
     await generateAiPlans();
     
@@ -244,7 +227,6 @@ Future<void>generateAiPlans() async{
      print('✅ Step 2 Complete: Plans generated');
     print('\n🎉 SUCCESS! Your personalized plans are ready!\n');
     
-    // Debug: Check if plans were generated
     print('📊 Diet plan length: ${plans['diet']?.length ?? 0} characters');
     print('📊 Workout plan length: ${plans['workout']?.length ?? 0} characters');
     print('📄 Diet plan preview (first 200 chars): ${plans['diet']?.substring(0, plans['diet']!.length > 200 ? 200 : plans['diet']!.length) ?? "EMPTY"}');
@@ -254,7 +236,6 @@ Future<void>generateAiPlans() async{
     userprofile.dietPlan = plans['diet'];
     userprofile.workoutPlan = plans['workout'];
     
-    // Verify plans before saving
     if (userprofile.dietPlan == null || userprofile.dietPlan!.isEmpty) {
       print('⚠️ WARNING: Diet plan is empty!');
     }
@@ -297,10 +278,8 @@ Future<DailyMealPlan?> loadDietPlan()async{
   print('diet plan found, parsing...');
     final mealPlan = DietPlanParser.parseDietPlan(profile.dietPlan!);
     
-    // Calculate target calories based on user profile if available
     if (mealPlan != null && profile.weight != null && profile.targetWeight != null) {
-      // Simple target calculation: use the total calories from plan as target
-      // Or calculate based on goal (this can be enhanced)
+      
       final targetCalories = mealPlan.totalCalories;
       return DailyMealPlan(
         meals: mealPlan.meals,

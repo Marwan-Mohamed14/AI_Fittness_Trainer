@@ -8,11 +8,9 @@ class DailyCheckupController extends GetxController {
   final repo = DailyLogRepository();
   final authService = AuthService();
 
-  // UI state
   var mealCompletion = <String, bool>{}.obs;
   var workoutCompletion = <int, bool>{}.obs;
 
-  // Dashboard state
   var streak = 0.obs;
   var dietCount = 0.obs;
   var workoutCount = 0.obs;
@@ -57,7 +55,6 @@ class DailyCheckupController extends GetxController {
     workoutCompletion[index] = value;
   }
 
-  // Check if today is already logged
   Future<void> checkTodayLog() async {
     final uid = userId;
     if (uid == null) {
@@ -79,7 +76,6 @@ class DailyCheckupController extends GetxController {
     }
   }
 
-  // Log diet only, workout only, or both
   Future<void> logDayIfCompleted() async {
     final uid = userId;
     if (uid == null) {
@@ -89,7 +85,6 @@ class DailyCheckupController extends GetxController {
 
     if (!canLog) return;
 
-    // Log based on what's completed
     await repo.logToday(
       userId: uid,
       dietDone: dietDone,
@@ -103,9 +98,7 @@ class DailyCheckupController extends GetxController {
     await refreshStats();
   }
 
-  // =====================
-  // STREAK + 30 DAY LOGIC
-  // =====================
+ 
   Future<void> refreshStats() async {
     final uid = userId;
     if (uid == null) {
@@ -135,7 +128,6 @@ class DailyCheckupController extends GetxController {
 
     for (final log in logs) {
       final logDate = DateTime.parse(log.date);
-      // Streak continues if at least one is done (diet OR workout)
       if ((log.dietDone || log.workoutDone) && _isSameDay(logDate, current)) {
         s++;
         current = current.subtract(const Duration(days: 1));
@@ -153,7 +145,6 @@ class DailyCheckupController extends GetxController {
     final start = DateTime.parse(startStr);
     final end = start.add(const Duration(days: 29));
 
-    // 🔁 RESET AFTER 30 DAYS (DONE OR NOT)
     if (DateTime.now().isAfter(end)) return null;
 
     return _Period(

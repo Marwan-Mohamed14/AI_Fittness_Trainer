@@ -17,7 +17,6 @@ class Authcontroller extends GetxController {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    // Validation
     if (username.isEmpty || email.isEmpty || password.isEmpty) {
       Get.snackbar(
         "Error",
@@ -28,7 +27,6 @@ class Authcontroller extends GetxController {
       return;
     }
 
-    // Email format validation
     if (!GetUtils.isEmail(email)) {
       Get.snackbar(
         "Error",
@@ -39,7 +37,6 @@ class Authcontroller extends GetxController {
       return;
     }
 
-    // Password length validation
     if (password.length < 6) {
       Get.snackbar(
         "Error",
@@ -61,14 +58,11 @@ class Authcontroller extends GetxController {
 
       isLoading.value = false;
 
-      // Check if signup was successful
       if (response.user != null && response.session != null) {
-        // Clear the form first
         usernameController.clear();
         emailController.clear();
         passwordController.clear();
 
-        // Show success message
         Get.snackbar(
           "Success",
           "Account created successfully!",
@@ -77,13 +71,11 @@ class Authcontroller extends GetxController {
           duration: Duration(seconds: 2),
         );
 
-        // Navigate after a short delay to ensure snackbar is shown
         Future.delayed(Duration(milliseconds: 500), () {
           Get.offAllNamed('/age-screen');
         });
       } else {
       
-        // Signup failed
         Get.snackbar(
           "Error",
           "Signup failed. Please try again.",
@@ -127,14 +119,11 @@ class Authcontroller extends GetxController {
     }
   }
 
-  // ---------------------------
-  // SIGN IN (IMPROVED)
-  // ---------------------------
+ 
   Future<void> signIn() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
-    // Validation
     if (email.isEmpty || password.isEmpty) {
       Get.snackbar(
         "Error",
@@ -145,7 +134,6 @@ class Authcontroller extends GetxController {
       return;
     }
 
-    // Email format validation
     if (!GetUtils.isEmail(email)) {
       Get.snackbar(
         "Error",

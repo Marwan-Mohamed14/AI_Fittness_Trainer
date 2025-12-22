@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeController extends GetxController {
-  ThemeMode themeMode = ThemeMode.dark; // Default to dark mode
+  ThemeMode themeMode = ThemeMode.dark; 
   static const String _themeKey = 'theme_mode';
 
   @override
@@ -23,10 +23,10 @@ class ThemeController extends GetxController {
         } else if (savedTheme == 'light') {
           themeMode = ThemeMode.light;
         } else {
-          themeMode = ThemeMode.dark; // Default to dark
+          themeMode = ThemeMode.dark; 
         }
       } else {
-        // First time - default to dark
+       
         themeMode = ThemeMode.dark;
         await prefs.setString(_themeKey, 'dark');
       }
@@ -34,7 +34,6 @@ class ThemeController extends GetxController {
       Get.changeThemeMode(themeMode);
       update();
     } catch (e) {
-      // If error, default to dark
       themeMode = ThemeMode.dark;
       Get.changeThemeMode(themeMode);
       update();
@@ -44,16 +43,14 @@ class ThemeController extends GetxController {
   Future<void> toggleTheme(bool isDark) async {
     themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     
-    // Save preference
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_themeKey, isDark ? 'dark' : 'light');
     } catch (e) {
-      // Ignore save errors
     }
     
-    update(); // triggers GetBuilder rebuild
-    Get.changeThemeMode(themeMode); // applies globally to all screens
+    update(); 
+    Get.changeThemeMode(themeMode); 
   }
 
   bool get isDarkMode => themeMode == ThemeMode.dark;

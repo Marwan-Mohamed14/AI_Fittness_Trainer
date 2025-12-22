@@ -14,18 +14,18 @@ class MainBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(
-        splashFactory: NoSplash.splashFactory, // remove ripple
-        highlightColor: Colors.transparent,     // remove highlight
+        splashFactory: NoSplash.splashFactory, 
+        highlightColor: Colors.transparent,     
       ),
       child: BottomNavigationBar(
-        // Use theme colors for background and item colors
+       
         backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
         selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor,
         unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
         currentIndex: currentIndex,
         type: BottomNavigationBarType.fixed,
-        selectedFontSize: 14,    // same size for both to reduce animation
-        unselectedFontSize: 14,  // same size for both to reduce animation
+        selectedFontSize: 14,    
+        unselectedFontSize: 14,  
         onTap: onTap,
         items: const [
           BottomNavigationBarItem(

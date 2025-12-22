@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/controllers/themecontroller.dart';
+import 'package:ai_personal_trainer/services/Authservice.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -10,10 +11,94 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final AuthService _authService = AuthService();
+  bool _isLoggingOut = false;
 
   bool _mealReminders = true;
   bool _workoutPrompts = true;
   bool _hydrationTracking = false;
+
+  Future<void> _handleLogout() async {
+    // Show confirmation dialog
+    final shouldLogout = await Get.dialog<bool>(
+      AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Text(
+          'Log Out',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to log out?',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text(
+              'Log Out',
+              style: TextStyle(
+                color: Color(0xFFD63D47),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout != true) return;
+
+    setState(() {
+      _isLoggingOut = true;
+    });
+
+    try {
+      await _authService.signOut();
+      
+      // Navigate to login page and clear navigation stack
+      Get.offAllNamed('/login');
+      
+      // Show success message after navigation
+      Future.delayed(const Duration(milliseconds: 300), () {
+        Get.snackbar(
+          'Logged Out',
+          'You have been successfully logged out.',
+          backgroundColor: Colors.green.withOpacity(0.7),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 2),
+        );
+      });
+    } catch (e) {
+      setState(() {
+        _isLoggingOut = false;
+      });
+      
+      Get.snackbar(
+        'Error',
+        'Failed to log out: ${e.toString()}',
+        backgroundColor: Colors.red.withOpacity(0.7),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +214,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               SizedBox(
                 width: double.infinity,
                 child: TextButton.icon(
-                  onPressed: () {},
+                  onPressed: _isLoggingOut ? null : _handleLogout,
                   style: TextButton.styleFrom(
                     backgroundColor: Theme.of(context).brightness == Brightness.dark
                         ? const Color(0xFF2C1E25)
@@ -139,10 +224,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  icon: const Icon(Icons.logout, color: Color(0xFFD63D47)),
-                  label: const Text(
-                    'Log Out',
-                    style: TextStyle(
+                  icon: _isLoggingOut
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFFD63D47),
+                          ),
+                        )
+                      : const Icon(Icons.logout, color: Color(0xFFD63D47)),
+                  label: Text(
+                    _isLoggingOut ? 'Logging out...' : 'Log Out',
+                    style: const TextStyle(
                       color: Color(0xFFD63D47),
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

@@ -84,7 +84,7 @@ final Authcontroller authController = Get.put(Authcontroller());
                           color: const Color(0xFF1E2230),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.blueAccent.withOpacity(0.2),
+                              color: Colors.deepPurple.withOpacity(0.2),
                               blurRadius: 30,
                               spreadRadius: 1,
                             ),
@@ -100,7 +100,7 @@ final Authcontroller authController = Get.put(Authcontroller());
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.blueAccent.withOpacity(0.4),
+                              color: Colors.deepPurple.withOpacity(0.4),
                               width: 2,
                               style: BorderStyle.solid, 
                             ),
@@ -111,7 +111,7 @@ final Authcontroller authController = Get.put(Authcontroller());
                               width: 8,
                               height: 8,
                               decoration: const BoxDecoration(
-                                color: Colors.blueAccent,
+                                color: Colors.deepPurple,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -197,12 +197,12 @@ final Authcontroller authController = Get.put(Authcontroller());
                    await authController.signUp();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
+                    backgroundColor: Colors.deepPurple,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 5,
-                    shadowColor: Colors.blueAccent.withOpacity(0.4),
+                    shadowColor: Colors.deepPurple.withOpacity(0.4),
                   ),
                   child: const Text(
                     "Sign Up",
@@ -232,7 +232,7 @@ final Authcontroller authController = Get.put(Authcontroller());
                     child: const Text(
                       "Log In",
                       style: TextStyle(
-                        color: Colors.blueAccent,
+                        color: Colors.deepPurple,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

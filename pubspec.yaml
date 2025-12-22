@@ -46,6 +46,8 @@ dependencies:
   url_launcher: ^6.2.5 # To launch Google Maps navigation
   flutter_dotenv: ^5.0.2
   flutter_screenutil: ^5.9.0
+  sqflite: ^2.3.3
+  path: ^1.9.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

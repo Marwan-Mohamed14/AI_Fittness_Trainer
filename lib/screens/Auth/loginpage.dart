@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.blueAccent.withOpacity(_fadeAnimation.value * 0.6),
+                              color: Colors.deepPurple.withOpacity(_fadeAnimation.value * 0.6),
                               blurRadius: 50,
                               spreadRadius: 2,
                             ),
@@ -88,7 +88,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           shape: BoxShape.circle,
                           color: const Color(0xFF1E2230),
                           border: Border.all(
-                            color: Colors.blueAccent.withOpacity(0.5),
+                            color: Colors.deepPurple.withOpacity(0.5),
                             width: 2,
                           ),
                         ),
@@ -108,7 +108,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         right: 28,
                         child: CircleAvatar(
                           radius: 4,
-                          backgroundColor: Colors.blueAccent.withOpacity(_fadeAnimation.value),
+                          backgroundColor: Colors.deepPurple.withOpacity(_fadeAnimation.value),
                         ),
                       ),
                     ],
@@ -170,12 +170,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           await authController.signIn();
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
+                    backgroundColor: Colors.deepPurple,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 5,
-                    shadowColor: Colors.blueAccent.withOpacity(0.4),
+                    shadowColor: Colors.deepPurple.withOpacity(0.4),
                   ),
                   child: authController.isLoading.value
                       ? const SizedBox(
@@ -214,7 +214,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     child: const Text(
                       "Sign Up",
                       style: TextStyle(
-                        color: Colors.blueAccent,
+                        color: Colors.deepPurple,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

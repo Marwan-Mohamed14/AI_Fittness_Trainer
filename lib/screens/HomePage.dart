@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-// Note: Ensure these paths match your actual project structure
+import 'package:get/get.dart';
+
+import '../controllers/dailycheckupcontroller.dart';
 import 'edit_user_info_page.dart';
 import 'UpdatePlans.dart';
 import 'NearbyGymsPage.dart';
-import'DailyCheckUpMealsScreen.dart';
-import'DailyCheckUpWorkoutScreen.dart';
-import 'package:get/get.dart';
-import'../controllers/dailycheckupcontroller.dart';
+import 'DailyCheckUpMealsScreen.dart';
+import 'DailyCheckUpWorkoutScreen.dart';
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final controller = Get.put(DailyCheckupController());
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
@@ -32,7 +34,8 @@ class HomePage extends StatelessWidget {
                 },
                 child: CircleAvatar(
                   backgroundColor: theme.colorScheme.surface,
-                  child: Icon(Icons.account_box_rounded, color: theme.colorScheme.onSurface),
+                  child: Icon(Icons.account_box_rounded,
+                      color: theme.colorScheme.onSurface),
                 ),
               ),
             ),
@@ -41,11 +44,14 @@ class HomePage extends StatelessWidget {
               children: [
                 Text(
                   'Welcome, Alex!',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 Text(
                   "Let's crush today's goals.",
-                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.6)),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                      color:
+                          theme.colorScheme.onBackground.withOpacity(0.6)),
                 ),
               ],
             ),
@@ -56,7 +62,8 @@ class HomePage extends StatelessWidget {
             padding: const EdgeInsets.only(right: 12),
             child: CircleAvatar(
               backgroundColor: theme.colorScheme.surface,
-              child: Icon(Icons.notifications, color: theme.colorScheme.onSurface),
+              child: Icon(Icons.notifications,
+                  color: theme.colorScheme.onSurface),
             ),
           ),
         ],
@@ -68,7 +75,7 @@ class HomePage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
               children: const [
-                _ConsistencyTracker(), 
+                _ConsistencyTracker(),
                 SizedBox(height: 20),
                 _DailyCheckUpCard(),
                 SizedBox(height: 20),
@@ -85,7 +92,7 @@ class HomePage extends StatelessWidget {
 }
 
 // =============================
-// Consistency Tracker 
+// Consistency Tracker
 // =============================
 class _ConsistencyTracker extends StatelessWidget {
   const _ConsistencyTracker();
@@ -93,58 +100,78 @@ class _ConsistencyTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final controller = Get.find<DailyCheckupController>();
 
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Consistency Tracker",
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
+    return Obx(() {
+      final workoutProgress =
+          (controller.workoutCount.value / 30).clamp(0.0, 1.0);
+      final dietProgress =
+          (controller.dietCount.value / 30).clamp(0.0, 1.0);
+
+      return Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Consistency Tracker",
+                style: theme.textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
-              child: Row(
-                children: const [
-                  Icon(Icons.local_fire_department, color: Colors.orange, size: 18),
-                  SizedBox(width: 4),
-                  Text("12 Day Streak", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 12)),
-                ],
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.local_fire_department,
+                        color: Colors.orange, size: 18),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${controller.streak.value} Day Streak",
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _GoalProgressCard(
+                  label: "Workout",
+                  icon: Icons.fitness_center,
+                  progress: workoutProgress,
+                  progressText:
+                      "${controller.workoutCount.value}/30",
+                  color: Colors.blue,
+                ),
               ),
-            )
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _GoalProgressCard(
-                label: "Workout",
-                icon: Icons.fitness_center,
-                progress: 0.8, 
-                progressText: "24/30",
-                color: Colors.blue,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _GoalProgressCard(
+                  label: "Diet Plan",
+                  icon: Icons.apple,
+                  progress: dietProgress,
+                  progressText:
+                      "${controller.dietCount.value}/30",
+                  color: Colors.tealAccent.shade700,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _GoalProgressCard(
-                label: "Diet Plan",
-                icon: Icons.apple,
-                progress: 0.95, 
-                progressText: "28/30",
-                color: Colors.tealAccent.shade700,
-              ),
-            ),
-          ],
-        )
-      ],
-    );
+            ],
+          )
+        ],
+      );
+    });
   }
 }
 
@@ -183,15 +210,21 @@ class _GoalProgressCard extends StatelessWidget {
                 child: Icon(icon, color: color, size: 16),
               ),
               const SizedBox(width: 8),
-              Text(label, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(label,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Monthly Goal", style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey, fontSize: 10)),
-              Text(progressText, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey, fontSize: 10)),
+              Text("Monthly Goal",
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: Colors.grey, fontSize: 10)),
+              Text(progressText,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: Colors.grey, fontSize: 10)),
             ],
           ),
           const SizedBox(height: 8),
@@ -214,14 +247,16 @@ class _GoalProgressCard extends StatelessWidget {
 // Daily Check-up
 // =============================
 class _DailyCheckUpCard extends StatelessWidget {
-  const _DailyCheckUpCard({super.key});
+  const _DailyCheckUpCard();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final controller = Get.put(DailyCheckupController());
+    final controller = Get.find<DailyCheckupController>();
 
     return Obx(() {
+      final canLog = controller.allDone;
+
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -233,23 +268,27 @@ class _DailyCheckUpCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.assignment_turned_in, color: theme.colorScheme.primary),
+                Icon(Icons.assignment_turned_in,
+                    color: theme.colorScheme.primary),
                 const SizedBox(width: 10),
                 Text(
                   "Daily Check-up",
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 6),
             Text(
               controller.formattedDate,
-              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: Colors.grey),
             ),
             const SizedBox(height: 6),
             Text(
               "Confirm your diet & workout for today.",
-              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: Colors.grey),
             ),
             const SizedBox(height: 20),
             Row(
@@ -257,7 +296,6 @@ class _DailyCheckUpCard extends StatelessWidget {
                 Expanded(
                   child: _SelectionTile(
                     label: "Diet",
-                    // Only green if all meals are done
                     completed: controller.dietDone,
                     onTap: () {
                       Get.to(() => const DailyCheckupMealsScreen());
@@ -268,7 +306,6 @@ class _DailyCheckUpCard extends StatelessWidget {
                 Expanded(
                   child: _SelectionTile(
                     label: "Workout",
-                    // Only green if all exercises are done
                     completed: controller.workoutDone,
                     onTap: () {
                       Get.to(() => const DailyCheckupWorkoutScreen());
@@ -281,32 +318,37 @@ class _DailyCheckUpCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               height: 55,
-              child: Obx(() {
-                final canLog = controller.allDone;
-                return ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: canLog ? theme.colorScheme.primary : Colors.grey,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  onPressed: canLog
-                      ? () {
-                          controller.logDayIfCompleted();
-                          Get.snackbar("Great Job!", "All tasks completed. Moving to next day.");
-                        }
-                      : null,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Text(
-                        "Log Daily Progress",
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(width: 10),
-                      Icon(Icons.arrow_forward, color: Colors.white),
-                    ],
-                  ),
-                );
-              }),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      canLog ? theme.colorScheme.primary : Colors.grey,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15)),
+                ),
+                onPressed: canLog
+                    ? () async {
+                        await controller.logDayIfCompleted();
+                        Get.snackbar(
+                          "Great Job!",
+                          "Daily progress logged successfully.",
+                        );
+                      }
+                    : null,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Log Daily Progress",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(width: 10),
+                    Icon(Icons.arrow_forward, color: Colors.white),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -333,23 +375,31 @@ class _SelectionTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        padding:
+            const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
-          color: completed 
-              ? Colors.green.withOpacity(0.2) 
-              : theme.colorScheme.background.withOpacity(0.5), // only green if fully completed
+          color: completed
+              ? Colors.green.withOpacity(0.2)
+              : theme.colorScheme.background.withOpacity(0.5),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border:
+              Border.all(color: Colors.white.withOpacity(0.05)),
         ),
         child: Row(
           children: [
             Icon(
-              completed ? Icons.check_circle : Icons.radio_button_off,
+              completed
+                  ? Icons.check_circle
+                  : Icons.radio_button_off,
               size: 18,
-              color: completed ? Colors.green : Colors.grey.withOpacity(0.5),
+              color: completed
+                  ? Colors.green
+                  : Colors.grey.withOpacity(0.5),
             ),
             const SizedBox(width: 10),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+            Text(label,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w500, fontSize: 14)),
           ],
         ),
       ),
@@ -380,7 +430,8 @@ class _NearestGymCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           image: const DecorationImage(
-            image: NetworkImage('https://images.unsplash.com/photo-1534438327276-14e5300c3a48'),
+            image: NetworkImage(
+                'https://images.unsplash.com/photo-1534438327276-14e5300c3a48'),
             fit: BoxFit.cover,
           ),
         ),
@@ -395,12 +446,14 @@ class _NearestGymCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Find Nearest Gym',
-                  style: theme.textTheme.titleMedium?.copyWith(color: Colors.white),
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(color: Colors.white),
                 ),
               ),
               CircleAvatar(
                 backgroundColor: theme.colorScheme.surface,
-                child: Icon(Icons.arrow_forward, color: theme.colorScheme.onSurface),
+                child: Icon(Icons.arrow_forward,
+                    color: theme.colorScheme.onSurface),
               ),
             ],
           ),
@@ -418,6 +471,8 @@ class _BottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Row(
       children: [
         Expanded(
@@ -442,7 +497,8 @@ class _BottomActions extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const CommunityScreen()),
+                MaterialPageRoute(
+                    builder: (_) => const CommunityScreen()),
               );
             },
           ),
@@ -458,7 +514,12 @@ class _ActionCard extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
 
-  const _ActionCard({required this.icon, required this.title, required this.subtitle, required this.onTap});
+  const _ActionCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -477,13 +538,18 @@ class _ActionCard extends StatelessWidget {
           children: [
             Icon(icon, color: theme.colorScheme.primary),
             const SizedBox(height: 12),
-            Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Text(title,
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text(
-              subtitle, 
-              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.6), fontSize: 10), 
-              maxLines: 2, 
-              overflow: TextOverflow.ellipsis
+              subtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface
+                      .withOpacity(0.6),
+                  fontSize: 10),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -493,10 +559,11 @@ class _ActionCard extends StatelessWidget {
 }
 
 // =============================
-// Destination Screens
+// Community Screen
 // =============================
 class CommunityScreen extends StatelessWidget {
   const CommunityScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

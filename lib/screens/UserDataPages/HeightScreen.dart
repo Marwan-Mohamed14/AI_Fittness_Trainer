@@ -85,9 +85,6 @@ class _HeightScreenState extends State<HeightScreen>
               children: [
                 const SizedBox(height: 40),
 
-                // ==========================================
-                // 🔥 Futuristic Animated Height Logo
-                // ==========================================
                 AnimatedBuilder(
                   animation: _animController,
                   builder: (context, child) {
@@ -126,14 +123,13 @@ class _HeightScreenState extends State<HeightScreen>
                           ),
                         ),
 
-                        // Pulsing Height Icon
+                     
                         Transform.scale(
                           scale: _scaleAnimation.value,
                           child: const Icon(Icons.height,
                               size: 55, color: Colors.white),
                         ),
 
-                        // Floating Particle
                         Positioned(
                           top: 25,
                           right: 25,
@@ -162,9 +158,6 @@ class _HeightScreenState extends State<HeightScreen>
 
                 const SizedBox(height: 30),
 
-                // ==========================================
-                // 🔥 Height Slider
-                // ==========================================
                 Text(
                   "${height.toInt()} cm",
                   style: const TextStyle(
@@ -202,7 +195,7 @@ class _HeightScreenState extends State<HeightScreen>
                       ),
                     ),
                     onPressed: () {
-                      // Save height using ProfileController
+                     
                       _profileController.saveHeight(height.toInt());
                     },
                     child: const Text(

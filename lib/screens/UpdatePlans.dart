@@ -17,16 +17,12 @@ class _UpdatePlansState extends State<UpdatePlans>
   final ProfileController _profileController = Get.put(ProfileController());
   late TabController _tabController;
   bool _isLoading = false;
-
-  // Controllers for text fields
   late TextEditingController _ageController;
   late TextEditingController _heightController;
   late TextEditingController _weightController;
   late TextEditingController _targetWeightController;
   late TextEditingController _mealsPerDayController;
   late TextEditingController _allergiesController;
-
-  // Selected values
   String? _selectedGender;
   String? _selectedWorkoutGoal;
   String? _selectedWorkoutLevel;
@@ -53,7 +49,7 @@ class _UpdatePlansState extends State<UpdatePlans>
   }
 
   void _loadProfileData() {
-    // Ensure profile is loaded
+  
     _profileController.loadExistingProfile().then((_) {
       if (mounted) {
         setState(() {
@@ -96,8 +92,8 @@ class _UpdatePlansState extends State<UpdatePlans>
       actions: [
         TextButton(
           onPressed: () {
-            Get.back(); // close dialog
-            Get.offAllNamed('/home'); // go to Home page
+            Get.back(); 
+            Get.offAllNamed('/home'); 
           },
           child: const Text(
             'Go to Home',
@@ -109,7 +105,7 @@ class _UpdatePlansState extends State<UpdatePlans>
         ),
       ],
     ),
-    barrierDismissible: false, // user must click button
+    barrierDismissible: false, 
   );
 }
 
@@ -148,13 +144,13 @@ class _UpdatePlansState extends State<UpdatePlans>
                 ],
               )
             : null,
-        color: !isDark ? const Color(0xFFFAFBFC) : null, // Slightly off-white in light mode
+        color: !isDark ? const Color(0xFFFAFBFC) : null, 
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
               ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.15), // More visible border in light mode
-          width: isDark ? 1 : 1.5, // Thicker border in light mode
+              : Colors.black.withOpacity(0.15), 
+          width: isDark ? 1 : 1.5, 
         ),
         boxShadow: isDark
             ? [
@@ -166,7 +162,7 @@ class _UpdatePlansState extends State<UpdatePlans>
               ]
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08), // More visible shadow
+                  color: Colors.black.withOpacity(0.08), 
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -241,8 +237,8 @@ class _UpdatePlansState extends State<UpdatePlans>
         border: Border.all(
           color: isDark
               ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.15), // More visible border
-          width: isDark ? 1 : 1.5, // Thicker in light mode
+              : Colors.black.withOpacity(0.15), 
+          width: isDark ? 1 : 1.5, 
         ),
       ),
       child: TextField(
@@ -294,8 +290,8 @@ class _UpdatePlansState extends State<UpdatePlans>
                 ? theme.colorScheme.primary.withOpacity(0.5)
                 : (isDark
                     ? Colors.white.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.15)), // More visible border
-            width: isSelected ? 2 : (isDark ? 1 : 1.5), // Thicker in light mode
+                    : Colors.black.withOpacity(0.15)), 
+            width: isSelected ? 2 : (isDark ? 1 : 1.5), 
           ),
         ),
         child: Text(
@@ -626,7 +622,6 @@ class _UpdatePlansState extends State<UpdatePlans>
     });
 
     try {
-      // Parse allergies
       List<String>? allergies;
       if (_allergiesController.text.trim().isNotEmpty) {
         allergies = _allergiesController.text
@@ -636,11 +631,8 @@ class _UpdatePlansState extends State<UpdatePlans>
             .toList();
       }
 
-      // Get current profile data
       await _profileController.loadExistingProfile();
       final currentData = _profileController.onboardingData.value;
-
-      // Update the existing data object with new values
       currentData.age = int.tryParse(_ageController.text);
       currentData.height = int.tryParse(_heightController.text);
       currentData.gender = _selectedGender;
@@ -655,7 +647,6 @@ class _UpdatePlansState extends State<UpdatePlans>
       currentData.activityLevel = _selectedActivityLevel;
       currentData.allergies = allergies;
 
-      // Generate new plans using AI service
       Get.snackbar(
         'Generating Plan',
         'Creating your personalized fitness and diet plan...',
@@ -667,15 +658,11 @@ class _UpdatePlansState extends State<UpdatePlans>
       final aiPlanService = AiPlanService();
       final generatedPlans = await aiPlanService.generateWeeklyPlan(currentData);
 
-      // Update the data with newly generated plans
       currentData.dietPlan = generatedPlans['diet'];
       currentData.workoutPlan = generatedPlans['workout'];
 
-      // Save to database using ProfileService
       final profileService = ProfileService();
       await profileService.saveProfile(currentData);
-
-      // Update controller
       _profileController.onboardingData.value = currentData;
 
       _showSuccessDialog();
@@ -699,21 +686,19 @@ class _UpdatePlansState extends State<UpdatePlans>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
-    // ===== Responsive variables =====
-    final double screenPadding = Responsive.padding(context); // general padding
-    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // body text
-    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); // headings
-    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); // button text
-    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // icons
-    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // exercise card icon
-    final double boxPadding = Responsive.padding(context) / 2; // inside cards
-    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // card border radius
-    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // spacing between cards
-    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); // small spacing
-    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); // large spacing
-    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); // circle around icons
-    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); // small text under icons
+   final double screenPadding = Responsive.padding(context); 
+    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); 
+    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); 
+    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double boxPadding = Responsive.padding(context) / 2; 
+    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); 
+    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); 
+    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); 
+    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
     
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,

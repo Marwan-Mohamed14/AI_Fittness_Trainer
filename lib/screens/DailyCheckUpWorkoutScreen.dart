@@ -8,7 +8,6 @@ import '../utils/responsive.dart';
 class DailyCheckupWorkoutScreen extends StatelessWidget {
   const DailyCheckupWorkoutScreen({super.key});
 
-  // Extract day type from dayTitle (e.g., "Push Day", "Pull Day", "Leg Day")
   String _getDayType(String dayTitle) {
     final lower = dayTitle.toLowerCase();
     if (lower.contains('push')) return 'Push';
@@ -19,29 +18,26 @@ class DailyCheckupWorkoutScreen extends StatelessWidget {
     if (lower.contains('full')) return 'Full Body';
     if (lower.contains('cardio')) return 'Cardio';
     if (lower.contains('rest')) return 'Rest';
-    // Try to extract from patterns like "Day 1 - CHEST"
-    final match = RegExp(r'-\s*([A-Z\s]+)').firstMatch(dayTitle);
+   final match = RegExp(r'-\s*([A-Z\s]+)').firstMatch(dayTitle);
     if (match != null) return match.group(1)?.trim() ?? 'Workout';
     return 'Workout';
   }
 
   @override
   Widget build(BuildContext context) {
-    // ===== Responsive variables =====
-    final double screenPadding = Responsive.padding(context); // general padding
-    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // body text
-    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); // headings
-    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); // button text
-    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // icons
-    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // exercise card icon
-    final double boxPadding = Responsive.padding(context) / 2; // inside cards
-    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // card border radius
-    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // spacing between cards
-    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); // small spacing
-    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); // large spacing
-    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); // circle around icons
-    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); // small text under icons
-    
+   final double screenPadding = Responsive.padding(context); 
+    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); 
+    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); 
+    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double boxPadding = Responsive.padding(context) / 2; 
+    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); 
+    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); 
+    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); 
+    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
     final controller = Get.find<DailyCheckupController>();
     final profileController = Get.find<ProfileController>();
 
@@ -59,9 +55,8 @@ class DailyCheckupWorkoutScreen extends StatelessWidget {
 
           final plan = snapshot.data!;
           
-          // Initialize workouts: rest (index 0) + all workout days
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            controller.initWorkout(plan.days.length + 1); // +1 for rest day
+            controller.initWorkout(plan.days.length + 1);
           });
 
           return SingleChildScrollView(
@@ -84,18 +79,16 @@ class DailyCheckupWorkoutScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 
-                // Rest Day Option (always shown first, index 0)
                 _RestDayCard(controller: controller, index: 0),
                 const SizedBox(height: 12),
                 
-                // All Workout Days
                 ...List.generate(plan.days.length, (i) {
                   final workoutDay = plan.days[i];
                   final dayType = _getDayType(workoutDay.dayTitle);
                   return _WorkoutDayCard(
                     workoutDay: workoutDay,
                     dayType: dayType,
-                    index: i + 1, // +1 because rest is at index 0
+                    index: i + 1,
                     controller: controller,
                   );
                 }),
@@ -122,15 +115,12 @@ class _RestDayCard extends StatelessWidget {
       final done = controller.workoutCompletion[index] ?? false;
       return GestureDetector(
         onTap: () {
-          // Radio button behavior: uncheck all others, check this one
-          if (!done) {
-            // Uncheck all other days
-            for (var i = 0; i < controller.workoutCompletion.length; i++) {
+        if (!done) {
+          for (var i = 0; i < controller.workoutCompletion.length; i++) {
               controller.updateWorkout(i, i == index);
             }
           } else {
-            // Uncheck if already selected
-            controller.updateWorkout(index, false);
+          controller.updateWorkout(index, false);
           }
         },
         child: AnimatedContainer(
@@ -142,14 +132,14 @@ class _RestDayCard extends StatelessWidget {
                 ? Colors.grey.withOpacity(0.2)
                 : (theme.brightness == Brightness.dark
                     ? theme.colorScheme.surface
-                    : const Color(0xFFFAFBFC)), // Better contrast in light mode
+                    : const Color(0xFFFAFBFC)), 
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: done
                   ? Colors.grey
                   : (theme.brightness == Brightness.dark
                       ? Colors.grey.withOpacity(0.3)
-                      : Colors.black.withOpacity(0.15)), // More visible border in light mode
+                      : Colors.black.withOpacity(0.15)), 
               width: done ? 2 : (theme.brightness == Brightness.dark ? 1 : 1.5),
             ),
             boxShadow: [
@@ -241,15 +231,12 @@ class _WorkoutDayCard extends StatelessWidget {
       return GestureDetector(
         onTap: () {
           if (!restDone || done) {
-            // Radio button behavior: uncheck all others, check this one
-            if (!done) {
-              // Uncheck all other days (including rest)
-              for (var i = 0; i < controller.workoutCompletion.length; i++) {
+         if (!done) {
+          for (var i = 0; i < controller.workoutCompletion.length; i++) {
                 controller.updateWorkout(i, i == index);
               }
             } else {
-              // Uncheck if already selected
-              controller.updateWorkout(index, false);
+            controller.updateWorkout(index, false);
             }
           }
         },

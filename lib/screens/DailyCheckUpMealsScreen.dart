@@ -10,20 +10,20 @@ class DailyCheckupMealsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ===== Responsive variables =====
-    final double screenPadding = Responsive.padding(context); // general padding
-    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // body text
-    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); // headings
-    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); // button text
-    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // icons
-    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // exercise card icon
-    final double boxPadding = Responsive.padding(context) / 2; // inside cards
-    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // card border radius
-    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // spacing between cards
-    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); // small spacing
-    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); // large spacing
-    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); // circle around icons
-    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); // small text under icons
+ 
+    final double screenPadding = Responsive.padding(context); 
+    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); 
+    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); 
+    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24);  
+    final double boxPadding = Responsive.padding(context) / 2; 
+    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16);
+    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); 
+    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); 
+    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); 
+    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
     
     final controller = Get.find<DailyCheckupController>();
     final profileController = Get.find<ProfileController>();
@@ -42,7 +42,7 @@ class DailyCheckupMealsScreen extends StatelessWidget {
 
           final dailyPlan = snapshot.data!;
 
-          // Generate meal labels dynamically
+          
           final mealLabels = List.generate(
             dailyPlan.meals.length,
             (index) {
@@ -51,7 +51,7 @@ class DailyCheckupMealsScreen extends StatelessWidget {
             },
           );
 
-          // Initialize meals **once after build**
+         
           WidgetsBinding.instance.addPostFrameCallback((_) {
             controller.initMeals(mealLabels);
           });
@@ -60,13 +60,13 @@ class DailyCheckupMealsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                // Dynamic meal cards
+              
                 ...dailyPlan.meals.asMap().entries.map((entry) {
                   final index = entry.key;
                   final meal = entry.value;
                   final label = mealLabels[index];
                   
-                  // Get display title
+                 
                   final mealTitles = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Meal 5'];
                   final displayTitle = index < mealTitles.length 
                       ? mealTitles[index] 
@@ -109,9 +109,9 @@ class _MealCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Obx(() {
-      final done = controller.mealCompletion[label] ?? false; // Individual check
+      final done = controller.mealCompletion[label] ?? false; 
       return GestureDetector(
-        onTap: () => controller.updateMeal(label, !done), // toggle on tap
+        onTap: () => controller.updateMeal(label, !done), 
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           padding: const EdgeInsets.all(16),
@@ -120,7 +120,7 @@ class _MealCard extends StatelessWidget {
                 ? Colors.greenAccent.withOpacity(0.3)
                 : (theme.brightness == Brightness.dark
                     ? theme.colorScheme.surface
-                    : const Color(0xFFFAFBFC)), // Better contrast in light mode
+                    : const Color(0xFFFAFBFC)), 
             borderRadius: BorderRadius.circular(20),
             border: theme.brightness == Brightness.light
                 ? Border.all(

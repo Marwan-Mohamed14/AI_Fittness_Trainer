@@ -24,11 +24,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   void initState() {
     super.initState();
     
-    // Initialize Animation
+
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    )..repeat(reverse: true); // Loops back and forth
+    )..repeat(reverse: true); 
 
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
@@ -47,23 +47,23 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    // ===== Responsive variables =====
-    final double screenPadding = Responsive.padding(context); // general padding
-    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // body text
-    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); // headings
-    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); // button text
-    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // icons
-    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // exercise card icon
-    final double boxPadding = Responsive.padding(context) / 2; // inside cards
-    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // card border radius
-    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // spacing between cards
-    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); // small spacing
-    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); // large spacing
-    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); // circle around icons
-    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); // small text under icons
+  
+    final double screenPadding = Responsive.padding(context); 
+    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); 
+    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); 
+    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double boxPadding = Responsive.padding(context) / 2; 
+    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); 
+    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); 
+    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); 
+    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
     
     return Scaffold(
-      backgroundColor: const Color(0xFF0F111A), // Dark Gym Theme
+      backgroundColor: const Color(0xFF0F111A), 
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -72,16 +72,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             children: [
               const SizedBox(height: 40),
 
-              // ========================================================
-              // INLINE DYNAMIC LOGO
-              // ========================================================
               AnimatedBuilder(
                 animation: _animController,
                 builder: (context, child) {
                   return Stack(
                     alignment: Alignment.center,
                     children: [
-                      // 1. Glowing Aura
+                    
                       Container(
                         width: 120,
                         height: 120,
@@ -96,7 +93,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           ],
                         ),
                       ),
-                      // 2. Tech Ring
+                     
                       Container(
                         width: 100,
                         height: 100,
@@ -109,7 +106,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           ),
                         ),
                       ),
-                      // 3. Pulsing Icon
+                
                       Transform.scale(
                         scale: _scaleAnimation.value,
                         child: const Icon(
@@ -118,7 +115,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           color: Colors.white,
                         ),
                       ),
-                      // 4. Floating 'AI' particle
+               
                       Positioned(
                         top: 22,
                         right: 28,
@@ -131,11 +128,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   );
                 },
               ),
-              // ========================================================
+             const SizedBox(height: 50),
 
-              const SizedBox(height: 50),
-
-              // Headlines
+            
               const Text(
                 "Welcome Back",
                 style: TextStyle(
@@ -156,7 +151,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
               const SizedBox(height: 40),
 
-              // Email Input - USING authController.emailController
+            
               _buildTextField(
                 controller: authController.emailController,
                 hintText: "Email",
@@ -165,7 +160,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
               const SizedBox(height: 20),
 
-              // Password Input - USING authController.passwordController
+           
               _buildTextField(
                 controller: authController.passwordController,
                 hintText: "Password",
@@ -175,7 +170,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
               const SizedBox(height: 20),
 
-              // Login Button
               Obx(() => SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -215,7 +209,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
               const SizedBox(height: 20),
 
-              // Footer
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -245,7 +238,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     );
   }
 
-  // UI Helper for TextFields
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,

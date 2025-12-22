@@ -22,23 +22,21 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    // ===== Responsive variables =====
-    final double screenPadding = Responsive.padding(context); // general padding
-    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // body text
-    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); // headings
-    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); // button text
-    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // icons
-    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // exercise card icon
-    final double boxPadding = Responsive.padding(context) / 2; // inside cards
-    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // card border radius
-    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // spacing between cards
-    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); // small spacing
-    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); // large spacing
-    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); // circle around icons
-    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); // small text under icons
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A1628), // Dark navy background
+    final double screenPadding = Responsive.padding(context); 
+    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); 
+    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); 
+    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double boxPadding = Responsive.padding(context) / 2; 
+    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); 
+    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); 
+    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); 
+    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
+        return Scaffold(
+      backgroundColor: const Color(0xFF0A1628), 
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A1628),
         elevation: 0,
@@ -172,9 +170,6 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
   }
 }
 
-// ============================
-// Daily Goal Card - MyFitnessPal Style
-// ============================
 class _DailyGoalCard extends StatelessWidget {
   final DailyMealPlan mealPlan;
 
@@ -184,8 +179,6 @@ class _DailyGoalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final targetCalories = mealPlan.targetCalories;
     final currentCalories = mealPlan.totalCalories;
-
-    // Macro targets
     final proteinTarget = (targetCalories * 0.3 / 4).round();
     final carbsTarget = (targetCalories * 0.4 / 4).round();
     final fatTarget = (targetCalories * 0.3 / 9).round();
@@ -193,7 +186,7 @@ class _DailyGoalCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2D47), // Dark blue card
+        color: const Color(0xFF1E2D47), 
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -243,9 +236,6 @@ class _DailyGoalCard extends StatelessWidget {
   }
 }
 
-// ============================
-// Macro Progress Bar
-// ============================
 class _MacroProgressBar extends StatelessWidget {
   final String label;
   final int current;
@@ -302,9 +292,6 @@ class _MacroProgressBar extends StatelessWidget {
   }
 }
 
-// ============================
-// Meal Card - MyFitnessPal Style
-// ============================
 class _MealCard extends StatelessWidget {
   final String title;
   final MealData meal;
@@ -320,18 +307,13 @@ class _MealCard extends StatelessWidget {
         .where((e) => e.isNotEmpty)
         .toList();
 
-    // Filter out macro-only entries
     final foodItems = items.where((item) {
       final lowerItem = item.toLowerCase().trim();
       
-      // Skip if it contains "protein", "carbs", "carb", "fat" as a word
-      // This catches: "35g protein", "10g carbs", "0g fat)", etc.
       if (RegExp(r'\b(protein|carbs?|fats?)\b', caseSensitive: false).hasMatch(lowerItem)) {
         print('FILTERED OUT (contains macro keyword): "$item"');
         return false;
       }
-      
-      // Skip if it's just a number with optional 'g' (like "12g", "0g")
       if (RegExp(r'^\d+\.?\d*g?\)?$').hasMatch(lowerItem)) {
         print('FILTERED OUT (just number): "$item"');
         return false;
@@ -345,32 +327,26 @@ class _MealCard extends StatelessWidget {
     foodItems.forEach((item) => print('- "$item"'));
     print('========================');
 
-    // If no valid food items found, return empty list
     if (foodItems.isEmpty) return [];
 
-    // Calculate macros per item proportionally
     final totalItems = foodItems.length;
     
     return foodItems.asMap().entries.map((entry) {
       final item = entry.value;
       
-      // Extract calories from the string (e.g., "120g baked salmon (180 calories")
-      final calorieMatch = RegExp(r'\((\d+)\s*calor').firstMatch(item);
+    final calorieMatch = RegExp(r'\((\d+)\s*calor').firstMatch(item);
       final itemCalories = calorieMatch != null ? int.parse(calorieMatch.group(1)!) : 0;
 
-      // Remove the calories part to get clean name
-      String name = item.replaceAll(RegExp(r'\(\d+\s*calor.*'), '').trim();
+    String name = item.replaceAll(RegExp(r'\(\d+\s*calor.*'), '').trim();
       String serving = '';
 
-      // Extract serving size (e.g., "120g", "200g")
-      final servingMatch = RegExp(r'^([\d.]+\s*(?:cup|g|oz|bowl|tbsp|tsp|slice|piece)?s?)\s+(.+)', caseSensitive: false).firstMatch(name);
+     final servingMatch = RegExp(r'^([\d.]+\s*(?:cup|g|oz|bowl|tbsp|tsp|slice|piece)?s?)\s+(.+)', caseSensitive: false).firstMatch(name);
       if (servingMatch != null) {
         serving = servingMatch.group(1)?.trim() ?? '';
         name = servingMatch.group(2)?.trim() ?? name;
       }
 
-      // Calculate proportional macros for this item
-      final calorieRatio = meal.calories > 0 && itemCalories > 0 
+     final calorieRatio = meal.calories > 0 && itemCalories > 0 
           ? itemCalories / meal.calories 
           : 1.0 / totalItems;
       final itemProtein = (meal.protein * calorieRatio).round();
@@ -395,7 +371,7 @@ class _MealCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Meal Header
+     
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -418,7 +394,7 @@ class _MealCard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        // Macros in compact format
+        
         Text(
           'C: ${meal.carbs}g • P: ${meal.protein}g • F: ${meal.fat}g',
           style: const TextStyle(
@@ -428,19 +404,19 @@ class _MealCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // Food Items Cards
+       
         ...foodItems.map((foodItem) {
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2D47), // Dark blue card
+              color: const Color(0xFF1E2D47), 
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Left side: Food name + serving
+                
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -468,14 +444,14 @@ class _MealCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Right side: Calories + macros
+              
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
                       '${foodItem['calories']} kcal',
                       style: const TextStyle(
-                        color: Color(0xFFBB86FC), // Purple accent
+                        color: Color(0xFFBB86FC), 
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),

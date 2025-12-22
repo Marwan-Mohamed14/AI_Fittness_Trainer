@@ -13,7 +13,7 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateMixin {
-  // --- 1. LOCAL STATE ---
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -22,7 +22,6 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   bool _isPasswordHidden = true;
   final bool _isConfirmPasswordHidden = true;
 
-  // --- 2. ANIMATION STATE (New Logo Logic) ---
   late AnimationController _animController;
   late Animation<double> _rotationAnimation;
 
@@ -33,11 +32,10 @@ final Authcontroller authController = Get.put(Authcontroller());
   void initState() {
     super.initState();
     
-    // Initialize Animation for Rotating Ring (Building Profile)
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 8),
-    )..repeat(); // Continuous rotation
+    )..repeat(); 
 
     _rotationAnimation = Tween<double>(begin: 0.0, end: 2 * 3.14159).animate(
       CurvedAnimation(parent: _animController, curve: Curves.linear),
@@ -54,23 +52,23 @@ final Authcontroller authController = Get.put(Authcontroller());
     super.dispose();
   }
 
-  // --- 3. UI BUILD ---
+
   @override
   Widget build(BuildContext context) {
-    // ===== Responsive variables =====
-    final double screenPadding = Responsive.padding(context); // general padding
-    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // body text
-    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); // headings
-    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); // button text
-    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // icons
-    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); // exercise card icon
-    final double boxPadding = Responsive.padding(context) / 2; // inside cards
-    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // card border radius
-    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); // spacing between cards
-    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); // small spacing
-    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); // large spacing
-    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); // circle around icons
-    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); // small text under icons
+    
+    final double screenPadding = Responsive.padding(context); 
+    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); 
+    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); 
+    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
+    final double boxPadding = Responsive.padding(context) / 2; 
+    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
+    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); 
+    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); 
+    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); 
+    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
     
     return Scaffold(
       backgroundColor: const Color(0xFF0F111A), // Dark Gym Theme
@@ -82,16 +80,13 @@ final Authcontroller authController = Get.put(Authcontroller());
             children: [
               const SizedBox(height: 40),
 
-              // ========================================================
-              // NEW DYNAMIC LOGO: "Profile Initialization"
-              // ========================================================
               AnimatedBuilder(
                 animation: _animController,
                 builder: (context, child) {
                   return Stack(
                     alignment: Alignment.center,
                     children: [
-                      // 1. Static Glowing Core
+                    
                       Container(
                         width: 100,
                         height: 100,
@@ -107,7 +102,7 @@ final Authcontroller authController = Get.put(Authcontroller());
                           ],
                         ),
                       ),
-                      // 2. Rotating "Scanner" Ring
+                     
                       Transform.rotate(
                         angle: _rotationAnimation.value,
                         child: Container(
@@ -134,7 +129,7 @@ final Authcontroller authController = Get.put(Authcontroller());
                           ),
                         ),
                       ),
-                      // 3. Static Icon (User being added)
+                    
                       const Icon(
                         Icons.person_add_alt_1,
                         size: 45,
@@ -144,11 +139,10 @@ final Authcontroller authController = Get.put(Authcontroller());
                   );
                 },
               ),
-              // ========================================================
-
+            
               const SizedBox(height: 40),
 
-              // Headlines
+             
               const Text(
                 "Create Account",
                 style: TextStyle(
@@ -170,7 +164,6 @@ final Authcontroller authController = Get.put(Authcontroller());
 
               const SizedBox(height: 40),
 
-              // Full Name Input
               _buildTextField(
                 controller: authController.usernameController,
                 hintText: "Full Name",
@@ -179,7 +172,7 @@ final Authcontroller authController = Get.put(Authcontroller());
 
               const SizedBox(height: 20),
 
-              // Email Input
+            
               _buildTextField(
                 controller: authController.emailController,
                 hintText: "Email Address",
@@ -188,7 +181,7 @@ final Authcontroller authController = Get.put(Authcontroller());
 
               const SizedBox(height: 20),
 
-              // Password Input
+             
               _buildTextField(
                 controller: authController.passwordController,
                 hintText: "Password",
@@ -204,7 +197,7 @@ final Authcontroller authController = Get.put(Authcontroller());
 
               const SizedBox(height: 30),
 
-              // Sign Up Button
+            
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -233,7 +226,7 @@ final Authcontroller authController = Get.put(Authcontroller());
 
               const SizedBox(height: 30),
 
-              // Footer
+             
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -243,7 +236,7 @@ final Authcontroller authController = Get.put(Authcontroller());
                   ),
                   GestureDetector(
                     onTap: () {
-                       Get.back(); // Go back to login
+                       Get.back(); 
                     },
                     child: const Text(
                       "Log In",
@@ -263,7 +256,7 @@ final Authcontroller authController = Get.put(Authcontroller());
     );
   }
 
-  // UI Helper for TextFields
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,

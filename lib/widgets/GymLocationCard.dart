@@ -24,7 +24,7 @@ class GymCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
-   
+    // Generate actual Google Places photo URL
     final String imageUrl = gym.photoReference != null
         ? "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${gym.photoReference}&key=$googleKey"
         : 'https://loremflickr.com/320/320/gym,fitness?random=${gym.id}';
@@ -38,8 +38,8 @@ class GymCard extends StatelessWidget {
         border: Border.all(
           color: isDark
               ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.15), 
-          width: isDark ? 1 : 1.5, 
+              : Colors.black.withOpacity(0.15), // More visible border
+          width: isDark ? 1 : 1.5, // Thicker in light mode
         ),
         boxShadow: !isDark
             ? [

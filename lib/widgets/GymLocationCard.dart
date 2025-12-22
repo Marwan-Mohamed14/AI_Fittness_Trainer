@@ -21,6 +21,9 @@ class GymCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     // Generate actual Google Places photo URL
     final String imageUrl = gym.photoReference != null
         ? "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${gym.photoReference}&key=$googleKey"
@@ -30,9 +33,13 @@ class GymCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2230),
+        color: isDark ? const Color(0xFF1E2230) : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.05)
+              : Colors.black.withOpacity(0.08),
+        ),
       ),
       child: Column(
         children: [
@@ -50,16 +57,22 @@ class GymCard extends StatelessWidget {
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Container(
-                        color: Colors.grey[800],
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.deepPurple),
+                        color: isDark ? Colors.grey[800] : Colors.grey[200],
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
                       );
                     },
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: Colors.grey[800],
-                        child: const Icon(Icons.fitness_center, color: Colors.white24),
+                        color: isDark ? Colors.grey[800] : Colors.grey[200],
+                        child: Icon(
+                          Icons.fitness_center,
+                          color: isDark ? Colors.white24 : Colors.grey[400],
+                        ),
                       );
                     },
                   ),
@@ -72,8 +85,8 @@ class GymCard extends StatelessWidget {
                   children: [
                     Text(
                       gym.name,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -82,7 +95,10 @@ class GymCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       "${gym.address} • ${gym.distanceKm.toStringAsFixed(1)} km",
-                      style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        fontSize: 12,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -91,7 +107,13 @@ class GymCard extends StatelessWidget {
                       children: [
                         const Icon(Icons.star, color: Colors.amber, size: 14),
                         const SizedBox(width: 4),
-                        Text("${gym.rating}", style: const TextStyle(color: Colors.white, fontSize: 12)),
+                        Text(
+                          "${gym.rating}",
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
+                            fontSize: 12,
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -114,12 +136,15 @@ class GymCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: _launchMaps,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: theme.colorScheme.primary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               icon: const Icon(Icons.navigation, size: 16, color: Colors.white),
-              label: const Text("Navigate", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              label: const Text(
+                "Navigate",
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
             ),
           )
         ],

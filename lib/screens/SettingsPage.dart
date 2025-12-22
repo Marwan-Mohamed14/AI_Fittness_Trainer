@@ -17,24 +17,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-     
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-      
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         title: Row(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.settings, color: Colors.deepPurple),
-            SizedBox(width: 8),
-            Text('Settings', style: TextStyle(
-                    
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-            
+          children: [
+            Icon(Icons.settings, color: theme.colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              'Settings',
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),
@@ -54,7 +57,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.language,
                     title: 'Language',
                     subtitle: 'English (US)',
-                    trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey[400], size: 16),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                      size: 16,
+                    ),
                     onTap: () {},
                   ),
                   const _Divider(),
@@ -124,7 +131,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: TextButton.icon(
                   onPressed: () {},
                   style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFF2C1E25),
+                    backgroundColor: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF2C1E25)
+                        : Colors.red[50],
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -145,7 +154,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Center(
                 child: Text(
                   'FitMind AI © 2024',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],
@@ -171,7 +183,7 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: TextStyle(
-          color: Colors.grey[400],
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           fontSize: 12,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
@@ -187,10 +199,19 @@ class _SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2230),
+        color: isDark ? const Color(0xFF1E2230) : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
+        border: !isDark
+            ? Border.all(
+                color: Colors.black.withOpacity(0.08),
+                width: 1,
+              )
+            : null,
       ),
       child: Column(children: children),
     );
@@ -227,10 +248,18 @@ class _SettingsTile extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF252A3A),
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF252A3A)
+                        : Colors.grey[200],
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, color: Colors.grey[400], size: 20),
+                  child: Icon(
+                    icon,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[400]
+                        : Colors.grey[700],
+                    size: 20,
+                  ),
                 ),
             const SizedBox(width: 16),
             Expanded(
@@ -239,8 +268,8 @@ class _SettingsTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
                     ),
                   ),
@@ -250,7 +279,7 @@ class _SettingsTile extends StatelessWidget {
                       child: Text(
                         subtitle!,
                         style: TextStyle(
-                          color: Colors.grey[400],
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           fontSize: 12,
                         ),
                       ),
@@ -287,7 +316,7 @@ class _SwitchSettingsTile extends StatelessWidget {
       trailing: Switch.adaptive(
         value: value,
         onChanged: onChanged,
-        activeColor: Colors.blue,
+        activeColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -331,7 +360,9 @@ class _Divider extends StatelessWidget {
     return Divider(
       height: 1,
       thickness: 1,
-      color: Colors.white.withOpacity(0.05),
+      color: Theme.of(context).brightness == Brightness.dark
+          ? Colors.white.withOpacity(0.05)
+          : Colors.black.withOpacity(0.08),
       indent: 60, // Indent to align with the text
     );
   }

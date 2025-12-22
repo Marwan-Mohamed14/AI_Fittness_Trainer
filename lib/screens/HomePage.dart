@@ -43,7 +43,7 @@ class HomePage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome, Alex!',
+                  'Welcome Back!',
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w600),
                 ),

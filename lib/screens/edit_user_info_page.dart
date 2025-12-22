@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/Authservice.dart';
 
 class EditUserInfoPage extends StatefulWidget {
@@ -61,13 +60,16 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     VoidCallback? onToggleVisibility,
     String? Function(String?)? validator,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: theme.colorScheme.onSurface.withOpacity(0.8),
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -75,26 +77,35 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF1E2230),
+            color: isDark ? const Color(0xFF1E2230) : theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.08),
+            ),
           ),
           child: TextFormField(
             controller: controller,
             obscureText: isPassword && (isPasswordVisible ?? false) == false,
             validator: validator,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: theme.colorScheme.onSurface),
             decoration: InputDecoration(
               hintText: label,
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
-              prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.5)),
+              hintStyle: TextStyle(
+                color: theme.colorScheme.onSurface.withOpacity(0.3),
+              ),
+              prefixIcon: Icon(
+                icon,
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+              ),
               suffixIcon: isPassword && onToggleVisibility != null
                   ? IconButton(
                       icon: Icon(
                         (isPasswordVisible ?? false)
                             ? Icons.visibility_off
                             : Icons.visibility,
-                        color: Colors.white.withOpacity(0.5),
+                        color: theme.colorScheme.onSurface.withOpacity(0.5),
                       ),
                       onPressed: onToggleVisibility,
                     )
@@ -193,16 +204,18 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: const Color(0xFF0F111A),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const BackButton(color: Colors.white),
-        title: const Text(
+        leading: BackButton(color: theme.colorScheme.onSurface),
+        title: Text(
           'Edit Account Info',
           style: TextStyle(
-            color: Colors.white,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -299,7 +312,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
+                    backgroundColor: theme.colorScheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

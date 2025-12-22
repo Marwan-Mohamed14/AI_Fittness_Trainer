@@ -19,8 +19,6 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
   
   Position? _currentPosition;
   List<GymModel> _gyms = [];
-  bool _isLoading = true;
-  String _errorMessage = '';
 
   @override
   void initState() {
@@ -36,10 +34,12 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
         _fetchGyms();
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = e.toString();
-      });
+      // Handle error silently or show snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -53,27 +53,36 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
       );
       setState(() {
         _gyms = gyms;
-        _isLoading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
+      // Handle error silently
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFF0F111A),
+      backgroundColor: theme.scaffoldBackgroundColor,
       extendBodyBehindAppBar: true, 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F111A).withOpacity(0.8),
+        backgroundColor: theme.scaffoldBackgroundColor.withOpacity(0.8),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Nearby Gyms', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Nearby Gyms',
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: Stack(
         children: [
@@ -108,7 +117,9 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
               ],
             )
           else
-            const Center(child: CircularProgressIndicator(color: Colors.deepPurple)),
+            Center(
+              child: CircularProgressIndicator(color: theme.colorScheme.primary),
+            ),
 
           DraggableScrollableSheet(
             initialChildSize: 0.35,
@@ -117,19 +128,46 @@ class _NearbyGymsScreenState extends State<NearbyGymsScreen> {
             builder: (context, scrollController) {
               return Container(
                 padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF0F111A),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                decoration: BoxDecoration(
+                  color: theme.scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  border: !isDark
+                      ? Border(
+                          top: BorderSide(
+                            color: Colors.black.withOpacity(0.08),
+                            width: 1,
+                          ),
+                        )
+                      : null,
                 ),
                 child: Column(
                   children: [
-                    Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[700], borderRadius: BorderRadius.circular(2))),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.grey[700] : Colors.grey[400],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Found Gyms", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text("${_gyms.length} results", style: const TextStyle(color: Colors.deepPurple)),
+                        Text(
+                          "Found Gyms",
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "${_gyms.length} results",
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),

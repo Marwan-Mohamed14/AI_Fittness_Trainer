@@ -31,7 +31,10 @@ void main() async {
   }
 
   Get.put(ProfileController());
-  Get.put(ThemeController());
+  final themeController = Get.put(ThemeController());
+  
+  // Load theme preference before building app
+  await themeController.loadTheme();
 
   runApp(const MyApp());
 }
@@ -62,8 +65,26 @@ Widget build(BuildContext context) {
                 secondary: Colors.deepPurpleAccent,
                 background: Color(0xFFF1F3F8),
                 surface: Colors.white,
+                onSurface: Colors.black87,
+                onBackground: Colors.black87,
               ),
               textTheme: Typography.material2021().black,
+              cardTheme: CardThemeData(
+                color: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: Colors.black.withOpacity(0.08),
+                    width: 1,
+                  ),
+                ),
+              ),
+              // Add borders to containers/cards in light mode
+              dividerTheme: DividerThemeData(
+                color: Colors.black.withOpacity(0.08),
+                thickness: 1,
+              ),
             ),
 
             // 🌙 DARK THEME

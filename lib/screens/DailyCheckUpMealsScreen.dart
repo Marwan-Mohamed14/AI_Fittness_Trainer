@@ -26,20 +26,46 @@ class DailyCheckupMealsScreen extends StatelessWidget {
 
           final dailyPlan = snapshot.data!;
 
+          // Generate meal labels dynamically
+          final mealLabels = List.generate(
+            dailyPlan.meals.length,
+            (index) {
+              final mealTitles = ['breakfast', 'lunch', 'dinner', 'snack', 'meal_5'];
+              return index < mealTitles.length ? mealTitles[index] : 'meal_${index + 1}';
+            },
+          );
+
           // Initialize meals **once after build**
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            controller.initMeals(["breakfast", "lunch", "dinner"]);
+            controller.initMeals(mealLabels);
           });
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _MealCard(meal: dailyPlan.breakfast, label: "breakfast", controller: controller),
-                const SizedBox(height: 16),
-                _MealCard(meal: dailyPlan.lunch, label: "lunch", controller: controller),
-                const SizedBox(height: 16),
-                _MealCard(meal: dailyPlan.dinner, label: "dinner", controller: controller),
+                // Dynamic meal cards
+                ...dailyPlan.meals.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final meal = entry.value;
+                  final label = mealLabels[index];
+                  
+                  // Get display title
+                  final mealTitles = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Meal 5'];
+                  final displayTitle = index < mealTitles.length 
+                      ? mealTitles[index] 
+                      : 'Meal ${index + 1}';
+                  
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: index < dailyPlan.meals.length - 1 ? 16 : 0),
+                    child: _MealCard(
+                      meal: meal,
+                      label: label,
+                      displayTitle: displayTitle,
+                      controller: controller,
+                    ),
+                  );
+                }),
               ],
             ),
           );
@@ -52,9 +78,15 @@ class DailyCheckupMealsScreen extends StatelessWidget {
 class _MealCard extends StatelessWidget {
   final MealData meal;
   final String label;
+  final String displayTitle;
   final DailyCheckupController controller;
 
-  const _MealCard({required this.meal, required this.label, required this.controller});
+  const _MealCard({
+    required this.meal,
+    required this.label,
+    required this.displayTitle,
+    required this.controller,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +130,7 @@ class _MealCard extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    label.capitalizeFirst!,
+                    displayTitle,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: theme.colorScheme.onSurface,

@@ -17,52 +17,112 @@ class MealData {
 }
 
 class DailyMealPlan {
-  final MealData breakfast;
-  final MealData lunch;
-  final MealData dinner;
+  final List<MealData> meals; // Dynamic list of meals (1-5 meals)
   final int totalCalories;
   final int totalProtein;
   final int totalCarbs;
   final int totalFat;
+  final int targetCalories; // Target calories for progress calculation
 
   DailyMealPlan({
-    required this.breakfast,
-    required this.lunch,
-    required this.dinner,
+    required this.meals,
     required this.totalCalories,
     required this.totalProtein,
     required this.totalCarbs,
     required this.totalFat,
+    this.targetCalories = 2000, // Default target
   });
 }
 
 class DietPlanParser {
-  /// Parse diet plan text into structured data
+  /// Parse diet plan text into structured data with dynamic meals
   static DailyMealPlan? parseDietPlan(String dietPlanText) {
     try {
       print('🔍 Parsing diet plan...');
+      print('📄 Diet plan text length: ${dietPlanText.length} characters');
+      print('📄 Diet plan preview (first 500 chars): ${dietPlanText.length > 500 ? dietPlanText.substring(0, 500) + "..." : dietPlanText}');
 
-      final breakfast = _extractMeal(dietPlanText, 'BREAKFAST');
-      if (breakfast == null) return null;
+      // Extract all meals dynamically (BREAKFAST, LUNCH, DINNER, SNACK, etc.)
+      final List<MealData> meals = [];
+      
+      // Try to extract common meal types
+      final mealTypes = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK', 'MEAL 1', 'MEAL 2', 'MEAL 3', 'MEAL 4', 'MEAL 5'];
+      
+      for (final mealType in mealTypes) {
+        final meal = _extractMeal(dietPlanText, mealType);
+        if (meal != null) {
+          print('✅ Found $mealType: ${meal.name}');
+          meals.add(meal);
+        } else {
+          print('⚠️ No $mealType found');
+        }
+      }
+      
+      // If no meals found with standard names, try to find any [MEAL] pattern
+      if (meals.isEmpty) {
+        final anyMealPattern = RegExp(
+          r'\[(BREAKFAST|LUNCH|DINNER|SNACK|MEAL\s*\d+)\].*?(?=\[|DAILY_TOTAL|===|$)',
+          dotAll: true,
+          caseSensitive: false,
+        );
+        
+        final matches = anyMealPattern.allMatches(dietPlanText);
+        for (final match in matches) {
+          final mealType = match.group(1) ?? '';
+          final meal = _extractMeal(dietPlanText, mealType);
+          if (meal != null && !meals.any((m) => m.name == meal.name)) {
+            meals.add(meal);
+          }
+        }
+      }
 
-      final lunch = _extractMeal(dietPlanText, 'LUNCH');
-      if (lunch == null) return null;
-
-      final dinner = _extractMeal(dietPlanText, 'DINNER');
-      if (dinner == null) return null;
+      if (meals.isEmpty) {
+        print('⚠️ No meals found in diet plan');
+        return null;
+      }
 
       final totals = _extractDailyTotals(dietPlanText);
+      
+      // Calculate totals from meals if DAILY_TOTAL is missing or incorrect
+      int calculatedCalories = meals.fold(0, (sum, meal) => sum + meal.calories);
+      int calculatedProtein = meals.fold(0, (sum, meal) => sum + meal.protein);
+      int calculatedCarbs = meals.fold(0, (sum, meal) => sum + meal.carbs);
+      int calculatedFat = meals.fold(0, (sum, meal) => sum + meal.fat);
 
-      print('✅ Diet plan parsed successfully!');
+      // Use calculated values if totals are missing or seem incorrect
+      final totalCalories = totals['calories'] ?? 0;
+      final totalProtein = totals['protein'] ?? 0;
+      final totalCarbs = totals['carbs'] ?? 0;
+      final totalFat = totals['fat'] ?? 0;
+
+      // Use calculated values if totals are 0 or significantly different (more than 20% difference)
+      final finalCalories = (totalCalories == 0 || (calculatedCalories - totalCalories).abs() > totalCalories * 0.2)
+          ? calculatedCalories
+          : totalCalories;
+      final finalProtein = (totalProtein == 0 || (calculatedProtein - totalProtein).abs() > totalProtein * 0.2)
+          ? calculatedProtein
+          : totalProtein;
+      final finalCarbs = (totalCarbs == 0 || (calculatedCarbs - totalCarbs).abs() > totalCarbs * 0.2)
+          ? calculatedCarbs
+          : totalCarbs;
+      final finalFat = (totalFat == 0 || (calculatedFat - totalFat).abs() > totalFat * 0.2)
+          ? calculatedFat
+          : totalFat;
+
+      print('✅ Diet plan parsed successfully! Found ${meals.length} meals');
+      print('📊 Totals: $finalCalories kcal | P: ${finalProtein}g | C: ${finalCarbs}g | F: ${finalFat}g');
+
+      // Calculate target calories (use total if it's reasonable, otherwise use calculated)
+      // Target should be slightly higher than current for weight loss, or match for maintenance
+      final targetCalories = finalCalories > 0 ? finalCalories : calculatedCalories;
 
       return DailyMealPlan(
-        breakfast: breakfast,
-        lunch: lunch,
-        dinner: dinner,
-        totalCalories: totals['calories'] ?? 0,
-        totalProtein: totals['protein'] ?? 0,
-        totalCarbs: totals['carbs'] ?? 0,
-        totalFat: totals['fat'] ?? 0,
+        meals: meals,
+        totalCalories: finalCalories,
+        totalProtein: finalProtein,
+        totalCarbs: finalCarbs,
+        totalFat: finalFat,
+        targetCalories: targetCalories,
       );
     } catch (e) {
       print('❌ Error parsing diet plan: $e');
@@ -75,16 +135,47 @@ class DietPlanParser {
   /// ==============================
   static MealData? _extractMeal(String text, String mealType) {
     try {
-      final mealPattern = RegExp(
-        '$mealType[^:]*:(.*?)(?:BREAKFAST|LUNCH|DINNER|DAILY|===|\\Z)',
-        dotAll: true,
-        caseSensitive: false,
-      );
+      var mealText = '';
+      
+      // For SNACK specifically, manually extract to ensure we get everything before DAILY_TOTAL
+      if (mealType.toUpperCase() == 'SNACK') {
+        final snackStart = text.toUpperCase().indexOf('[SNACK]');
+        if (snackStart != -1) {
+          final snackContentStart = text.indexOf(']', snackStart) + 1;
+          final dailyTotalStart = text.toUpperCase().indexOf('[DAILY_TOTAL]', snackContentStart);
+          if (dailyTotalStart != -1) {
+            mealText = text.substring(snackContentStart, dailyTotalStart).trim();
+            print('📝 SNACK: Manually extracted content (${mealText.length} chars)');
+          } else {
+            // Fallback: extract until end of text
+            mealText = text.substring(snackContentStart).trim();
+            print('📝 SNACK: Extracted to end of text (${mealText.length} chars)');
+          }
+        }
+      } else {
+        // For other meals, use regex pattern
+        final mealPattern = RegExp(
+          '\\[$mealType\\](.*?)(?=\\[(?:BREAKFAST|LUNCH|DINNER|SNACK|MEAL|DAILY_TOTAL|===)|\\Z)',
+          dotAll: true,
+          caseSensitive: false,
+        );
 
-      final mealMatch = mealPattern.firstMatch(text);
-      if (mealMatch == null) return null;
+        final mealMatch = mealPattern.firstMatch(text);
+        if (mealMatch == null) {
+          print('⚠️ No match found for $mealType');
+          return null;
+        }
 
-      final mealText = mealMatch.group(1) ?? '';
+        mealText = mealMatch.group(1)?.trim() ?? '';
+      }
+      
+      if (mealText.isEmpty) {
+        print('⚠️ Empty meal text for $mealType');
+        return null;
+      }
+      
+      print('📝 Extracting $mealType - meal text length: ${mealText.length}');
+      print('📝 First 300 chars: ${mealText.length > 300 ? mealText.substring(0, 300) + "..." : mealText}');
 
       // ---------- Name ----------
       String name = '';
@@ -96,12 +187,45 @@ class DietPlanParser {
 
       // ---------- Portions ----------
       String portions = '';
+      // Handle multiline portions with bullet points
+      // Pattern: "Portions:" followed by optional whitespace/newline, then capture everything until next field
+      // Updated to handle cases where Portions: is followed by newline and bullet points
       final portionMatch = RegExp(
-        r'Portions?:\s*(.+)',
+        r'Portions?:\s*\n?(.*?)(?=\n\s*(?:Calories|Protein|Carbs|Fat|Name|\[|DAILY_TOTAL))',
+        dotAll: true,
         caseSensitive: false,
       ).firstMatch(mealText);
+      
       if (portionMatch != null) {
         portions = portionMatch.group(1)?.trim() ?? '';
+        print('📝 Raw portions for $mealType: "$portions"');
+        
+        if (portions.isNotEmpty) {
+          // Clean up the portions: remove leading dashes/bullets and normalize whitespace
+          portions = portions
+              .split('\n')
+              .map((line) => line.trim())
+              .where((line) => line.isNotEmpty)
+              .map((line) => line.replaceFirst(RegExp(r'^[-•]\s*'), '')) // Remove leading dash/bullet
+              .where((line) => line.isNotEmpty) // Filter out empty lines after cleaning
+              .join(', '); // Join with commas for display
+          print('📝 Cleaned portions for $mealType: "$portions"');
+        }
+      } else {
+        print('⚠️ No portion match for $mealType');
+      }
+      
+      // Fallback: if multiline pattern didn't match, try single line
+      if (portions.isEmpty) {
+        final portionMatchSingle = RegExp(
+          r'Portions?:\s*(.+?)(?=\n\s*(?:Calories|Protein|Carbs|Fat|DAILY_TOTAL))',
+          dotAll: true,
+          caseSensitive: false,
+        ).firstMatch(mealText);
+        if (portionMatchSingle != null) {
+          portions = portionMatchSingle.group(1)?.trim() ?? '';
+          print('📝 Fallback portions for $mealType: "$portions"');
+        }
       }
 
       // ---------- Calories ----------

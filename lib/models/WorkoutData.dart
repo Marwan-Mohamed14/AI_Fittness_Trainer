@@ -270,8 +270,38 @@ class WorkoutPlanParser {
 
     print('🔍 Extracting exercises from content (${content.length} chars)');
     
+    // Stop parsing if we hit diet plan markers
+    final dietMarkers = [
+      '===DIET PLAN===',
+      '==DIET PLAN==',
+      '[BREAKFAST]',
+      '[LUNCH]',
+      '[DINNER]',
+      '[SNACK]',
+      '[MEAL',
+      'DAILY_TOTAL',
+      'Name:',
+      'Portions:',
+      'Calories:',
+      'Protein:',
+      'Carbs:',
+      'Fat:',
+    ];
+    
+    // Find where diet plan starts and cut content there
+    int cutIndex = content.length;
+    for (final marker in dietMarkers) {
+      final index = content.indexOf(marker);
+      if (index != -1 && index < cutIndex) {
+        cutIndex = index;
+      }
+    }
+    
+    // Only parse workout content, not diet content
+    final workoutContent = content.substring(0, cutIndex);
+    
     // Split content into lines for better parsing
-    final lines = content.split('\n');
+    final lines = workoutContent.split('\n');
     
     // Pattern 1: Numbered format "1. Exercise Name: X sets, Y reps" (most common format)
     // Matches: "1. Barbell Bench Press: 4 sets, 8 reps"
@@ -285,7 +315,7 @@ class WorkoutPlanParser {
     print('🔍 Looking for numbered exercises...');
     
     for (final pattern in numberedPatterns) {
-      for (final match in pattern.allMatches(content)) {
+      for (final match in pattern.allMatches(workoutContent)) {
         try {
           // Extract the exercise name - it's already clean from the regex, just trim it
           String name = match.group(1)?.trim() ?? '';
@@ -323,6 +353,14 @@ class WorkoutPlanParser {
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
       if (line.isEmpty) continue;
+      
+      // Skip if this line contains diet plan markers
+      final lowerLine = line.toLowerCase();
+      if (lowerLine.contains('name:') && 
+          (lowerLine.contains('kcal') || lowerLine.contains('protein') || lowerLine.contains('carbs') || lowerLine.contains('fat'))) {
+        print('⚠️ Skipping diet plan line: $line');
+        break; // Stop parsing, we've hit diet content
+      }
 
       // Check if this line contains an exercise name (not a header/metadata)
       if (_isExerciseNameLine(line)) {
@@ -454,9 +492,27 @@ class WorkoutPlanParser {
     ];
 
     for (final pattern in exercisePatterns2) {
-      for (final match in pattern.allMatches(content)) {
+      for (final match in pattern.allMatches(workoutContent)) {
         try {
           String name = _cleanExerciseName(match.group(1)?.trim() ?? '');
+          
+          // Skip if this looks like diet plan content
+          final lowerName = name.toLowerCase();
+          if (lowerName.contains('name:') || 
+              lowerName.contains('portions') || 
+              lowerName.contains('calories') ||
+              lowerName.contains('protein') ||
+              lowerName.contains('carbs') ||
+              lowerName.contains('fat') ||
+              lowerName.contains('oatmeal') ||
+              lowerName.contains('chicken') ||
+              lowerName.contains('salmon') ||
+              lowerName.contains('yogurt') ||
+              lowerName.contains('meal') && (lowerName.contains('kcal') || lowerName.contains('g'))) {
+            print('⚠️ Skipping diet-related content: $name');
+            continue;
+          }
+          
           String? sets;
           String? reps;
 
@@ -510,7 +566,7 @@ class WorkoutPlanParser {
       caseSensitive: false,
     );
 
-    for (final match in exercisePattern3.allMatches(content)) {
+    for (final match in exercisePattern3.allMatches(workoutContent)) {
       try {
         String name = _cleanExerciseName(match.group(1)?.trim() ?? '');
         if (name.isNotEmpty && !seenExercises.contains(name.toLowerCase())) {
@@ -561,6 +617,23 @@ class WorkoutPlanParser {
         lower.length < 3) {
       return false;
     }
+    
+    // Exclude diet plan markers
+    if (lower.startsWith('name:') ||
+        lower.contains('portions:') ||
+        lower.contains('calories:') ||
+        lower.contains('protein:') ||
+        lower.contains('carbs:') ||
+        lower.contains('fat:') ||
+        lower.contains('daily_total') ||
+        lower.contains('[breakfast]') ||
+        lower.contains('[lunch]') ||
+        lower.contains('[dinner]') ||
+        lower.contains('[snack]') ||
+        lower.contains('[meal')) {
+      return false;
+    }
+    
     // Check if it looks like an exercise name (has capital letters, reasonable length)
     return line.length >= 3 && line.length < 60 && RegExp(r'[A-Z]').hasMatch(line);
   }

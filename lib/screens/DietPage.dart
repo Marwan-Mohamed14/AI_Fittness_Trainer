@@ -12,22 +12,10 @@ class DietPlanScreen extends StatefulWidget {
 
 class _DietPlanScreenState extends State<DietPlanScreen> {
   final ProfileController _profileController = Get.find<ProfileController>();
-  DailyMealPlan? _mealPlan;
-  bool _isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadDietPlan();
-  }
-
-  Future<void> _loadDietPlan() async {
-    setState(() => _isLoading = true);
-    final plan = await _profileController.loadDietPlan();
-    setState(() {
-      _mealPlan = plan;
-      _isLoading = false;
-    });
+  Future<void> _reloadDietPlan() async {
+    // Force rebuild by calling setState with a new future
+    setState(() {});
   }
 
   @override
@@ -54,13 +42,16 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh, color: theme.colorScheme.primary),
-            onPressed: _loadDietPlan,
+            onPressed: _reloadDietPlan,
             tooltip: 'Refresh',
           ),
         ],
       ),
-      body: _isLoading
-          ? Center(
+      body: FutureBuilder<DailyMealPlan?>(
+        future: _profileController.loadDietPlan(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -72,72 +63,85 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
                   ),
                 ],
               ),
-            )
-          : _mealPlan == null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.restaurant_menu_outlined, size: 64, color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No diet plan found',
-                        style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onBackground),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Complete your profile to generate one',
-                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.7)),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: () => Get.toNamed('/age-screen'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.primary,
-                        ),
-                        child: Text('Set Up Profile', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
-                      ),
-                    ],
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data == null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.restaurant_menu_outlined, size: 64, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No diet plan found',
+                    style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onBackground),
                   ),
-                )
-              : SafeArea(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _DailyGoalCard(mealPlan: _mealPlan!),
-                        const SizedBox(height: 24),
-                        _MealCard(
-                          title: 'Breakfast',
-                          icon: Icons.wb_sunny_outlined,
-                          meal: _mealPlan!.breakfast,
-                        ),
-                        const SizedBox(height: 16),
-                        _MealCard(
-                          title: 'Lunch',
-                          icon: Icons.lunch_dining_outlined,
-                          meal: _mealPlan!.lunch,
-                        ),
-                        const SizedBox(height: 16),
-                        _MealCard(
-                          title: 'Dinner',
-                          icon: Icons.dinner_dining_outlined,
-                          meal: _mealPlan!.dinner,
-                        ),
-                        const SizedBox(height: 24),
-                        _NotesCard(),
-                      ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'Complete your profile to generate one',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onBackground.withOpacity(0.7)),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => Get.toNamed('/age-screen'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
                     ),
+                    child: Text('Set Up Profile', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
                   ),
-                ),
+                ],
+              ),
+            );
+          }
+
+          final mealPlan = snapshot.data!;
+
+          return SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _DailyGoalCard(mealPlan: mealPlan),
+                  const SizedBox(height: 24),
+                  // Dynamic meal cards
+                  ...mealPlan.meals.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final meal = entry.value;
+                    final mealTitles = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Meal 5'];
+                    final mealIcons = [
+                      Icons.wb_sunny_outlined,
+                      Icons.lunch_dining_outlined,
+                      Icons.dinner_dining_outlined,
+                      Icons.fastfood_outlined,
+                      Icons.restaurant_outlined,
+                    ];
+                    
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: index < mealPlan.meals.length - 1 ? 16 : 0),
+                      child: _MealCard(
+                        title: index < mealTitles.length ? mealTitles[index] : 'Meal ${index + 1}',
+                        icon: index < mealIcons.length ? mealIcons[index] : Icons.restaurant_outlined,
+                        meal: meal,
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 24),
+                  _NotesCard(),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
 
 // ============================
-// Daily Goal Card
+// Daily Goal Card with Progress Bars
 // ============================
 class _DailyGoalCard extends StatelessWidget {
   final DailyMealPlan mealPlan;
@@ -147,6 +151,13 @@ class _DailyGoalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final targetCalories = mealPlan.targetCalories;
+    final currentCalories = mealPlan.totalCalories;
+
+    // Macro targets (can be adjusted based on goals)
+    final proteinTarget = (targetCalories * 0.3 / 4).round(); // 30% of calories from protein
+    final carbsTarget = (targetCalories * 0.4 / 4).round(); // 40% of calories from carbs
+    final fatTarget = (targetCalories * 0.3 / 9).round(); // 30% of calories from fat
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -171,17 +182,41 @@ class _DailyGoalCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Today\'s Nutrition',
-              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onPrimary.withOpacity(0.7))),
-          const SizedBox(height: 8),
-          Text('${mealPlan.totalCalories} kcal',
-              style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onPrimary)),
+          Text('Daily Goal',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onPrimary.withOpacity(0.9),
+                fontWeight: FontWeight.bold,
+              )),
+          const SizedBox(height: 12),
+          Text('$currentCalories / $targetCalories kcal',
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onPrimary,
+              )),
           const SizedBox(height: 24),
-          _MacroRow(label: 'Protein', grams: '${mealPlan.totalProtein}g', color: Colors.blue),
+          _MacroProgressBar(
+            label: 'Carbs',
+            current: mealPlan.totalCarbs,
+            target: carbsTarget,
+            color: Colors.green,
+            onPrimary: theme.colorScheme.onPrimary,
+          ),
           const SizedBox(height: 16),
-          _MacroRow(label: 'Carbs', grams: '${mealPlan.totalCarbs}g', color: Colors.green),
+          _MacroProgressBar(
+            label: 'Protein',
+            current: mealPlan.totalProtein,
+            target: proteinTarget,
+            color: Colors.blue,
+            onPrimary: theme.colorScheme.onPrimary,
+          ),
           const SizedBox(height: 16),
-          _MacroRow(label: 'Fat', grams: '${mealPlan.totalFat}g', color: Colors.orange),
+          _MacroProgressBar(
+            label: 'Fat',
+            current: mealPlan.totalFat,
+            target: fatTarget,
+            color: Colors.orange,
+            onPrimary: theme.colorScheme.onPrimary,
+          ),
         ],
       ),
     );
@@ -189,37 +224,66 @@ class _DailyGoalCard extends StatelessWidget {
 }
 
 // ============================
-// Macro Row
+// Macro Progress Bar
 // ============================
-class _MacroRow extends StatelessWidget {
+class _MacroProgressBar extends StatelessWidget {
   final String label;
-  final String grams;
+  final int current;
+  final int target;
   final Color color;
+  final Color onPrimary;
 
-  const _MacroRow({required this.label, required this.grams, required this.color});
+  const _MacroProgressBar({
+    required this.label,
+    required this.current,
+    required this.target,
+    required this.color,
+    required this.onPrimary,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final progress = target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: onPrimary.withOpacity(0.9),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              '${current}g',
+              style: TextStyle(
+                color: onPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: progress,
+            minHeight: 8,
+            backgroundColor: onPrimary.withOpacity(0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
-        const SizedBox(width: 12),
-        Text(label, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onPrimary.withOpacity(0.8))),
-        const Spacer(),
-        Text(grams, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onPrimary)),
       ],
     );
   }
 }
+
 
 // ============================
 // Meal Card
@@ -230,6 +294,32 @@ class _MealCard extends StatelessWidget {
   final MealData meal;
 
   const _MealCard({required this.title, required this.icon, required this.meal});
+
+  // Parse food items from portions string
+  List<Map<String, String>> _parseFoodItems(String portions) {
+    if (portions.isEmpty) return [];
+    
+    // Split by common separators (comma, newline, semicolon)
+    final items = portions
+        .split(RegExp(r'[,;\n]'))
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    
+    return items.map((item) {
+      // Try to extract calories if present (e.g., "150g chicken (250 kcal)")
+      final calorieMatch = RegExp(r'\((\d+)\s*kcal\)').firstMatch(item);
+      final calories = calorieMatch != null ? '${calorieMatch.group(1)} kcal' : '';
+      
+      // Remove calorie info from name
+      final name = item.replaceAll(RegExp(r'\(.*?kcal.*?\)'), '').trim();
+      
+      return {
+        'name': name,
+        'calories': calories,
+      };
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -273,9 +363,31 @@ class _MealCard extends StatelessWidget {
           const SizedBox(height: 12),
           Divider(color: theme.colorScheme.onSurface.withOpacity(0.1)),
           const SizedBox(height: 12),
-          Text(meal.name, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
-          const SizedBox(height: 8),
-          Text(meal.portions, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7))),
+          // Parse portions into individual food items
+          ..._parseFoodItems(meal.portions).map((foodItem) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      foodItem['name'] ?? '',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    foodItem['calories'] ?? '',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,

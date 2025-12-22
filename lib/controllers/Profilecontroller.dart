@@ -243,13 +243,27 @@ Future<void>generateAiPlans() async{
 
      print('✅ Step 2 Complete: Plans generated');
     print('\n🎉 SUCCESS! Your personalized plans are ready!\n');
+    
+    // Debug: Check if plans were generated
+    print('📊 Diet plan length: ${plans['diet']?.length ?? 0} characters');
+    print('📊 Workout plan length: ${plans['workout']?.length ?? 0} characters');
+    print('📄 Diet plan preview (first 200 chars): ${plans['diet']?.substring(0, plans['diet']!.length > 200 ? 200 : plans['diet']!.length) ?? "EMPTY"}');
+    print('📄 Workout plan preview (first 200 chars): ${plans['workout']?.substring(0, plans['workout']!.length > 200 ? 200 : plans['workout']!.length) ?? "EMPTY"}');
 
      print('\n🔄 Step 3: Saving plans to Supabase...');
     userprofile.dietPlan = plans['diet'];
     userprofile.workoutPlan = plans['workout'];
+    
+    // Verify plans before saving
+    if (userprofile.dietPlan == null || userprofile.dietPlan!.isEmpty) {
+      print('⚠️ WARNING: Diet plan is empty!');
+    }
+    if (userprofile.workoutPlan == null || userprofile.workoutPlan!.isEmpty) {
+      print('⚠️ WARNING: Workout plan is empty!');
+    }
 
     await _profileService.saveProfile(userprofile);
-    print('Plans saved to Supabase!');
+    print('✅ Plans saved to Supabase!');
 
     
     Get.snackbar(
@@ -281,7 +295,24 @@ Future<DailyMealPlan?> loadDietPlan()async{
       return null;
     } 
   print('diet plan found, parsing...');
-    return DietPlanParser.parseDietPlan(profile.dietPlan!);
+    final mealPlan = DietPlanParser.parseDietPlan(profile.dietPlan!);
+    
+    // Calculate target calories based on user profile if available
+    if (mealPlan != null && profile.weight != null && profile.targetWeight != null) {
+      // Simple target calculation: use the total calories from plan as target
+      // Or calculate based on goal (this can be enhanced)
+      final targetCalories = mealPlan.totalCalories;
+      return DailyMealPlan(
+        meals: mealPlan.meals,
+        totalCalories: mealPlan.totalCalories,
+        totalProtein: mealPlan.totalProtein,
+        totalCarbs: mealPlan.totalCarbs,
+        totalFat: mealPlan.totalFat,
+        targetCalories: targetCalories,
+      );
+    }
+    
+    return mealPlan;
   } catch (e) {
     print('❌ Error loading diet plan: $e');
     return null;

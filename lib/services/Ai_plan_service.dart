@@ -17,13 +17,11 @@ class AiPlanService {
     print('   - Location: ${userData.trainingLocation}');
     
     try {
-      // Build the prompt
       final prompt = _buildWeeklyPlanPrompt(userData);
       
-      // Call Groq AI
+      
       final response = await _callGroqAPI(prompt);
       
-      // Parse response into diet and workout sections
       final plans = _parsePlans(response);
       
       print('\n✅ Plans generated successfully!');
@@ -42,10 +40,8 @@ class AiPlanService {
     }
   }
 
-  /// FUNCTION 2: Build the AI prompt
-  /// WHY: This creates a detailed instruction for the AI based on user data
+  
 String _buildWeeklyPlanPrompt(OnboardingData userData) {
-  // Calculate daily calorie needs based on user data
   final baseCalories = _calculateBaseCalories(userData);
   final mealsPerDay = userData.mealsPerDay ?? 3;
   
@@ -93,7 +89,6 @@ START YOUR RESPONSE WITH "===DIET PLAN===":
 ''';
 }
 
-  /// Generate meal format based on number of meals
   String _generateMealFormat(int mealsPerDay) {
     final mealNames = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK', 'MEAL 5'];
     final format = StringBuffer();
@@ -113,45 +108,38 @@ START YOUR RESPONSE WITH "===DIET PLAN===":
     return format.toString();
   }
 
-  /// Calculate base daily calories based on user profile
   int _calculateBaseCalories(OnboardingData userData) {
-    // Simple BMR calculation (Mifflin-St Jeor Equation approximation)
     final age = userData.age ?? 30;
     final weight = userData.weight ?? 70;
     final height = userData.height ?? 170;
     final isMale = userData.gender?.toLowerCase() == 'male';
     
-    // Base BMR
     double bmr = (10 * weight) + (6.25 * height) - (5 * age) + (isMale ? 5 : -161);
     
-    // Activity multiplier based on training days
-    double activityMultiplier = 1.2; // Sedentary base
+    double activityMultiplier = 1.2; 
     if (userData.trainingDays != null) {
       if (userData.trainingDays! >= 5) {
-        activityMultiplier = 1.725; // Very active
+        activityMultiplier = 1.725; 
       } else if (userData.trainingDays! >= 3) {
-        activityMultiplier = 1.55; // Moderately active
+        activityMultiplier = 1.55; 
       } else if (userData.trainingDays! >= 1) {
-        activityMultiplier = 1.375; // Lightly active
+        activityMultiplier = 1.375; 
       }
     }
     
-    // Adjust for goal
     double goalAdjustment = 1.0;
     final goal = userData.workoutGoal?.toLowerCase() ?? '';
     if (goal.contains('lose')) {
-      goalAdjustment = 0.85; // 15% deficit for weight loss
+      goalAdjustment = 0.85; 
     } else if (goal.contains('build') || goal.contains('gain')) {
-      goalAdjustment = 1.15; // 15% surplus for muscle gain
+      goalAdjustment = 1.15; 
     }
     
     final dailyCalories = (bmr * activityMultiplier * goalAdjustment).round();
     
-    // Ensure reasonable range
     return dailyCalories.clamp(1200, 4000);
   }
-  /// FUNCTION 3: Call Groq AI API
-  /// WHY: This sends the prompt to Groq and gets the AI response
+  
   Future<String> _callGroqAPI(String prompt) async {
     print('📡 Calling Groq AI API...');
     
@@ -188,13 +176,11 @@ START YOUR RESPONSE WITH "===DIET PLAN===":
     }
   }
 
-  /// FUNCTION 4: Parse AI response into separate plans
-  /// WHY: The AI returns both plans together, we need to split them
+ 
   Map<String, String> _parsePlans(String response) {
   print('🔍 Parsing AI response...');
   print('📄 Response length: ${response.length} characters');
   
-  // Find the positions of the markers
   final dietMarker = RegExp(r'===\s*DIET\s*PLAN\s*===', caseSensitive: false);
   final workoutMarker = RegExp(r'===\s*WORKOUT\s*PLAN\s*===', caseSensitive: false);
   
@@ -204,12 +190,11 @@ START YOUR RESPONSE WITH "===DIET PLAN===":
   if (dietMarkerMatch != null && workoutMarkerMatch != null) {
     print('✅ Found both markers!');
     
-    // Extract diet plan (from DIET PLAN marker to WORKOUT PLAN marker)
     final dietStart = dietMarkerMatch.end;
     final workoutStart = workoutMarkerMatch.start;
     final dietContent = response.substring(dietStart, workoutStart).trim();
     
-    // Extract workout plan (from WORKOUT PLAN marker to end)
+    
     final workoutContent = response.substring(workoutMarkerMatch.end).trim();
     
     print('📊 Diet plan extracted: ${dietContent.length} characters');
@@ -223,7 +208,6 @@ START YOUR RESPONSE WITH "===DIET PLAN===":
     };
   }
   
-  // Fallback: Try alternative markers
   final altDietMarker = RegExp(r'DIET\s*PLAN', caseSensitive: false);
   final altWorkoutMarker = RegExp(r'WORKOUT\s*PLAN', caseSensitive: false);
   
@@ -246,8 +230,7 @@ START YOUR RESPONSE WITH "===DIET PLAN===":
   print('⚠️ Markers not found!');
   print('📄 Response preview (first 500 chars): ${response.length > 500 ? response.substring(0, 500) + "..." : response}');
   
-  // If no markers found, try to split by common patterns
-  // This is a fallback - ideally the AI should always use the markers
+  
   return {
     'diet': response,
     'workout': 'Could not separate workout plan - markers not found in response',

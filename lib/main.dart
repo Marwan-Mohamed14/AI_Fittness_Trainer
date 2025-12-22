@@ -20,6 +20,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:ai_personal_trainer/controllers/notificationcontroller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +34,9 @@ void main() async {
 
   Get.put(ProfileController());
   final themeController = Get.put(ThemeController());
-  
+    Get.put(ProfileController());
+ 
+  Get.put(NotificationController(), permanent: true);
   // Load theme preference before building app
   await themeController.loadTheme();
 

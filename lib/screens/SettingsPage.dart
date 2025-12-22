@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/controllers/themecontroller.dart';
+import 'package:ai_personal_trainer/controllers/notificationcontroller.dart';
 import 'package:ai_personal_trainer/services/Authservice.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -12,51 +13,32 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final AuthService _authService = AuthService();
-  bool _isLoggingOut = false;
 
+final NotificationController notificationController =
+    Get.find<NotificationController>();
+
+
+  bool _isLoggingOut = false;
   bool _mealReminders = true;
   bool _workoutPrompts = true;
-  bool _hydrationTracking = false;
 
+  // ================= LOGOUT =================
   Future<void> _handleLogout() async {
-    // Show confirmation dialog
     final shouldLogout = await Get.dialog<bool>(
       AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Text(
-          'Log Out',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to log out?',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-          ),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Log Out'),
+        content: const Text('Are you sure you want to log out?'),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-              ),
-            ),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
             child: const Text(
               'Log Out',
-              style: TextStyle(
-                color: Color(0xFFD63D47),
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -65,37 +47,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (shouldLogout != true) return;
 
-    setState(() {
-      _isLoggingOut = true;
-    });
+    setState(() => _isLoggingOut = true);
 
     try {
       await _authService.signOut();
-      
-      // Navigate to login page and clear navigation stack
       Get.offAllNamed('/login');
-      
-      // Show success message after navigation
-      Future.delayed(const Duration(milliseconds: 300), () {
-        Get.snackbar(
-          'Logged Out',
-          'You have been successfully logged out.',
-          backgroundColor: Colors.green.withOpacity(0.7),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 2),
-        );
-      });
     } catch (e) {
-      setState(() {
-        _isLoggingOut = false;
-      });
-      
+      setState(() => _isLoggingOut = false);
       Get.snackbar(
         'Error',
-        'Failed to log out: ${e.toString()}',
-        backgroundColor: Colors.red.withOpacity(0.7),
+        e.toString(),
+        backgroundColor: Colors.red,
         colorText: Colors.white,
-        duration: const Duration(seconds: 3),
       );
     }
   }
@@ -103,7 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -119,152 +82,114 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'Settings',
               style: TextStyle(
                 color: theme.colorScheme.onSurface,
-                fontSize: 28,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
       ),
-       
-    
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ================= GENERAL =================
-              const _SectionHeader(title: 'GENERAL'),
-              _SettingsCard(
-                children: [
-                  _SettingsTile(
-                    icon: Icons.language,
-                    title: 'Language',
-                    subtitle: 'English (US)',
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                      size: 16,
-                    ),
-                    onTap: () {},
-                  ),
-                  const _Divider(),
-             GetBuilder<ThemeController>(
-  builder: (themeController) {
-    return _SwitchSettingsTile(
-      icon: Icons.dark_mode_outlined,
-      title: 'Dark Mode',
-      value: themeController.isDarkMode,
-      onChanged: themeController.toggleTheme,
-    );
-  },
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ================= GENERAL =================
+            const _SectionHeader(title: 'GENERAL'),
+            _SettingsCard(
+              children: [
+                GetBuilder<ThemeController>(
+                  builder: (themeController) {
+                    return _SwitchSettingsTile(
+                      icon: Icons.dark_mode_outlined,
+                      title: 'Dark Mode',
+                      value: themeController.isDarkMode,
+                      onChanged: themeController.toggleTheme,
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // ================= SMART NOTIFICATIONS =================
+            const _SectionHeader(title: 'SMART NOTIFICATIONS'),
+            _SettingsCard(
+              children: [
+                _SwitchSettingsTile(
+                  icon: Icons.restaurant,
+                  title: 'Meal Reminders',
+                  value: _mealReminders,
+                  onChanged: (v) => setState(() => _mealReminders = v),
+                ),
+                const _Divider(),
+                _SwitchSettingsTile(
+                  icon: Icons.fitness_center,
+                  title: 'Workout Reminders',
+                  value: _workoutPrompts,
+                  onChanged: (v) => setState(() => _workoutPrompts = v),
+                ),
+                const _Divider(),
+
+Obx(
+  () => _SwitchSettingsTile(
+    icon: Icons.water_drop_outlined,
+    title: 'Hydration Reminders',
+    value: notificationController.hydrationEnabled.value,
+    onChanged: notificationController.toggleHydration,
+  ),
 ),
 
+              ],
+            ),
 
-                ],
-              ),
-              const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
-              // ================= SMART NOTIFICATIONS =================
-              const _SectionHeader(title: 'SMART NOTIFICATIONS'),
-              _SettingsCard(
-                children: [
-                  _SwitchSettingsTile(
-                    icon: Icons.restaurant,
-                    title: 'Meal Reminders',
-                    value: _mealReminders,
-                    onChanged: (val) => setState(() => _mealReminders = val),
-                  ),
-                  const _Divider(),
-                  _SwitchSettingsTile(
-                    icon: Icons.fitness_center,
-                    title: 'Workout Reminders',
-                    value: _workoutPrompts,
-                    onChanged: (val) => setState(() => _workoutPrompts = val),
-                  ),
-                  const _Divider(),
-                  _SwitchSettingsTile(
-                    icon: Icons.water_drop_outlined,
-                    title: 'Hydration Reminders',
-                    value: _hydrationTracking,
-                    onChanged: (val) => setState(() => _hydrationTracking = val),
-                  ),
-                  const _Divider(),
-                  
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // ================= SYSTEM =================
-              const _SectionHeader(title: 'SYSTEM'),
-              _SettingsCard(
-                children: [
-                  _SettingsTile(
-                    icon: Icons.dns_outlined,
-                    title: 'AI Engine Status',
-                    subtitle: 'v2.4.0 (Latest)',
-                    trailing: const _AIEngineStatusBadge(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-
-              // ================= LOG OUT =================
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: _isLoggingOut ? null : _handleLogout,
-                  style: TextButton.styleFrom(
-                    backgroundColor: Theme.of(context).brightness == Brightness.dark
-                        ? const Color(0xFF2C1E25)
-                        : Colors.red[50],
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  icon: _isLoggingOut
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFFD63D47),
-                          ),
-                        )
-                      : const Icon(Icons.logout, color: Color(0xFFD63D47)),
-                  label: Text(
-                    _isLoggingOut ? 'Logging out...' : 'Log Out',
-                    style: const TextStyle(
-                      color: Color(0xFFD63D47),
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+            // ================= LOG OUT =================
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: _isLoggingOut ? null : _handleLogout,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                icon: _isLoggingOut
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.logout, color: Colors.red),
+                label: Text(
+                  _isLoggingOut ? 'Logging out...' : 'Log Out',
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              Center(
-                child: Text(
-                  'FitMind AI © 2024',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                    fontSize: 12,
-                  ),
+            ),
+
+            const SizedBox(height: 24),
+            Center(
+              child: Text(
+                'FitMind AI © 2024',
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  fontSize: 12,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// ==========================================
-// Widgets
-// ==========================================
+// ================= UI COMPONENTS =================
 
 class _SectionHeader extends StatelessWidget {
   final String title;
@@ -273,14 +198,14 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
         style: TextStyle(
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           fontSize: 12,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         ),
       ),
     );
@@ -293,107 +218,14 @@ class _SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E2230) : const Color(0xFFFAFBFC),
         borderRadius: BorderRadius.circular(16),
-        border: !isDark
-            ? Border.all(
-                color: Colors.black.withOpacity(0.15), // More visible border
-                width: 1.5, // Thicker border
-              )
-            : null,
-        boxShadow: !isDark
-            ? [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
       ),
       child: Column(children: children),
-    );
-  }
-}
-
-class _SettingsTile extends StatelessWidget {
-  final IconData? icon;
-  final Widget? leadingIconWidget;
-  final String title;
-  final String? subtitle;
-  final Widget trailing;
-  final VoidCallback? onTap;
-
-  const _SettingsTile({
-    this.icon,
-    this.leadingIconWidget,
-    required this.title,
-    this.subtitle,
-    required this.trailing,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            leadingIconWidget ??
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? const Color(0xFF252A3A)
-                        : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.grey[400]
-                        : Colors.grey[700],
-                    size: 20,
-                  ),
-                ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 16,
-                    ),
-                  ),
-                  if (subtitle != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        subtitle!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            trailing,
-          ],
-        ),
-      ),
     );
   }
 }
@@ -413,43 +245,13 @@ class _SwitchSettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _SettingsTile(
-      icon: icon,
-      title: title,
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
       trailing: Switch.adaptive(
         value: value,
         onChanged: onChanged,
         activeColor: Theme.of(context).colorScheme.primary,
-      ),
-    );
-  }
-}
-
-class _AIEngineStatusBadge extends StatelessWidget {
-  const _AIEngineStatusBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.circle, color: Colors.green, size: 8),
-          SizedBox(width: 6),
-          Text(
-            'Connected',
-            style: TextStyle(
-              color: Colors.green,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -463,10 +265,10 @@ class _Divider extends StatelessWidget {
     return Divider(
       height: 1,
       thickness: 1,
+      indent: 60,
       color: Theme.of(context).brightness == Brightness.dark
           ? Colors.white.withOpacity(0.05)
           : Colors.black.withOpacity(0.08),
-      indent: 60, // Indent to align with the text
     );
   }
 }

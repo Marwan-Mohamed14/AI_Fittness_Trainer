@@ -3,9 +3,130 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class NotificationController extends GetxController {
+
   /// ================= Hydration Reminder =================
   RxBool hydrationEnabled = false.obs;
   Timer? _hydrationTimer;
+
+  RxBool mealEnabled = true.obs;
+  RxBool workoutEnabled = true.obs;
+  Timer? _mealTimer;
+  Timer? _workoutTimer;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _startMealReminder();
+    _startWorkoutReminder();
+  }
+  
+  Duration _calculateDelayUntil(int targetHour, int targetMinute) {
+    final now = DateTime.now();
+    var scheduledTime = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      targetHour,
+      targetMinute,
+    );
+
+    // If the scheduled time has already passed today, schedule for tomorrow
+    if (scheduledTime.isBefore(now)) {
+      scheduledTime = scheduledTime.add(const Duration(days: 1));
+    }
+
+    return scheduledTime.difference(now);
+  }
+
+void toogleMeal(bool value) {
+    mealEnabled.value = value;
+
+    if (value) {
+      _startMealReminder();
+    } else {
+      _stopMealReminder();
+    }
+  }
+  void _startMealReminder() {
+    if (_mealTimer != null) return;
+
+    final delay = _calculateDelayUntil(11, 0);
+    
+    _mealTimer = Timer(delay, () {
+      _showMealNotification();
+      
+      _mealTimer = Timer.periodic(
+        const Duration(hours: 24),
+        (_) => _showMealNotification(),
+      );
+    });
+  }
+  void _stopMealReminder() {
+    _mealTimer?.cancel();
+    _mealTimer = null;
+  }
+  void _showMealNotification() {
+    if (!mealEnabled.value) return;
+
+    Get.snackbar(
+      '🍽️ Meal Time!',
+      'dont forget to log your meals today!',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.orange.withOpacity(0.9),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(12),
+      duration: const Duration(seconds: 4),
+    );
+  }
+void toogleWorkout(bool value) {
+    workoutEnabled.value = value;
+
+    if (value) {
+      _startWorkoutReminder();
+    } else {
+      _stopWorkoutReminder();
+    }
+  }
+  void _startWorkoutReminder() {
+    if (_workoutTimer != null) return;
+
+    // Schedule for 12 PM (noon) daily
+    final delay = _calculateDelayUntil(12, 0);
+    
+    // First notification after calculated delay
+    _workoutTimer = Timer(delay, () {
+      _showWorkoutNotification();
+      
+      _workoutTimer = Timer.periodic(
+        const Duration(hours: 24),
+        (_) => _showWorkoutNotification(),
+      );
+    });
+  }
+  void _stopWorkoutReminder() {
+    _workoutTimer?.cancel();
+    _workoutTimer = null;
+  }
+  void _showWorkoutNotification() {
+    if (!workoutEnabled.value) return;
+
+    Get.snackbar(
+      '🏋️ Workout Time!',
+      'adont forget to log your workouts today!',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.purple.withOpacity(0.9),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(12),
+      duration: const Duration(seconds: 4),
+    );
+  }
+
+
+
+
+
+
+
 
   /// Toggle method callable from UI
   void toggleHydration(bool value) {
@@ -83,12 +204,13 @@ class NotificationController extends GetxController {
     );
   }
 
-  @override
+ @override
   void onClose() {
     _hydrationTimer?.cancel();
+    _mealTimer?.cancel();
+    _workoutTimer?.cancel();
     super.onClose();
   }
 
-  // ================= Future Reminder Functions =================
-  // Add more functions here for Meal, Workout, Sleep, etc.
+  
 }

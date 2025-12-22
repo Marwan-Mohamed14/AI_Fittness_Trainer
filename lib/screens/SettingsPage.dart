@@ -121,15 +121,22 @@ final NotificationController notificationController =
                   icon: Icons.restaurant,
                   title: 'Meal Reminders',
                   value: _mealReminders,
-                  onChanged: (v) => setState(() => _mealReminders = v),
+                  onChanged: (v) { setState(() => _mealReminders = v);
+                  notificationController.toogleMeal(v);
+                  }
+
                 ),
                 const _Divider(),
                 _SwitchSettingsTile(
-                  icon: Icons.fitness_center,
-                  title: 'Workout Reminders',
-                  value: _workoutPrompts,
-                  onChanged: (v) => setState(() => _workoutPrompts = v),
+  icon: Icons.fitness_center,
+  title: 'Workout Reminders',
+  value: _workoutPrompts,
+  onChanged: (v) {
+    setState(() => _workoutPrompts = v);
+    notificationController.toogleWorkout(v);
+  },
                 ),
+                
                 const _Divider(),
 
 Obx(

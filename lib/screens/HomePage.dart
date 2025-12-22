@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../controllers/dailycheckupcontroller.dart';
 import 'edit_user_info_page.dart';
@@ -15,6 +16,12 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     Get.put(DailyCheckupController()); // Ensure controller is initialized
+    
+    // Get user's first name - simpler approach
+    final user = Supabase.instance.client.auth.currentUser;
+    final firstName = (user?.userMetadata?['username'] as String? ?? 
+                      user?.email?.split('@').first ?? 
+                      'User').split(' ').first;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
@@ -43,7 +50,7 @@ class HomePage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome Back!',
+                  'Welcome Back, $firstName!',
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.w600),
                 ),

@@ -3,19 +3,15 @@ import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Authcontroller extends GetxController {
-  // TextEditingControllers
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // For showing loading spinner
   RxBool isLoading = false.obs;
 
   final supabase = Supabase.instance.client;
 
-  // ---------------------------
-  // SIGN UP
-  // ---------------------------
+ 
   Future<void> signUp() async {
     final username = usernameController.text.trim();
     final email = emailController.text.trim();

@@ -147,13 +147,13 @@ class _UpdatePlansState extends State<UpdatePlans>
                 ],
               )
             : null,
-        color: !isDark ? theme.colorScheme.surface : null,
+        color: !isDark ? const Color(0xFFFAFBFC) : null, // Slightly off-white in light mode
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
               ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.08),
-          width: 1,
+              : Colors.black.withOpacity(0.15), // More visible border in light mode
+          width: isDark ? 1 : 1.5, // Thicker border in light mode
         ),
         boxShadow: isDark
             ? [
@@ -165,9 +165,14 @@ class _UpdatePlansState extends State<UpdatePlans>
               ]
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
+                  color: Colors.black.withOpacity(0.08), // More visible shadow
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
                 ),
               ],
       ),
@@ -230,12 +235,13 @@ class _UpdatePlansState extends State<UpdatePlans>
     
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F111A) : theme.colorScheme.surface,
+        color: isDark ? const Color(0xFF0F111A) : const Color(0xFFFAFBFC),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark
               ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.08),
+              : Colors.black.withOpacity(0.15), // More visible border
+          width: isDark ? 1 : 1.5, // Thicker in light mode
         ),
       ),
       child: TextField(
@@ -280,15 +286,15 @@ class _UpdatePlansState extends State<UpdatePlans>
                   ],
                 )
               : null,
-          color: isSelected ? null : (isDark ? const Color(0xFF0F111A) : theme.colorScheme.surface),
+          color: isSelected ? null : (isDark ? const Color(0xFF0F111A) : const Color(0xFFFAFBFC)),
           borderRadius: BorderRadius.circular(25),
           border: Border.all(
             color: isSelected
                 ? theme.colorScheme.primary.withOpacity(0.5)
                 : (isDark
                     ? Colors.white.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.08)),
-            width: isSelected ? 2 : 1,
+                    : Colors.black.withOpacity(0.15)), // More visible border
+            width: isSelected ? 2 : (isDark ? 1 : 1.5), // Thicker in light mode
           ),
         ),
         child: Text(
@@ -778,7 +784,7 @@ class _UpdatePlansState extends State<UpdatePlans>
                             Icon(Icons.save, color: Colors.white),
                             SizedBox(width: 8),
                             Text(
-                              'Save All Changes',
+                              'Regenerate Plans & Save',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,

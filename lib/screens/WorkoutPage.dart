@@ -171,6 +171,8 @@ class _WeeklyFocusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -178,12 +180,27 @@ class _WeeklyFocusCard extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             theme.colorScheme.primary.withOpacity(0.8),
-            theme.colorScheme.surface
+            isDark ? theme.colorScheme.surface : const Color(0xFFFAFBFC),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
+        border: !isDark
+            ? Border.all(
+                color: Colors.black.withOpacity(0.15),
+                width: 1.5,
+              )
+            : null,
+        boxShadow: !isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : null,
       ),
       child: Stack(
         children: [
@@ -326,12 +343,29 @@ class _ExerciseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: isDark ? theme.colorScheme.surface : const Color(0xFFFAFBFC),
         borderRadius: BorderRadius.circular(16),
+        border: !isDark
+            ? Border.all(
+                color: Colors.black.withOpacity(0.15),
+                width: 1.5,
+              )
+            : null,
+        boxShadow: !isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -204,13 +204,22 @@ class _SettingsCard extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2230) : theme.colorScheme.surface,
+        color: isDark ? const Color(0xFF1E2230) : const Color(0xFFFAFBFC),
         borderRadius: BorderRadius.circular(16),
         border: !isDark
             ? Border.all(
-                color: Colors.black.withOpacity(0.08),
-                width: 1,
+                color: Colors.black.withOpacity(0.15), // More visible border
+                width: 1.5, // Thicker border
               )
+            : null,
+        boxShadow: !isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ]
             : null,
       ),
       child: Column(children: children),

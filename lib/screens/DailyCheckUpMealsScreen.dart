@@ -68,13 +68,27 @@ class _MealCard extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: done ? Colors.greenAccent.withOpacity(0.3) : theme.colorScheme.surface,
+            color: done
+                ? Colors.greenAccent.withOpacity(0.3)
+                : (theme.brightness == Brightness.dark
+                    ? theme.colorScheme.surface
+                    : const Color(0xFFFAFBFC)), // Better contrast in light mode
             borderRadius: BorderRadius.circular(20),
+            border: theme.brightness == Brightness.light
+                ? Border.all(
+                    color: done
+                        ? Colors.green.withOpacity(0.3)
+                        : Colors.black.withOpacity(0.15),
+                    width: 1.5,
+                  )
+                : null,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(
+                  theme.brightness == Brightness.dark ? 0.05 : 0.08,
+                ),
+                blurRadius: theme.brightness == Brightness.dark ? 8 : 6,
+                offset: Offset(0, theme.brightness == Brightness.dark ? 4 : 2),
               ),
             ],
           ),
@@ -83,10 +97,18 @@ class _MealCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(label.capitalizeFirst!, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    label.capitalizeFirst!,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
                   const Spacer(),
-                  Icon(done ? Icons.check_circle : Icons.radio_button_off,
-                      color: done ? Colors.green : Colors.grey),
+                  Icon(
+                    done ? Icons.check_circle : Icons.radio_button_off,
+                    color: done ? Colors.green : Colors.grey,
+                  ),
                 ],
               ),
               const SizedBox(height: 12),

@@ -193,11 +193,28 @@ class _GoalProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
+      return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: theme.brightness == Brightness.dark
+            ? theme.colorScheme.surface
+            : const Color(0xFFFAFBFC), // Better contrast in light mode
         borderRadius: BorderRadius.circular(20),
+        border: theme.brightness == Brightness.light
+            ? Border.all(
+                color: Colors.black.withOpacity(0.15),
+                width: 1.5,
+              )
+            : null,
+        boxShadow: theme.brightness == Brightness.light
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,11 +271,28 @@ class _DailyCheckUpCard extends StatelessWidget {
     final theme = Theme.of(context);
     final controller = Get.find<DailyCheckupController>();
 
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: isDark ? theme.colorScheme.surface : const Color(0xFFFAFBFC),
         borderRadius: BorderRadius.circular(24),
+        border: !isDark
+            ? Border.all(
+                color: Colors.black.withOpacity(0.15),
+                width: 1.5,
+              )
+            : null,
+        boxShadow: !isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,10 +417,25 @@ class _SelectionTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: completed
               ? Colors.green.withOpacity(0.2)
-              : theme.colorScheme.background.withOpacity(0.5),
+              : (theme.brightness == Brightness.dark
+                  ? theme.colorScheme.background.withOpacity(0.5)
+                  : const Color(0xFFFAFBFC)), // Better contrast in light mode
           borderRadius: BorderRadius.circular(12),
-          border:
-              Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(
+            color: theme.brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.05)
+                : Colors.black.withOpacity(0.15), // More visible border in light mode
+            width: theme.brightness == Brightness.dark ? 1 : 1.5,
+          ),
+          boxShadow: theme.brightness == Brightness.light
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -529,8 +578,25 @@ class _ActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
+          color: theme.brightness == Brightness.dark
+              ? theme.colorScheme.surface
+              : const Color(0xFFFAFBFC),
           borderRadius: BorderRadius.circular(18),
+          border: theme.brightness == Brightness.light
+              ? Border.all(
+                  color: Colors.black.withOpacity(0.15),
+                  width: 1.5,
+                )
+              : null,
+          boxShadow: theme.brightness == Brightness.light
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

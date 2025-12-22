@@ -59,30 +59,31 @@ Widget build(BuildContext context) {
               useMaterial3: true,
               brightness: Brightness.light,
               scaffoldBackgroundColor: const Color(0xFFF1F3F8),
-              cardColor: Colors.white,
+              cardColor: const Color(0xFFFAFBFC), // Slightly off-white for better contrast
               colorScheme: const ColorScheme.light(
                 primary: Colors.deepPurple,
                 secondary: Colors.deepPurpleAccent,
                 background: Color(0xFFF1F3F8),
-                surface: Colors.white,
-                onSurface: Colors.black87,
-                onBackground: Colors.black87,
+                surface: Color(0xFFFAFBFC), // Slightly off-white
+                onSurface: Color(0xFF1A1A1A), // Darker black for better readability
+                onBackground: Color(0xFF1A1A1A),
               ),
               textTheme: Typography.material2021().black,
               cardTheme: CardThemeData(
-                color: Colors.white,
+                color: const Color(0xFFFAFBFC), // Slightly off-white
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: Colors.black.withOpacity(0.08),
-                    width: 1,
+                    color: Colors.black.withOpacity(0.12), // More visible border
+                    width: 1.5, // Thicker border
                   ),
                 ),
+                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
               ),
               // Add borders to containers/cards in light mode
               dividerTheme: DividerThemeData(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withOpacity(0.12), // More visible divider
                 thickness: 1,
               ),
             ),

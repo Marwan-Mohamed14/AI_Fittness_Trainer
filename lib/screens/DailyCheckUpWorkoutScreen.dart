@@ -122,16 +122,26 @@ class _RestDayCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: done ? Colors.grey.withOpacity(0.2) : theme.colorScheme.surface,
+            color: done
+                ? Colors.grey.withOpacity(0.2)
+                : (theme.brightness == Brightness.dark
+                    ? theme.colorScheme.surface
+                    : const Color(0xFFFAFBFC)), // Better contrast in light mode
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: done ? Colors.grey : Colors.grey.withOpacity(0.3),
-              width: done ? 2 : 1,
+              color: done
+                  ? Colors.grey
+                  : (theme.brightness == Brightness.dark
+                      ? Colors.grey.withOpacity(0.3)
+                      : Colors.black.withOpacity(0.15)), // More visible border in light mode
+              width: done ? 2 : (theme.brightness == Brightness.dark ? 1 : 1.5),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 6,
+                color: Colors.black.withOpacity(
+                  theme.brightness == Brightness.dark ? 0.03 : 0.08,
+                ),
+                blurRadius: theme.brightness == Brightness.dark ? 6 : 6,
                 offset: const Offset(0, 3),
               ),
             ],

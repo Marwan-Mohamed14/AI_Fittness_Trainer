@@ -77,13 +77,23 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E2230) : theme.colorScheme.surface,
+            color: isDark ? const Color(0xFF1E2230) : const Color(0xFFFAFBFC),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isDark
                   ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.08),
+                  : Colors.black.withOpacity(0.15), // More visible border
+              width: isDark ? 1 : 1.5, // Thicker in light mode
             ),
+            boxShadow: !isDark
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           child: TextFormField(
             controller: controller,

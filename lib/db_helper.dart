@@ -15,16 +15,44 @@ class DBHelper {
 
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE daily_logs (
-            date TEXT PRIMARY KEY,
+            date TEXT,
+            user_id TEXT,
             diet_done INTEGER,
             workout_done INTEGER,
-            created_at TEXT
+            created_at TEXT,
+            PRIMARY KEY (date, user_id)
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // Migrate existing data to new schema
+          await db.execute('''
+            CREATE TABLE daily_logs_new (
+              date TEXT,
+              user_id TEXT,
+              diet_done INTEGER,
+              workout_done INTEGER,
+              created_at TEXT,
+              PRIMARY KEY (date, user_id)
+            )
+          ''');
+          
+          // Copy existing data with a default user_id (for existing users)
+          // Note: This is a migration - existing users will need to re-log
+          await db.execute('''
+            INSERT INTO daily_logs_new (date, user_id, diet_done, workout_done, created_at)
+            SELECT date, 'migrated_user', diet_done, workout_done, created_at
+            FROM daily_logs
+          ''');
+          
+          await db.execute('DROP TABLE daily_logs');
+          await db.execute('ALTER TABLE daily_logs_new RENAME TO daily_logs');
+        }
       },
     );
   }

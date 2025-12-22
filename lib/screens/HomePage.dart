@@ -14,7 +14,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final controller = Get.put(DailyCheckupController());
+    Get.put(DailyCheckupController()); // Ensure controller is initialized
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
@@ -254,78 +254,79 @@ class _DailyCheckUpCard extends StatelessWidget {
     final theme = Theme.of(context);
     final controller = Get.find<DailyCheckupController>();
 
-    return Obx(() {
-      final canLog = controller.allDone;
-
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.assignment_turned_in,
-                    color: theme.colorScheme.primary),
-                const SizedBox(width: 10),
-                Text(
-                  "Daily Check-up",
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              controller.formattedDate,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: Colors.grey),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              "Confirm your diet & workout for today.",
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: _SelectionTile(
-                    label: "Diet",
-                    completed: controller.dietDone,
-                    onTap: () {
-                      Get.to(() => const DailyCheckupMealsScreen());
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _SelectionTile(
-                    label: "Workout",
-                    completed: controller.workoutDone,
-                    onTap: () {
-                      Get.to(() => const DailyCheckupWorkoutScreen());
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.assignment_turned_in,
+                  color: theme.colorScheme.primary),
+              const SizedBox(width: 10),
+              Text(
+                "Daily Check-up",
+                style: theme.textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            controller.formattedDate,
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: Colors.grey),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "Confirm your diet & workout for today.",
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: Colors.grey),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: Obx(() => _SelectionTile(
+                  label: "Diet",
+                  completed: controller.todayDietDone.value || controller.dietDone,
+                  onTap: () {
+                    Get.to(() => const DailyCheckupMealsScreen());
+                  },
+                )),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Obx(() => _SelectionTile(
+                  label: "Workout",
+                  completed: controller.todayWorkoutDone.value || controller.workoutDone,
+                  onTap: () {
+                    Get.to(() => const DailyCheckupWorkoutScreen());
+                  },
+                )),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Obx(() {
+            final alreadyLogged = controller.todayLogged.value;
+            final canLogNow = controller.canLog && !alreadyLogged;
+            
+            return SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
-                      canLog ? theme.colorScheme.primary : Colors.grey,
+                      canLogNow ? theme.colorScheme.primary : Colors.grey,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15)),
                 ),
-                onPressed: canLog
+                onPressed: canLogNow
                     ? () async {
                         await controller.logDayIfCompleted();
                         Get.snackbar(
@@ -334,26 +335,28 @@ class _DailyCheckUpCard extends StatelessWidget {
                         );
                       }
                     : null,
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Log Daily Progress",
-                      style: TextStyle(
+                      alreadyLogged ? "Already Logged Today" : "Log Daily Progress",
+                      style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(width: 10),
-                    Icon(Icons.arrow_forward, color: Colors.white),
+                    if (!alreadyLogged) ...[
+                      const SizedBox(width: 10),
+                      const Icon(Icons.arrow_forward, color: Colors.white),
+                    ],
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      );
-    });
+            );
+          }),
+        ],
+      ),
+    );
   }
 }
 
@@ -471,8 +474,6 @@ class _BottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Row(
       children: [
         Expanded(

@@ -2,9 +2,11 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../data/repositories/daily_log_repository.dart';
 import '../models/daily_log.dart';
+import '../services/Authservice.dart';
 
 class DailyCheckupController extends GetxController {
   final repo = DailyLogRepository();
+  final authService = AuthService();
 
   // UI state
   var mealCompletion = <String, bool>{}.obs;
@@ -14,6 +16,9 @@ class DailyCheckupController extends GetxController {
   var streak = 0.obs;
   var dietCount = 0.obs;
   var workoutCount = 0.obs;
+  var todayLogged = false.obs;
+  var todayDietDone = false.obs;
+  var todayWorkoutDone = false.obs;
 
   bool get dietDone =>
       mealCompletion.isNotEmpty && mealCompletion.values.every((v) => v);
@@ -21,12 +26,15 @@ class DailyCheckupController extends GetxController {
   bool get workoutDone =>
       workoutCompletion.isNotEmpty && workoutCompletion.values.every((v) => v);
 
-  bool get allDone => dietDone && workoutDone;
+  bool get canLog => dietDone || workoutDone;
+
+  String? get userId => authService.getCurrentUserId();
 
   @override
   void onInit() {
     super.onInit();
     refreshStats();
+    checkTodayLog();
   }
 
   void initMeals(List<String> meals) {
@@ -49,15 +57,49 @@ class DailyCheckupController extends GetxController {
     workoutCompletion[index] = value;
   }
 
-  // 🔐 ONE LOG PER DAY
-  Future<void> logDayIfCompleted() async {
-    if (!allDone) return;
+  // Check if today is already logged
+  Future<void> checkTodayLog() async {
+    final uid = userId;
+    if (uid == null) {
+      todayLogged.value = false;
+      todayDietDone.value = false;
+      todayWorkoutDone.value = false;
+      return;
+    }
 
-    await repo.logToday();
+    final todayLog = await repo.getTodayLog(uid);
+    if (todayLog != null) {
+      todayLogged.value = true;
+      todayDietDone.value = todayLog.dietDone;
+      todayWorkoutDone.value = todayLog.workoutDone;
+    } else {
+      todayLogged.value = false;
+      todayDietDone.value = false;
+      todayWorkoutDone.value = false;
+    }
+  }
+
+  // Log diet only, workout only, or both
+  Future<void> logDayIfCompleted() async {
+    final uid = userId;
+    if (uid == null) {
+      Get.snackbar("Error", "User not logged in");
+      return;
+    }
+
+    if (!canLog) return;
+
+    // Log based on what's completed
+    await repo.logToday(
+      userId: uid,
+      dietDone: dietDone,
+      workoutDone: workoutDone,
+    );
 
     mealCompletion.clear();
     workoutCompletion.clear();
 
+    await checkTodayLog();
     await refreshStats();
   }
 
@@ -65,20 +107,26 @@ class DailyCheckupController extends GetxController {
   // STREAK + 30 DAY LOGIC
   // =====================
   Future<void> refreshStats() async {
-    final logs = await repo.getAllLogs();
+    final uid = userId;
+    if (uid == null) {
+      streak.value = 0;
+      dietCount.value = 0;
+      workoutCount.value = 0;
+      return;
+    }
+
+    final logs = await repo.getAllLogs(uid);
     streak.value = _calculateStreak(logs);
 
-    final period = await _getCurrentPeriod();
+    final period = await _getCurrentPeriod(uid);
     if (period == null) {
       dietCount.value = 0;
       workoutCount.value = 0;
       return;
     }
 
-    dietCount.value =
-        await repo.countDietDays(period.start, period.end);
-    workoutCount.value =
-        await repo.countWorkoutDays(period.start, period.end);
+    dietCount.value = await repo.countDietDays(uid, period.start, period.end);
+    workoutCount.value = await repo.countWorkoutDays(uid, period.start, period.end);
   }
 
   int _calculateStreak(List<DailyLog> logs) {
@@ -87,7 +135,8 @@ class DailyCheckupController extends GetxController {
 
     for (final log in logs) {
       final logDate = DateTime.parse(log.date);
-      if (log.dietDone && log.workoutDone && _isSameDay(logDate, current)) {
+      // Streak continues if at least one is done (diet OR workout)
+      if ((log.dietDone || log.workoutDone) && _isSameDay(logDate, current)) {
         s++;
         current = current.subtract(const Duration(days: 1));
       } else {
@@ -97,8 +146,8 @@ class DailyCheckupController extends GetxController {
     return s;
   }
 
-  Future<_Period?> _getCurrentPeriod() async {
-    final startStr = await repo.getPeriodStart();
+  Future<_Period?> _getCurrentPeriod(String userId) async {
+    final startStr = await repo.getPeriodStart(userId);
     if (startStr == null) return null;
 
     final start = DateTime.parse(startStr);

@@ -161,9 +161,9 @@ START YOUR RESPONSE WITH "===DIET PLAN===":
             'content': prompt,
           }
         ],
-        'temperature': 0.5,
+        'temperature': 0.5,  //control creativity of responses more lower more precise
         'max_tokens': 8000,
-        'stream': false,
+        'stream': false, //getting full response at once
       }),
     );
 

@@ -62,8 +62,8 @@ class DietPlanParser {
       if (meals.isEmpty) {
         final anyMealPattern = RegExp(
           r'\[(BREAKFAST|LUNCH|DINNER|SNACK|MEAL\s*\d+)\].*?(?=\[|DAILY_TOTAL|===|$)',
-          dotAll: true,
-          caseSensitive: false,
+          dotAll: true, //allows . 
+          caseSensitive: false, //ignore capitalization
         );
         
         final matches = anyMealPattern.allMatches(dietPlanText);
@@ -87,7 +87,7 @@ class DietPlanParser {
       int calculatedCalories = meals.fold(0, (sum, meal) => sum + meal.calories);
       int calculatedProtein = meals.fold(0, (sum, meal) => sum + meal.protein);
       int calculatedCarbs = meals.fold(0, (sum, meal) => sum + meal.carbs);
-      int calculatedFat = meals.fold(0, (sum, meal) => sum + meal.fat);
+      int calculatedFat = meals.fold(0, (sum, meal) => sum + meal.fat);//iterates through meals to add neutrition facts
 
     
       final totalCalories = totals['calories'] ?? 0;
@@ -107,7 +107,7 @@ class DietPlanParser {
           : totalCarbs;
       final finalFat = (totalFat == 0 || (calculatedFat - totalFat).abs() > totalFat * 0.2)
           ? calculatedFat
-          : totalFat;
+          : totalFat;//compare extracted totals to calculated totals to choose most reliable
 
       print('✅ Diet plan parsed successfully! Found ${meals.length} meals');
       print('📊 Totals: $finalCalories kcal | P: ${finalProtein}g | C: ${finalCarbs}g | F: ${finalFat}g');

@@ -21,41 +21,28 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
-    final double screenPadding = Responsive.padding(context); 
-    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); 
-    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); 
-    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
-    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
-    final double boxPadding = Responsive.padding(context) / 2; 
-    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); 
-    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); 
-    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); 
-    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
-        return Scaffold(
-      backgroundColor: const Color(0xFF0A1628), 
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0A1628),
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: theme.colorScheme.background,
+         appBar: AppBar(
+        backgroundColor: theme.colorScheme.background,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white70),
-          onPressed: () => Get.back(),
-        ),
-        title: const Text(
-          'Diet Plan',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.food_bank, color: theme.colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              'Diet Plan',
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.deepPurple),
+            icon: Icon(Icons.refresh, color: theme.colorScheme.primary),
             onPressed: _reloadDietPlan,
             tooltip: 'Refresh',
           ),
@@ -65,15 +52,15 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
         future: _profileController.loadDietPlan(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(color: Colors.deepPurple),
-                  SizedBox(height: 16),
+                  CircularProgressIndicator(color: theme.colorScheme.primary),
+                  const SizedBox(height: 16),
                   Text(
                     'Loading your diet plan...',
-                    style: TextStyle(color: Colors.white70),
+                    style: TextStyle(color: theme.colorScheme.onBackground.withOpacity(0.6)),
                   ),
                 ],
               ),
@@ -85,39 +72,30 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.restaurant_menu_outlined,
                     size: 64,
-                    color: Colors.white38,
+                    color: theme.colorScheme.onBackground.withOpacity(0.2),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'No diet plan found',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Complete your profile to generate one',
-                    style: TextStyle(color: Colors.white60, fontSize: 14),
+                    style: TextStyle(color: theme.colorScheme.onBackground.withOpacity(0.6)),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () => Get.toNamed('/age-screen'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 12,
-                      ),
+                      backgroundColor: theme.colorScheme.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     ),
-                    child: const Text(
-                      'Set Up Profile',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: const Text('Set Up Profile', style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),
@@ -129,37 +107,31 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
           return SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _DailyGoalCard(mealPlan: mealPlan),
-                  const SizedBox(height: 20),
-                  // Dynamic meal cards
+                  const SizedBox(height: 24),
+                  Text(
+                    "Today's Meals",
+                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
                   ...mealPlan.meals.asMap().entries.map((entry) {
                     final index = entry.key;
                     final meal = entry.value;
-                    final mealTitles = [
-                      'Breakfast',
-                      'Lunch',
-                      'Dinner',
-                      'Snack',
-                      'Meal 5'
-                    ];
+                    final mealTitles = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Meal 5'];
 
                     return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: index < mealPlan.meals.length - 1 ? 16 : 0,
-                      ),
+                      padding: const EdgeInsets.only(bottom: 20),
                       child: _MealCard(
-                        title: index < mealTitles.length
-                            ? mealTitles[index]
-                            : 'Meal ${index + 1}',
+                        title: index < mealTitles.length ? mealTitles[index] : 'Meal ${index + 1}',
                         meal: meal,
                       ),
                     );
                   }),
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -177,6 +149,9 @@ class _DailyGoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     final targetCalories = mealPlan.targetCalories;
     final currentCalories = mealPlan.totalCalories;
     final proteinTarget = (targetCalories * 0.3 / 4).round();
@@ -186,50 +161,35 @@ class _DailyGoalCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E2D47), 
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? theme.colorScheme.surface : const Color(0xFFFAFBFC),
+        borderRadius: BorderRadius.circular(24),
+        border: !isDark ? Border.all(color: Colors.black.withOpacity(0.15), width: 1.5) : null,
+        boxShadow: !isDark ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 3))] : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Daily Goal',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
+          Row(
+            children: [
+              Icon(Icons.track_changes, color: theme.colorScheme.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Daily Goal',
+                style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.grey),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
             '$currentCalories / $targetCalories kcal',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+            style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          _MacroProgressBar(
-            label: 'Carbs',
-            current: mealPlan.totalCarbs,
-            target: carbsTarget,
-            color: const Color(0xFF4CAF50),
-          ),
+          _MacroProgressBar(label: 'Carbs', current: mealPlan.totalCarbs, target: carbsTarget, color: Colors.green),
           const SizedBox(height: 12),
-          _MacroProgressBar(
-            label: 'Protein',
-            current: mealPlan.totalProtein,
-            target: proteinTarget,
-            color: const Color(0xFF2196F3),
-          ),
+          _MacroProgressBar(label: 'Protein', current: mealPlan.totalProtein, target: proteinTarget, color: Colors.blue),
           const SizedBox(height: 12),
-          _MacroProgressBar(
-            label: 'Fat',
-            current: mealPlan.totalFat,
-            target: fatTarget,
-            color: const Color(0xFFFF9800),
-          ),
+          _MacroProgressBar(label: 'Fat', current: mealPlan.totalFat, target: fatTarget, color: Colors.orange),
         ],
       ),
     );
@@ -242,48 +202,29 @@ class _MacroProgressBar extends StatelessWidget {
   final int target;
   final Color color;
 
-  const _MacroProgressBar({
-    required this.label,
-    required this.current,
-    required this.target,
-    required this.color,
-  });
+  const _MacroProgressBar({required this.label, required this.current, required this.target, required this.color});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final progress = target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            Text(
-              '${current}g',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+            Text('${current}g', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(10),
           child: LinearProgressIndicator(
             value: progress,
-            minHeight: 6,
-            backgroundColor: Colors.white.withOpacity(0.2),
+            minHeight: 8,
+            backgroundColor: theme.colorScheme.background,
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
@@ -298,173 +239,55 @@ class _MealCard extends StatelessWidget {
 
   const _MealCard({required this.title, required this.meal});
 
-  List<Map<String, dynamic>> _parseFoodItems(String portions) {
-    if (portions.isEmpty) return [];
-
-    final items = portions
-        .split(RegExp(r'[,;\n]'))
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-
-    final foodItems = items.where((item) {
-      final lowerItem = item.toLowerCase().trim();
-      
-      if (RegExp(r'\b(protein|carbs?|fats?)\b', caseSensitive: false).hasMatch(lowerItem)) {
-        print('FILTERED OUT (contains macro keyword): "$item"');
-        return false;
-      }
-      if (RegExp(r'^\d+\.?\d*g?\)?$').hasMatch(lowerItem)) {
-        print('FILTERED OUT (just number): "$item"');
-        return false;
-      }
-      
-      print('KEPT (food item): "$item"');
-      return true;
-    }).toList();
-
-    print('=== FINAL FOOD ITEMS ===');
-    foodItems.forEach((item) => print('- "$item"'));
-    print('========================');
-
-    if (foodItems.isEmpty) return [];
-
-    final totalItems = foodItems.length;
-    
-    return foodItems.asMap().entries.map((entry) {
-      final item = entry.value;
-      
-    final calorieMatch = RegExp(r'\((\d+)\s*calor').firstMatch(item);
-      final itemCalories = calorieMatch != null ? int.parse(calorieMatch.group(1)!) : 0;
-
-    String name = item.replaceAll(RegExp(r'\(\d+\s*calor.*'), '').trim();
-      String serving = '';
-
-     final servingMatch = RegExp(r'^([\d.]+\s*(?:cup|g|oz|bowl|tbsp|tsp|slice|piece)?s?)\s+(.+)', caseSensitive: false).firstMatch(name);
-      if (servingMatch != null) {
-        serving = servingMatch.group(1)?.trim() ?? '';
-        name = servingMatch.group(2)?.trim() ?? name;
-      }
-
-     final calorieRatio = meal.calories > 0 && itemCalories > 0 
-          ? itemCalories / meal.calories 
-          : 1.0 / totalItems;
-      final itemProtein = (meal.protein * calorieRatio).round();
-      final itemCarbs = (meal.carbs * calorieRatio).round();
-      final itemFat = (meal.fat * calorieRatio).round();
-
-      return {
-        'name': name,
-        'serving': serving,
-        'calories': itemCalories,
-        'protein': itemProtein,
-        'carbs': itemCarbs,
-        'fat': itemFat,
-      };
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final foodItems = _parseFoodItems(meal.portions);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final foodItems = _parseFoodItems(meal.portions, meal);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-     
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              '${meal.calories} kcal',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        
-        Text(
-          'C: ${meal.carbs}g • P: ${meal.protein}g • F: ${meal.fat}g',
-          style: const TextStyle(
-            color: Colors.white60,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text('${meal.calories} kcal', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-       
         ...foodItems.map((foodItem) {
           return Container(
-            margin: const EdgeInsets.only(bottom: 8),
+            margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E2D47), 
-              borderRadius: BorderRadius.circular(12),
+              color: isDark ? theme.colorScheme.surface : const Color(0xFFFAFBFC),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.1),
+                width: 1,
+              ),
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        foodItem['name'] ?? '',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      Text(foodItem['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                       if (foodItem['serving']!.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            foodItem['serving']!,
-                            style: const TextStyle(
-                              color: Colors.white54,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
+                        Text(foodItem['serving']!, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 12)),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
-              
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      '${foodItem['calories']} kcal',
-                      style: const TextStyle(
-                        color: Color(0xFFBB86FC), 
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'P: ${foodItem['protein']}g  C: ${foodItem['carbs']}g  F: ${foodItem['fat']}g',
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                  
+                    Text('P: ${foodItem['protein']}g C: ${foodItem['carbs']}g', 
+                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 11)),
                   ],
                 ),
               ],
@@ -473,5 +296,37 @@ class _MealCard extends StatelessWidget {
         }),
       ],
     );
+  }
+
+  // Helper to parse portions string into items
+  List<Map<String, dynamic>> _parseFoodItems(String portions, MealData meal) {
+    if (portions.isEmpty) return [];
+    final items = portions.split(RegExp(r'[,;\n]')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    final foodItems = items.where((item) {
+      final lowerItem = item.toLowerCase();
+      return !RegExp(r'\b(protein|carbs?|fats?)\b').hasMatch(lowerItem) && !RegExp(r'^\d+\.?\d*g?\)?$').hasMatch(lowerItem);
+    }).toList();
+
+    return foodItems.asMap().entries.map((entry) {
+      final item = entry.value;
+      final calorieMatch = RegExp(r'\((\d+)\s*calor').firstMatch(item);
+      final itemCalories = calorieMatch != null ? int.parse(calorieMatch.group(1)!) : 0;
+      String name = item.replaceAll(RegExp(r'\(\d+\s*calor.*'), '').trim();
+      String serving = '';
+      final servingMatch = RegExp(r'^([\d.]+\s*(?:cup|g|oz|bowl|tbsp|tsp|slice|piece)?s?)\s+(.+)', caseSensitive: false).firstMatch(name);
+      if (servingMatch != null) {
+        serving = servingMatch.group(1)?.trim() ?? '';
+        name = servingMatch.group(2)?.trim() ?? name;
+      }
+      final ratio = meal.calories > 0 && itemCalories > 0 ? itemCalories / meal.calories : 1.0 / foodItems.length;
+      return {
+        'name': name,
+        'serving': serving,
+        'calories': itemCalories,
+        'protein': (meal.protein * ratio).round(),
+        'carbs': (meal.carbs * ratio).round(),
+        'fat': (meal.fat * ratio).round(),
+      };
+    }).toList();
   }
 }

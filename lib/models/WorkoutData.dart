@@ -37,7 +37,7 @@ class WorkoutPlan {
 }
 
 class WorkoutPlanParser {
-  /// Parse workout plan text into structured data
+
   static WorkoutPlan? parseWorkoutPlan(String workoutPlanText) {
     try {
       print('🔍 Parsing workout plan...');
@@ -50,10 +50,10 @@ class WorkoutPlanParser {
         return null;
       }
 
-      // Extract weekly focus if present
+ 
       String? weeklyFocus = _extractWeeklyFocus(workoutPlanText);
 
-      // Extract workout days
+    
       final days = _extractWorkoutDays(workoutPlanText);
 
       if (days.isEmpty) {
@@ -73,10 +73,10 @@ class WorkoutPlanParser {
     }
   }
 
-  /// Extract weekly focus message
+ 
   static String? _extractWeeklyFocus(String text) {
     try {
-      // Look for patterns like "Weekly Focus:", "Focus:", "Tip:", etc.
+     
       final focusPatterns = [
         RegExp(r'Weekly\s+Focus[:\-]?\s*(.+?)(?:\n\n|\[|DAY|===)', dotAll: true, caseSensitive: false),
         RegExp(r'Focus[:\-]?\s*(.+?)(?:\n\n|\[|DAY|===)', dotAll: true, caseSensitive: false),
@@ -99,39 +99,39 @@ class WorkoutPlanParser {
     }
   }
 
-  /// Extract all workout days from the text
+
   static List<WorkoutDay> _extractWorkoutDays(String text) {
     final List<WorkoutDay> days = [];
 
-    // Pattern 1: [DAY X - MUSCLE GROUP] format (most common)
+ 
     final dayPattern1 = RegExp(
       r'\[DAY\s+(\d+)\s*-\s*([^\]]+)\](.*?)(?=\[DAY\s+\d+|$)',
       dotAll: true,
       caseSensitive: false,
     );
 
-    // Pattern 2: [DAY X] format
+  
     final dayPattern2 = RegExp(
       r'\[DAY\s+(\d+)\](.*?)(?=\[DAY\s+\d+\]|$)',
       dotAll: true,
       caseSensitive: false,
     );
 
-    // Pattern 3: Day X:, Day X - format
+    
     final dayPattern3 = RegExp(
       r'Day\s+(\d+)[:\-\s]+([^:\n]+)?[:\-]?(.*?)(?=Day\s+\d+[:\-]|$)',
       dotAll: true,
       caseSensitive: false,
     );
 
-    // Pattern 4: Push Day, Pull Day, Leg Day, etc.
+  
     final dayPattern4 = RegExp(
       r'(Push\s+Day|Pull\s+Day|Leg\s+Day|Upper\s+Body|Lower\s+Body|Full\s+Body|Cardio\s+Day|Rest\s+Day)[:\-]?(.*?)(?=(?:Push|Pull|Leg|Upper|Lower|Full|Cardio|Rest)\s+Day|$)',
       dotAll: true,
       caseSensitive: false,
     );
 
-    // Try pattern 1 first (most specific)
+ 
     final matches1 = dayPattern1.allMatches(text);
     if (matches1.isNotEmpty) {
       for (final match in matches1) {
@@ -147,7 +147,7 @@ class WorkoutPlanParser {
       if (days.isNotEmpty) return days;
     }
 
-    // Try pattern 2
+
     final matches2 = dayPattern2.allMatches(text);
     if (matches2.isNotEmpty) {
       for (final match in matches2) {
@@ -159,7 +159,7 @@ class WorkoutPlanParser {
       if (days.isNotEmpty) return days;
     }
 
-    // Try pattern 3
+
     final matches3 = dayPattern3.allMatches(text);
     if (matches3.isNotEmpty) {
       for (final match in matches3) {
@@ -175,7 +175,7 @@ class WorkoutPlanParser {
       if (days.isNotEmpty) return days;
     }
 
-    // Try pattern 4
+
     final matches4 = dayPattern4.allMatches(text);
     if (matches4.isNotEmpty) {
       for (final match in matches4) {
@@ -187,7 +187,7 @@ class WorkoutPlanParser {
       if (days.isNotEmpty) return days;
     }
 
-    // Fallback: Try to parse the entire text as a single day
+  
     if (days.isEmpty) {
       final day = _parseDayContent(text, 'Workout Day', '');
       if (day != null) days.add(day);
@@ -196,17 +196,17 @@ class WorkoutPlanParser {
     return days;
   }
 
-  /// Parse a single day's content
+
   static WorkoutDay? _parseDayContent(String content, String defaultTitle, String muscleGroup) {
     try {
       print('🔍 Parsing day content for: $defaultTitle');
       print('📄 Day content (first 300 chars): ${content.length > 300 ? content.substring(0, 300) + "..." : content}');
       
-      // Use the provided title and muscle group
+  
       String dayTitle = defaultTitle;
       String muscles = muscleGroup.isNotEmpty ? muscleGroup.toUpperCase() : '';
 
-      // If muscle group wasn't provided, try to extract it
+   
       if (muscles.isEmpty) {
         final musclesPatterns = [
           RegExp(r'Muscles?[:\-]?\s*(.+?)(?:\n|Duration|Exercises|$)', caseSensitive: false),
@@ -223,12 +223,12 @@ class WorkoutPlanParser {
         }
       }
       
-      // If still no muscles found, default to FULL BODY
+
       if (muscles.isEmpty) {
         muscles = 'FULL BODY';
       }
 
-      // Extract duration
+ 
       String duration = '45 Min';
       final durationPatterns = [
         RegExp(r'Duration[:\-]?\s*(\d+\s*(?:Min|min|minutes?))', caseSensitive: false),
@@ -243,7 +243,7 @@ class WorkoutPlanParser {
         }
       }
 
-      // Extract exercises
+
       final exercises = _extractExercises(content);
 
       if (exercises.isEmpty) {
@@ -263,14 +263,14 @@ class WorkoutPlanParser {
     }
   }
 
-  /// Extract exercises from day content
+
   static List<Exercise> _extractExercises(String content) {
     final List<Exercise> exercises = [];
-    final Set<String> seenExercises = {}; // To avoid duplicates
+    final Set<String> seenExercises = {};
 
     print('🔍 Extracting exercises from content (${content.length} chars)');
     
-    // Stop parsing if we hit diet plan markers
+
     final dietMarkers = [
       '===DIET PLAN===',
       '==DIET PLAN==',
@@ -288,7 +288,7 @@ class WorkoutPlanParser {
       'Fat:',
     ];
     
-    // Find where diet plan starts and cut content there
+  
     int cutIndex = content.length;
     for (final marker in dietMarkers) {
       final index = content.indexOf(marker);
@@ -297,15 +297,13 @@ class WorkoutPlanParser {
       }
     }
     
-    // Only parse workout content, not diet content
+   
     final workoutContent = content.substring(0, cutIndex);
     
-    // Split content into lines for better parsing
+  
     final lines = workoutContent.split('\n');
     
-    // Pattern 1: Numbered format "1. Exercise Name: X sets, Y reps" (most common format)
-    // Matches: "1. Barbell Bench Press: 4 sets, 8 reps"
-    // Try multiple variations of the pattern
+ 
     final numberedPatterns = [
       RegExp(r'\d+[\.\)]\s*(.+?)[:\-]\s*(\d+)\s*sets?[,\s]+(\d+[\-]?\d*)\s*reps?', caseSensitive: false),
       RegExp(r'\d+[\.\)]\s*(.+?)[:\-]\s*(\d+)\s*sets?,\s*(\d+[\-]?\d*)\s*reps?', caseSensitive: false),
@@ -317,12 +315,12 @@ class WorkoutPlanParser {
     for (final pattern in numberedPatterns) {
       for (final match in pattern.allMatches(workoutContent)) {
         try {
-          // Extract the exercise name - it's already clean from the regex, just trim it
+        
           String name = match.group(1)?.trim() ?? '';
           String sets = '${match.group(2)} Sets';
           String reps = '${match.group(3)} Reps';
           
-          // Clean the name to remove any trailing colons or dashes
+       
           name = name.replaceAll(RegExp(r'[:\-,\s]+$'), '').trim();
           
           if (name.isNotEmpty && !seenExercises.contains(name.toLowerCase())) {
@@ -336,41 +334,38 @@ class WorkoutPlanParser {
       }
     }
     
-    // If we found exercises with numbered pattern, return them
+ 
     if (exercises.isNotEmpty) {
       return exercises;
     }
     
-    // If we found exercises with numbered pattern, return them
+
     if (exercises.isNotEmpty) {
       return exercises;
     }
     
-    // Pattern 2: Exercise name on one line, sets/reps on next line(s)
-    // Example:
-    // Barbell Bench Press
-    // Sets: 4, Reps: 8-10
+
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
       if (line.isEmpty) continue;
       
-      // Skip if this line contains diet plan markers
+   
       final lowerLine = line.toLowerCase();
       if (lowerLine.contains('name:') && 
           (lowerLine.contains('kcal') || lowerLine.contains('protein') || lowerLine.contains('carbs') || lowerLine.contains('fat'))) {
         print('⚠️ Skipping diet plan line: $line');
-        break; // Stop parsing, we've hit diet content
+        break; 
       }
 
-      // Check if this line contains an exercise name (not a header/metadata)
+     
       if (_isExerciseNameLine(line)) {
         String originalName = line;
         
-        // First, try to extract sets/reps from the line itself
+     
         String? sets;
         String? reps;
         
-        // Pattern: "Exercise Name: 4 sets, 8 reps" or "Exercise Name - 4 sets x 8 reps"
+      
         final combinedPattern = RegExp(
           r'(.+?)[:\-]\s*(\d+)\s*(?:sets?|x)\s*([\d\-]+)\s*(?:reps?|repetitions?)',
           caseSensitive: false,
@@ -382,7 +377,7 @@ class WorkoutPlanParser {
           originalName = combinedMatch.group(1)?.trim() ?? originalName;
         }
         
-        // Pattern: "Exercise Name (4 sets, 8 reps)"
+      
         final parenPattern = RegExp(
           r'(.+?)\s*\((\d+)\s*(?:sets?|x)\s*([\d\-]+)\s*(?:reps?|repetitions?)\)',
           caseSensitive: false,
@@ -396,12 +391,12 @@ class WorkoutPlanParser {
         
         String name = _cleanExerciseName(originalName);
 
-        // Look ahead up to 3 lines for sets/reps info
+
         for (int j = i + 1; j < lines.length && j <= i + 3; j++) {
           final nextLine = lines[j].trim();
           if (nextLine.isEmpty) continue;
           
-          // Try various patterns for sets/reps
+        
           final setsPatterns = [
             RegExp(r'Sets?[:\-]?\s*(\d+)', caseSensitive: false),
             RegExp(r'(\d+)\s*sets?', caseSensitive: false),
@@ -432,11 +427,11 @@ class WorkoutPlanParser {
             }
           }
           
-          // If we found both, stop looking
+       
           if (sets != null && reps != null) break;
         }
 
-        // Also check current line for sets/reps (in case it's all on one line)
+     
         if (sets == null || reps == null) {
           final setsPatterns = [
             RegExp(r'Sets?[:\-]?\s*(\d+)', caseSensitive: false),
@@ -469,7 +464,7 @@ class WorkoutPlanParser {
           }
         }
 
-        // Only add if we have a valid name
+ 
         if (name.isNotEmpty && !seenExercises.contains(name.toLowerCase())) {
           exercises.add(Exercise(
             name: name, 
@@ -482,8 +477,7 @@ class WorkoutPlanParser {
       }
     }
 
-    // Pattern 2: Exercise: Name, Sets: X, Reps: Y (all in one line)
-    // Try multiple variations
+
     final exercisePatterns2 = [
       RegExp(r'(.+?)[:\-]\s*(\d+)\s*(?:sets?|x)\s*([\d\-]+)\s*(?:reps?|repetitions?)', caseSensitive: false),
       RegExp(r'(.+?)[,\-]\s*Sets?[:\-]?\s*(\d+).*?Reps?[:\-]?\s*([\d\-]+)', caseSensitive: false),
@@ -496,7 +490,7 @@ class WorkoutPlanParser {
         try {
           String name = _cleanExerciseName(match.group(1)?.trim() ?? '');
           
-          // Skip if this looks like diet plan content
+       
           final lowerName = name.toLowerCase();
           if (lowerName.contains('name:') || 
               lowerName.contains('portions') || 
@@ -516,30 +510,28 @@ class WorkoutPlanParser {
           String? sets;
           String? reps;
 
-          // Handle different group positions
+    
           if (match.groupCount >= 3) {
             if (match.group(2) != null && match.group(3) != null) {
               // Check if group 2 is sets or reps based on context
               final group2 = match.group(2)!;
               final group3 = match.group(3)!;
               
-              // Try to determine which is sets and which is reps
-              // Default assumption: group 2 is sets, group 3 is reps
-              // But check the match text to be sure
+           
               try {
                 final matchText = match.group(0) ?? '';
                 if (matchText.toLowerCase().contains('rep') && 
                     matchText.toLowerCase().indexOf('rep') < matchText.toLowerCase().indexOf('set')) {
-                  // Reps comes before sets in the text
+              
                   sets = '$group3 Sets';
                   reps = '$group2 Reps';
                 } else {
-                  // Default: sets comes first
+              
                   sets = '$group2 Sets';
                   reps = '$group3 Reps';
                 }
               } catch (e) {
-                // Fallback to default
+            
                 sets = '$group2 Sets';
                 reps = '$group3 Reps';
               }
@@ -560,7 +552,7 @@ class WorkoutPlanParser {
       }
     }
 
-    // Pattern 3: Simple format: Name - X sets x Y reps
+   
     final exercisePattern3 = RegExp(
       r'(.+?)[\-\–]\s*(\d+)\s*(?:sets?|x)\s*([\d\-]+)\s*(?:reps?|repetitions?)',
       caseSensitive: false,
@@ -582,7 +574,7 @@ class WorkoutPlanParser {
       }
     }
 
-    // Fallback: If no structured exercises found, try to extract exercise names
+ 
     if (exercises.isEmpty) {
       for (final line in lines) {
         final trimmed = line.trim();
@@ -603,10 +595,10 @@ class WorkoutPlanParser {
     return exercises;
   }
 
-  /// Check if a line looks like an exercise name
+ 
   static bool _isExerciseNameLine(String line) {
     final lower = line.toLowerCase();
-    // Exclude headers and metadata
+ 
     if (lower.contains('day') || 
         lower.contains('muscle') || 
         lower.contains('duration') ||
@@ -618,7 +610,7 @@ class WorkoutPlanParser {
       return false;
     }
     
-    // Exclude diet plan markers
+  
     if (lower.startsWith('name:') ||
         lower.contains('portions:') ||
         lower.contains('calories:') ||
@@ -634,13 +626,13 @@ class WorkoutPlanParser {
       return false;
     }
     
-    // Check if it looks like an exercise name (has capital letters, reasonable length)
+ 
     return line.length >= 3 && line.length < 60 && RegExp(r'[A-Z]').hasMatch(line);
   }
 
-  /// Clean exercise name from common prefixes and sets/reps
+  
   static String _cleanExerciseName(String name) {
-    // Remove sets and reps from the name
+ 
     String cleaned = name
         .replaceAll(RegExp(r'^(Exercise[:\-]?\s*|\d+[\.\)]\s*|[-•]\s*)', caseSensitive: false), '')
         .replaceAll(RegExp(r'[:\-]\s*\d+\s*(?:sets?|reps?|x)', caseSensitive: false), '')
@@ -650,7 +642,7 @@ class WorkoutPlanParser {
         .replaceAll(RegExp(r',\s*\d+\s*(?:sets?|reps?)', caseSensitive: false), '')
         .trim();
     
-    // Remove trailing colons, dashes, or commas
+ 
     cleaned = cleaned.replaceAll(RegExp(r'[:\-,\s]+$'), '').trim();
     
     return cleaned;

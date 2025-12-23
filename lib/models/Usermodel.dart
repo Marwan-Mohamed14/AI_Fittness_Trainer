@@ -33,7 +33,7 @@ class ProfileModel {
     this.dailySchedule,
   });
 
-  // Convert from Supabase JSON response
+
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
     return ProfileModel(
       userId: json['user_id'],
@@ -54,7 +54,7 @@ class ProfileModel {
     );
   }
 
-  // Convert to JSON for Supabase insert/update
+
   Map<String, dynamic> toJson() {
     return {
       'user_id': userId,

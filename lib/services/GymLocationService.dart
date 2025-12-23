@@ -31,8 +31,7 @@ class GymService {
     final data = json.decode(res.body);
     final List results = data['results'] ?? [];
 
-    // Filter results locally to strictly match "gym" in types 
-    // This prevents accidental "Yoga" or "Parks" if they don't have gym services
+
     return results
         .map((g) => GymModel.fromGoogle(g, lat, lon))
         .where((gym) => 

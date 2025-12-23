@@ -12,7 +12,7 @@ class DailyLogRepository {
     final db = await DBHelper.database;
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-    // Check if log exists for today
+ 
     final existing = await db.query(
       'daily_logs',
       where: 'date = ? AND user_id = ?',
@@ -20,7 +20,7 @@ class DailyLogRepository {
     );
 
     if (existing.isNotEmpty) {
-      // Update existing log
+   
       final existingLog = DailyLog.fromMap(existing.first);
       await db.update(
         'daily_logs',
@@ -33,7 +33,7 @@ class DailyLogRepository {
         whereArgs: [today, userId],
       );
     } else {
-      // Insert new log
+   
       await db.insert(
         'daily_logs',
         {

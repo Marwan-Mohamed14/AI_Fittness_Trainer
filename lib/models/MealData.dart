@@ -17,12 +17,12 @@ class MealData {
 }
 
 class DailyMealPlan {
-  final List<MealData> meals; // Dynamic list of meals (1-5 meals)
+  final List<MealData> meals;
   final int totalCalories;
   final int totalProtein;
   final int totalCarbs;
   final int totalFat;
-  final int targetCalories; // Target calories for progress calculation
+  final int targetCalories; 
 
   DailyMealPlan({
     required this.meals,
@@ -30,22 +30,22 @@ class DailyMealPlan {
     required this.totalProtein,
     required this.totalCarbs,
     required this.totalFat,
-    this.targetCalories = 2000, // Default target
+    this.targetCalories = 2000,
   });
 }
 
 class DietPlanParser {
-  /// Parse diet plan text into structured data with dynamic meals
+
   static DailyMealPlan? parseDietPlan(String dietPlanText) {
     try {
       print('🔍 Parsing diet plan...');
       print('📄 Diet plan text length: ${dietPlanText.length} characters');
       print('📄 Diet plan preview (first 500 chars): ${dietPlanText.length > 500 ? dietPlanText.substring(0, 500) + "..." : dietPlanText}');
 
-      // Extract all meals dynamically (BREAKFAST, LUNCH, DINNER, SNACK, etc.)
+     
       final List<MealData> meals = [];
       
-      // Try to extract common meal types
+    
       final mealTypes = ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK', 'MEAL 1', 'MEAL 2', 'MEAL 3', 'MEAL 4', 'MEAL 5'];
       
       for (final mealType in mealTypes) {
@@ -58,7 +58,7 @@ class DietPlanParser {
         }
       }
       
-      // If no meals found with standard names, try to find any [MEAL] pattern
+    
       if (meals.isEmpty) {
         final anyMealPattern = RegExp(
           r'\[(BREAKFAST|LUNCH|DINNER|SNACK|MEAL\s*\d+)\].*?(?=\[|DAILY_TOTAL|===|$)',
@@ -83,19 +83,19 @@ class DietPlanParser {
 
       final totals = _extractDailyTotals(dietPlanText);
       
-      // Calculate totals from meals if DAILY_TOTAL is missing or incorrect
+   
       int calculatedCalories = meals.fold(0, (sum, meal) => sum + meal.calories);
       int calculatedProtein = meals.fold(0, (sum, meal) => sum + meal.protein);
       int calculatedCarbs = meals.fold(0, (sum, meal) => sum + meal.carbs);
       int calculatedFat = meals.fold(0, (sum, meal) => sum + meal.fat);
 
-      // Use calculated values if totals are missing or seem incorrect
+    
       final totalCalories = totals['calories'] ?? 0;
       final totalProtein = totals['protein'] ?? 0;
       final totalCarbs = totals['carbs'] ?? 0;
       final totalFat = totals['fat'] ?? 0;
 
-      // Use calculated values if totals are 0 or significantly different (more than 20% difference)
+   
       final finalCalories = (totalCalories == 0 || (calculatedCalories - totalCalories).abs() > totalCalories * 0.2)
           ? calculatedCalories
           : totalCalories;
@@ -112,8 +112,7 @@ class DietPlanParser {
       print('✅ Diet plan parsed successfully! Found ${meals.length} meals');
       print('📊 Totals: $finalCalories kcal | P: ${finalProtein}g | C: ${finalCarbs}g | F: ${finalFat}g');
 
-      // Calculate target calories (use total if it's reasonable, otherwise use calculated)
-      // Target should be slightly higher than current for weight loss, or match for maintenance
+
       final targetCalories = finalCalories > 0 ? finalCalories : calculatedCalories;
 
       return DailyMealPlan(
@@ -130,14 +129,12 @@ class DietPlanParser {
     }
   }
 
-  /// ==============================
-  /// Extract a single meal
-  /// ==============================
+
   static MealData? _extractMeal(String text, String mealType) {
     try {
       var mealText = '';
       
-      // For SNACK specifically, manually extract to ensure we get everything before DAILY_TOTAL
+    
       if (mealType.toUpperCase() == 'SNACK') {
         final snackStart = text.toUpperCase().indexOf('[SNACK]');
         if (snackStart != -1) {
@@ -147,13 +144,13 @@ class DietPlanParser {
             mealText = text.substring(snackContentStart, dailyTotalStart).trim();
             print('📝 SNACK: Manually extracted content (${mealText.length} chars)');
           } else {
-            // Fallback: extract until end of text
+         
             mealText = text.substring(snackContentStart).trim();
             print('📝 SNACK: Extracted to end of text (${mealText.length} chars)');
           }
         }
       } else {
-        // For other meals, use regex pattern
+     
         final mealPattern = RegExp(
           '\\[$mealType\\](.*?)(?=\\[(?:BREAKFAST|LUNCH|DINNER|SNACK|MEAL|DAILY_TOTAL|===)|\\Z)',
           dotAll: true,
@@ -177,7 +174,7 @@ class DietPlanParser {
       print('📝 Extracting $mealType - meal text length: ${mealText.length}');
       print('📝 First 300 chars: ${mealText.length > 300 ? mealText.substring(0, 300) + "..." : mealText}');
 
-      // ---------- Name ----------
+ 
       String name = '';
       final nameMatch = RegExp(r'Name:\s*(.+)', caseSensitive: false)
           .firstMatch(mealText);
@@ -185,11 +182,10 @@ class DietPlanParser {
         name = nameMatch.group(1)?.trim() ?? '';
       }
 
-      // ---------- Portions ----------
+    
       String portions = '';
-      // Handle multiline portions with bullet points
-      // Pattern: "Portions:" followed by optional whitespace/newline, then capture everything until next field
-      // Updated to handle cases where Portions: is followed by newline and bullet points
+   
+
       final portionMatch = RegExp(
         r'Portions?:\s*\n?(.*?)(?=\n\s*(?:Calories|Protein|Carbs|Fat|Name|\[|DAILY_TOTAL))',
         dotAll: true,
@@ -201,21 +197,21 @@ class DietPlanParser {
         print('📝 Raw portions for $mealType: "$portions"');
         
         if (portions.isNotEmpty) {
-          // Clean up the portions: remove leading dashes/bullets and normalize whitespace
+        
           portions = portions
               .split('\n')
               .map((line) => line.trim())
               .where((line) => line.isNotEmpty)
-              .map((line) => line.replaceFirst(RegExp(r'^[-•]\s*'), '')) // Remove leading dash/bullet
-              .where((line) => line.isNotEmpty) // Filter out empty lines after cleaning
-              .join(', '); // Join with commas for display
+              .map((line) => line.replaceFirst(RegExp(r'^[-•]\s*'), '')) 
+              .where((line) => line.isNotEmpty) 
+              .join(', '); 
           print('📝 Cleaned portions for $mealType: "$portions"');
         }
       } else {
         print('⚠️ No portion match for $mealType');
       }
       
-      // Fallback: if multiline pattern didn't match, try single line
+    
       if (portions.isEmpty) {
         final portionMatchSingle = RegExp(
           r'Portions?:\s*(.+?)(?=\n\s*(?:Calories|Protein|Carbs|Fat|DAILY_TOTAL))',
@@ -228,7 +224,7 @@ class DietPlanParser {
         }
       }
 
-      // ---------- Calories ----------
+
       final caloriesMatch = RegExp(
         r'Calories:\s*(\d+)|(\d+)\s*kcal',
         caseSensitive: false,
@@ -240,7 +236,7 @@ class DietPlanParser {
           ) ??
           0;
 
-      // ---------- Macronutrients (NEW + OLD SUPPORT) ----------
+   
       final proteinMatch = RegExp(
         r'(Protein|P):\s*(\d+)g',
         caseSensitive: false,
@@ -276,14 +272,14 @@ class DietPlanParser {
 
   static Map<String, int> _extractDailyTotals(String text) {
   try {
-    // Find the [DAILY_TOTAL] section and everything after it
+
     final totalSectionMatch = RegExp(
       r'\[DAILY_TOTAL\].*?$',
       dotAll: true,
       caseSensitive: false,
     ).firstMatch(text);
 
-    String totalSection = totalSectionMatch?.group(0) ?? text; // fallback to whole text
+    String totalSection = totalSectionMatch?.group(0) ?? text;
 
     int calories = _extractInt(totalSection, 'Calories:');
     int protein = _extractInt(totalSection, 'Protein:');

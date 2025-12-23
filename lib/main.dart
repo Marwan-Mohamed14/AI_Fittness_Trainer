@@ -123,7 +123,7 @@ class _MyAppState extends State<MyApp> {
               title: 'AI Personal Trainer',
               debugShowCheckedModeBanner: false,
 
-              // 🌞 LIGHT THEME
+              //  LIGHT THEME
               theme: ThemeData(
                 useMaterial3: true,
                 brightness: Brightness.light,
@@ -157,7 +157,7 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
 
-              // 🌙 DARK THEME
+              // DARK THEME
               darkTheme: ThemeData(
                 useMaterial3: true,
                 brightness: Brightness.dark,

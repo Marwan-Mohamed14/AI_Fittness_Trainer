@@ -30,7 +30,7 @@ class DBHelper {
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
-          // Migrate existing data to new schema
+       
           await db.execute('''
             CREATE TABLE daily_logs_new (
               date TEXT,
@@ -42,8 +42,7 @@ class DBHelper {
             )
           ''');
           
-          // Copy existing data with a default user_id (for existing users)
-          // Note: This is a migration - existing users will need to re-log
+        
           await db.execute('''
             INSERT INTO daily_logs_new (date, user_id, diet_done, workout_done, created_at)
             SELECT date, 'migrated_user', diet_done, workout_done, created_at

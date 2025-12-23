@@ -24,7 +24,7 @@ class GymCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
-    // Generate actual Google Places photo URL
+ 
     final String imageUrl = gym.photoReference != null
         ? "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${gym.photoReference}&key=$googleKey"
         : 'https://loremflickr.com/320/320/gym,fitness?random=${gym.id}';

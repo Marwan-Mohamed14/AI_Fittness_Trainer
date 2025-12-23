@@ -1,26 +1,26 @@
 class OnboardingData {
-  // Basic Info
+
   int? age;
   int? height;
   String? gender;
 
-  // Workout
-  String? workoutGoal;        // lose weight, build muscle, etc
-  String? workoutLevel;       // beginner / intermediate / advanced
-  int? trainingDays;          // how many days per week
-  String? trainingLocation;   // home or gym
 
-  // Diet
-  String? dietPreference;     // low-carb, normal, etc
+  String? workoutGoal;       
+  String? workoutLevel;      
+  int? trainingDays;       
+  String? trainingLocation; 
+
+
+  String? dietPreference;   
   int? mealsPerDay;
-  String? budget;             // low / medium / high
+  String? budget;             
 
-  // Weight info
-  int? weight;                // current weight
-  int? targetWeight;          // target weight
 
-  // Lifestyle
-  String? activityLevel;      // low / medium / high
+  int? weight;             
+  int? targetWeight;        
+
+
+  String? activityLevel;    
 
   List<String>? allergies;    
 
@@ -46,9 +46,8 @@ class OnboardingData {
     this.workoutPlan,
   });
 
-  // ================================
-  // Convert to Map for Supabase JSON
-  // ================================
+
+
   Map<String, dynamic> toJson() {
     return {
       "age": age,
@@ -69,7 +68,7 @@ class OnboardingData {
 
     };
   }
-  // Add this to your OnboardingData class
+
 factory OnboardingData.fromJson(Map<String, dynamic> json) {
   return OnboardingData(
     age: json['age'],

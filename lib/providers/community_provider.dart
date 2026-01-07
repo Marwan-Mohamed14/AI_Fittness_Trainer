@@ -16,12 +16,10 @@ class CommunityProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  /// Initialize - fetch posts
   CommunityProvider() {
     fetchPosts();
   }
 
-  /// Fetch all posts
   Future<void> fetchPosts() async {
     try {
       _isLoading = true;
@@ -39,7 +37,6 @@ class CommunityProvider extends ChangeNotifier {
     }
   }
 
-  /// Create a new post
   Future<void> createPost({
     required File imageFile,
     String? caption,
@@ -48,19 +45,17 @@ class CommunityProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      // Upload image
+      // 1. Upload image to Supabase Storage
       final imageUrl = await _storageService.uploadImage(imageFile);
 
-      // Create post in database
+      // 2. Create entry in Supabase Database
       final newPost = await _postService.createPost(
         mediaUrl: imageUrl,
         mediaType: 'image',
         caption: caption,
       );
 
-      // Add to list
       _posts.insert(0, newPost);
-
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -71,7 +66,6 @@ class CommunityProvider extends ChangeNotifier {
     }
   }
 
-  /// Toggle like
   Future<void> toggleLike(String postId) async {
     try {
       final index = _posts.indexWhere((p) => p.id == postId);
@@ -79,7 +73,7 @@ class CommunityProvider extends ChangeNotifier {
 
       final post = _posts[index];
 
-      // Optimistic update
+      // Optimistic UI update using copyWith
       if (post.isLikedByMe) {
         _posts[index] = post.copyWith(
           isLikedByMe: false,
@@ -96,27 +90,21 @@ class CommunityProvider extends ChangeNotifier {
         await _postService.likePost(postId);
       }
     } catch (e) {
-      // Revert on error
+      // Revert if database call fails
       await fetchPosts();
     }
   }
 
-  /// Delete a post
   Future<void> deletePost(String postId) async {
     try {
       final index = _posts.indexWhere((p) => p.id == postId);
       if (index == -1) return;
 
       final post = _posts[index];
-
-      // Remove from list
       _posts.removeAt(index);
       notifyListeners();
 
-      // Delete from storage
       await _storageService.deleteImage(post.mediaUrl);
-
-      // Delete from database
       await _postService.deletePost(postId);
     } catch (e) {
       await fetchPosts();
@@ -124,7 +112,6 @@ class CommunityProvider extends ChangeNotifier {
     }
   }
 
-  /// Refresh posts
   Future<void> refreshPosts() async {
     await fetchPosts();
   }

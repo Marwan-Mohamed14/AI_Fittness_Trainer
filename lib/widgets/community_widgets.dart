@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+// Note: You may need an image picker package like image_picker to get the File
 import '../models/post_model.dart';
 import '../providers/community_provider.dart';
 
@@ -24,12 +26,17 @@ class CreatePostSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              const CircleAvatar(backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=me')),
+              const CircleAvatar(
+                backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=me'),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: TextField(
                   controller: controller,
-                  decoration: const InputDecoration(hintText: "What's on your mind?", border: InputBorder.none),
+                  decoration: const InputDecoration(
+                    hintText: "What's on your mind?",
+                    border: InputBorder.none,
+                  ),
                 ),
               ),
             ],
@@ -43,14 +50,15 @@ class CreatePostSection extends StatelessWidget {
                   Icon(Icons.image, color: Colors.blue.shade400, size: 20),
                   const SizedBox(width: 15),
                   Icon(Icons.camera_alt, color: Colors.blue.shade400, size: 20),
-                ],  
+                ],
               ),
               ElevatedButton(
                 onPressed: () {
-                  if (controller.text.isNotEmpty) {
-                    context.read<CommunityProvider>().addPost(controller.text);
-                    controller.clear();
-                  }
+                  // NOTE: In a real app, you would pick a File first.
+                  // This is a placeholder logic for the UI.
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Select an image to post")),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
@@ -88,55 +96,61 @@ class SocialPostCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(backgroundImage: NetworkImage(post.userAvatar)),
+              CircleAvatar(
+                backgroundImage: NetworkImage(post.userAvatar ?? 'https://i.pravatar.cc/150?u=default'),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(post.userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(post.userName ?? "User", style: const TextStyle(fontWeight: FontWeight.bold)),
                     Text(post.timeAgo, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   ],
                 ),
               ),
-              TextButton(onPressed: () {}, child: const Text("Follow")),
+              IconButton(
+                icon: const Icon(Icons.more_vert),
+                onPressed: () {
+                  // Show delete option if it's the user's post
+                },
+              ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(post.postText),
-          if (post.imageUrl != null) ...[
+          if (post.caption != null && post.caption!.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(post.imageUrl!, fit: BoxFit.cover, width: double.infinity, height: 200),
-                ),
-                if (post.calories != null)
-                  Positioned(
-                    bottom: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(8)),
-                      child: Text("AI DETECTED: ${post.calories}", style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-              ],
-            ),
+            Text(post.caption!),
           ],
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              post.mediaUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: 250,
+              errorBuilder: (context, error, stackTrace) => Container(
+                height: 200,
+                color: Colors.grey[300],
+                child: const Icon(Icons.broken_image),
+              ),
+            ),
+          ),
           const SizedBox(height: 16),
           Row(
             children: [
               IconButton(
-                icon: Icon(post.isLiked ? Icons.favorite : Icons.favorite_border, color: post.isLiked ? Colors.red : Colors.grey),
+                icon: Icon(
+                  post.isLikedByMe ? Icons.favorite : Icons.favorite_border,
+                  color: post.isLikedByMe ? Colors.red : Colors.grey,
+                ),
                 onPressed: () => context.read<CommunityProvider>().toggleLike(post.id),
               ),
-              Text("${post.likes}"),
+              Text("${post.likesCount}"),
               const SizedBox(width: 20),
               const Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey),
               const SizedBox(width: 5),
-              Text("${post.comments}"),
+              Text("${post.commentsCount}"),
             ],
           )
         ],

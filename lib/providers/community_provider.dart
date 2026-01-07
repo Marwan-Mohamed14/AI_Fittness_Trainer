@@ -1,56 +1,131 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/post_model.dart';
+import '../services/post_service.dart';
+import '../services/storage_service.dart';
 
 class CommunityProvider extends ChangeNotifier {
-  // Mock data representing the image provided
-  final List<Post> _posts = [
-    Post(
-      id: '1',
-      userName: "Sarah Fit",
-      userAvatar: "https://i.pravatar.cc/150?u=sarah",
-      timeAgo: "2 hours ago",
-      postText: "Trying out the AI-recommended lunch. Packed with protein! 💪🥗 #FitMind #HealthyEating",
-      imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
-      calories: "500 KCAL",
-      likes: 46,
-      comments: 12,
-    ),
-    Post(
-      id: '2',
-      userName: "Mike Runner",
-      userAvatar: "https://i.pravatar.cc/150?u=mike",
-      timeAgo: "5 hours ago",
-      postText: "Just crushed a 5k personal best thanks to the interval training plan. 🏃‍♂️💨",
-      likes: 120,
-      comments: 8,
-    ),
-  ];
+  final PostService _postService = PostService();
+  final StorageService _storageService = StorageService();
+
+  List<Post> _posts = [];
+  bool _isLoading = false;
+  String? _error;
 
   List<Post> get posts => _posts;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  // Logic to handle liking a post
-  void toggleLike(String postId) {
-    final index = _posts.indexWhere((p) => p.id == postId);
-    if (index != -1) {
-      if (_posts[index].isLiked) {
-        _posts[index].likes--;
-      } else {
-        _posts[index].likes++;
-      }
-      _posts[index].isLiked = !_posts[index].isLiked;
-      notifyListeners(); // This tells the UI to refresh
+  /// Initialize - fetch posts
+  CommunityProvider() {
+    fetchPosts();
+  }
+
+  /// Fetch all posts
+  Future<void> fetchPosts() async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      _posts = await _postService.fetchPosts();
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
-  // Logic to add a new text post
-  void addPost(String text) {
-    _posts.insert(0, Post(
-      id: DateTime.now().toString(),
-      userName: "You",
-      userAvatar: "https://i.pravatar.cc/150?u=me",
-      timeAgo: "Just now",
-      postText: text,
-    ));
-    notifyListeners();
+  /// Create a new post
+  Future<void> createPost({
+    required File imageFile,
+    String? caption,
+  }) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Upload image
+      final imageUrl = await _storageService.uploadImage(imageFile);
+
+      // Create post in database
+      final newPost = await _postService.createPost(
+        mediaUrl: imageUrl,
+        mediaType: 'image',
+        caption: caption,
+      );
+
+      // Add to list
+      _posts.insert(0, newPost);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// Toggle like
+  Future<void> toggleLike(String postId) async {
+    try {
+      final index = _posts.indexWhere((p) => p.id == postId);
+      if (index == -1) return;
+
+      final post = _posts[index];
+
+      // Optimistic update
+      if (post.isLikedByMe) {
+        _posts[index] = post.copyWith(
+          isLikedByMe: false,
+          likesCount: post.likesCount - 1,
+        );
+        notifyListeners();
+        await _postService.unlikePost(postId);
+      } else {
+        _posts[index] = post.copyWith(
+          isLikedByMe: true,
+          likesCount: post.likesCount + 1,
+        );
+        notifyListeners();
+        await _postService.likePost(postId);
+      }
+    } catch (e) {
+      // Revert on error
+      await fetchPosts();
+    }
+  }
+
+  /// Delete a post
+  Future<void> deletePost(String postId) async {
+    try {
+      final index = _posts.indexWhere((p) => p.id == postId);
+      if (index == -1) return;
+
+      final post = _posts[index];
+
+      // Remove from list
+      _posts.removeAt(index);
+      notifyListeners();
+
+      // Delete from storage
+      await _storageService.deleteImage(post.mediaUrl);
+
+      // Delete from database
+      await _postService.deletePost(postId);
+    } catch (e) {
+      await fetchPosts();
+      rethrow;
+    }
+  }
+
+  /// Refresh posts
+  Future<void> refreshPosts() async {
+    await fetchPosts();
   }
 }

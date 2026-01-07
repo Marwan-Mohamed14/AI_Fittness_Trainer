@@ -43,7 +43,7 @@ class CreatePostSection extends StatelessWidget {
                   Icon(Icons.image, color: Colors.blue.shade400, size: 20),
                   const SizedBox(width: 15),
                   Icon(Icons.camera_alt, color: Colors.blue.shade400, size: 20),
-                ],
+                ],  
               ),
               ElevatedButton(
                 onPressed: () {

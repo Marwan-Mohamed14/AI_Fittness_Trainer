@@ -1,3 +1,4 @@
+import 'package:ai_personal_trainer/screens/community_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -630,14 +631,4 @@ class _ActionCard extends StatelessWidget {
   }
 }
 
-class CommunityScreen extends StatelessWidget {
-  const CommunityScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Community')),
-      body: const Center(child: Text('Community Page')),
-    );
-  }
-}

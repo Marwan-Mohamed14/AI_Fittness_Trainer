@@ -1,5 +1,6 @@
 import 'package:ai_personal_trainer/controllers/Profilecontroller.dart';
 import 'package:ai_personal_trainer/layout/MainLayout.dart';
+import 'package:ai_personal_trainer/screens/HomePage.dart';
 import 'package:ai_personal_trainer/screens/NearbyGymsPage.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/AgeScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/DietQuestionsScreen.dart';
@@ -7,6 +8,7 @@ import 'package:ai_personal_trainer/screens/UserDataPages/GenderScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/HeightScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/WorkoutQuestionsScreen.dart';
 import 'package:ai_personal_trainer/screens/WorkoutPage.dart';
+import 'package:ai_personal_trainer/screens/community_screen.dart';
 import 'package:ai_personal_trainer/screens/DailyCheckUpMealsScreen.dart';
 import 'package:ai_personal_trainer/screens/DailyCheckUpWorkoutScreen.dart';
 import 'package:ai_personal_trainer/screens/DietPage.dart';
@@ -34,8 +36,8 @@ void main() async {
 
   Get.put(ProfileController());
   final themeController = Get.put(ThemeController());
-    Get.put(ProfileController());
- 
+  Get.put(ProfileController());
+
   Get.put(NotificationController(), permanent: true);
   // Load theme preference before building app
   await themeController.loadTheme();
@@ -63,7 +65,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _checkAuthAndSetRoute() async {
     final authService = AuthService();
     final user = authService.getCurrentUser();
-    
+
     if (user != null) {
       // User is logged in, check if they have completed onboarding
       try {
@@ -73,7 +75,7 @@ class _MyAppState extends State<MyApp> {
             .select('user_id')
             .eq('user_id', user.id)
             .maybeSingle();
-        
+
         final hasProfile = response != null;
         setState(() {
           initialRoute = hasProfile ? '/home' : '/age-screen';
@@ -104,9 +106,7 @@ class _MyAppState extends State<MyApp> {
         home: Scaffold(
           backgroundColor: const Color(0xFF0F111A),
           body: Center(
-            child: CircularProgressIndicator(
-              color: Colors.deepPurple,
-            ),
+            child: CircularProgressIndicator(color: Colors.deepPurple),
           ),
         ),
       );
@@ -128,13 +128,17 @@ class _MyAppState extends State<MyApp> {
                 useMaterial3: true,
                 brightness: Brightness.light,
                 scaffoldBackgroundColor: const Color(0xFFF1F3F8),
-                cardColor: const Color(0xFFFAFBFC), // Slightly off-white for better contrast
+                cardColor: const Color(
+                  0xFFFAFBFC,
+                ), // Slightly off-white for better contrast
                 colorScheme: const ColorScheme.light(
                   primary: Colors.deepPurple,
                   secondary: Colors.deepPurpleAccent,
                   background: Color(0xFFF1F3F8),
                   surface: Color(0xFFFAFBFC), // Slightly off-white
-                  onSurface: Color(0xFF1A1A1A), // Darker black for better readability
+                  onSurface: Color(
+                    0xFF1A1A1A,
+                  ), // Darker black for better readability
                   onBackground: Color(0xFF1A1A1A),
                 ),
                 textTheme: Typography.material2021().black,
@@ -144,11 +148,16 @@ class _MyAppState extends State<MyApp> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
-                      color: Colors.black.withOpacity(0.12), // More visible border
+                      color: Colors.black.withOpacity(
+                        0.12,
+                      ), // More visible border
                       width: 1.5, // Thicker border
                     ),
                   ),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 4,
+                  ),
                 ),
                 // Add borders to containers/cards in light mode
                 dividerTheme: DividerThemeData(
@@ -175,28 +184,60 @@ class _MyAppState extends State<MyApp> {
               themeMode: themeController.themeMode,
 
               initialRoute: initialRoute ?? '/login',
-            getPages: [
-              GetPage(name: '/login', page: () => const LoginPage()),
-              GetPage(name: '/signup', page: () => const SignupPage()),
-              GetPage(name: '/age-screen', page: () => AgeScreen()),
-              GetPage(name: '/height-screen', page: () => const HeightScreen()),
-              GetPage(name: '/gender-screen', page: () => const GenderScreen()),
-              GetPage(name: '/workout-screen', page: () => const WorkoutQuestionsScreen()),
-              GetPage(name: '/diet-screen', page: () => const DietQuestionsScreen()),
-              GetPage(name: '/home', page: () => const MainLayout()),
-              GetPage(name: '/show-diet-page', page: () => const DietPlanScreen()),
-              GetPage(name: '/show-workout-page', page: () => const WorkoutPlanScreen()),
-              GetPage(name: '/settings-page', page: () => const SettingsScreen()),
-              GetPage(name: '/nearby-gyms-page', page: () => const NearbyGymsScreen()),
-              GetPage(name: '/daily-meals', page: () => const DailyCheckupMealsScreen()),
-  GetPage(name: '/daily-workout', page: () => const DailyCheckupWorkoutScreen()),
-
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
+              getPages: [
+                GetPage(name: '/login', page: () => const LoginPage()),
+                GetPage(name: '/signup', page: () => const SignupPage()),
+                GetPage(name: '/age-screen', page: () => AgeScreen()),
+                GetPage(
+                  name: '/height-screen',
+                  page: () => const HeightScreen(),
+                ),
+                GetPage(
+                  name: '/gender-screen',
+                  page: () => const GenderScreen(),
+                ),
+                GetPage(
+                  name: '/workout-screen',
+                  page: () => const WorkoutQuestionsScreen(),
+                ),
+                GetPage(
+                  name: '/diet-screen',
+                  page: () => const DietQuestionsScreen(),
+                ),
+                GetPage(name: '/home', page: () => const MainLayout()),
+                GetPage(
+                  name: '/show-diet-page',
+                  page: () => const DietPlanScreen(),
+                ),
+                GetPage(
+                  name: '/show-workout-page',
+                  page: () => const WorkoutPlanScreen(),
+                ),
+                GetPage(
+                  name: '/settings-page',
+                  page: () => const SettingsScreen(),
+                ),
+                GetPage(
+                  name: '/nearby-gyms-page',
+                  page: () => const NearbyGymsScreen(),
+                ),
+                GetPage(
+                  name: '/daily-meals',
+                  page: () => const DailyCheckupMealsScreen(),
+                ),
+                GetPage(
+                  name: '/daily-workout',
+                  page: () => const DailyCheckupWorkoutScreen(),
+                ),
+                GetPage(
+                  name: '/community_screen',
+                  page: () => const CommunityScreen(),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 }

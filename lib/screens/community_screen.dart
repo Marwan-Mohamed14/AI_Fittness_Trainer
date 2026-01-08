@@ -13,19 +13,27 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen> {
   int _currentIndex = 0;
+  late CommunityProvider _provider; // Store provider instance
 
-  // The pages to navigate between
-  final List<Widget> _pages = [
-    const CommunityView(),
-    const MyCommunityAccount(), // This is the placeholder for later
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _provider = CommunityProvider(); // Create once
+    _provider.fetchPosts(); // Load initial posts
+  }
+
+  @override
+  void dispose() {
+    _provider.dispose(); // Clean up
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return ChangeNotifierProvider(
-      create: (_) => CommunityProvider(),
+    return ChangeNotifierProvider.value(
+      value: _provider, // Use existing instance
       child: Scaffold(
         backgroundColor: theme.colorScheme.background,
         appBar: AppBar(
@@ -36,12 +44,17 @@ class _CommunityScreenState extends State<CommunityScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           actions: [
-            if (_currentIndex == 0) // Only show search/notif on the feed
+            if (_currentIndex == 0)
               IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-           
           ],
         ),
-        body: _pages[_currentIndex],
+        body: IndexedStack(
+          index: _currentIndex,
+          children: const [
+            CommunityView(),
+            MyCommunityAccount(),
+          ],
+        ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
@@ -97,7 +110,6 @@ class CommunityView extends StatelessWidget {
   }
 }
 
-// --- Placeholder for your Account Page ---
 class MyCommunityAccount extends StatelessWidget {
   const MyCommunityAccount({super.key});
 

@@ -93,7 +93,7 @@ class CreatePostSection extends StatelessWidget {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (bottomSheetContext) => ChangeNotifierProvider.value(
-      value: provider, // Pass the provider to the dialog
+      value: provider, 
       child: const CreatePostDialog(),
     ),
   );
@@ -342,7 +342,8 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
 
 class SocialPostCard extends StatelessWidget {
   final Post post;
-  const SocialPostCard({super.key, required this.post});
+  final bool showDelete;
+  const SocialPostCard({super.key, required this.post,this.showDelete = false});
 
   @override
   Widget build(BuildContext context) {
@@ -363,52 +364,54 @@ class SocialPostCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // User header
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
-                child: Icon(
-                  Icons.person,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      post.userName ?? 'FitUser',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      post.timeAgo,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'delete') {
-                    _showDeleteConfirmation(context);
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Delete', style: TextStyle(color: Colors.red)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+         Row(
+  children: [
+    CircleAvatar(
+      backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
+      child: Icon(
+        Icons.person,
+        color: theme.colorScheme.primary,
+      ),
+    ),
+    const SizedBox(width: 12),
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            post.userName ?? 'FitUser',
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
+          Text(
+            post.timeAgo,
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+        ],
+      ),
+    ),
+    // Only show three dots if showDelete is true
+    if (showDelete)
+      PopupMenuButton<String>(
+        onSelected: (value) {
+          if (value == 'delete') {
+            _showDeleteConfirmation(context);
+          }
+        },
+        itemBuilder: (context) => [
+          const PopupMenuItem(
+            value: 'delete',
+            child: Row(
+              children: [
+                Icon(Icons.delete_outline, color: Colors.red),
+                SizedBox(width: 8),
+                Text('Delete', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          ),
+        ],
+      ),
+  ],
+),
 
           // Caption
           if (post.caption != null && post.caption!.isNotEmpty) ...[
@@ -470,45 +473,47 @@ class SocialPostCard extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Post'),
-        content: const Text('Are you sure?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              try {
-                await context.read<CommunityProvider>().deletePost(post.id);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Post deleted'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+ void _showDeleteConfirmation(BuildContext cardContext) {
+  final provider = cardContext.read<CommunityProvider>(); // Use cardContext, not dialog context
+
+  showDialog(
+    context: cardContext,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Delete Post'),
+      content: const Text('Are you sure you want to delete this post?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () async {
+            Navigator.of(dialogContext).pop(); // Close dialog first
+            try {
+              await provider.deletePost(post.id);
+              if (cardContext.mounted) {
+                ScaffoldMessenger.of(cardContext).showSnackBar(
+                  const SnackBar(
+                    content: Text('Post deleted successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
               }
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
+            } catch (e) {
+              if (cardContext.mounted) {
+                ScaffoldMessenger.of(cardContext).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to delete: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          },
+          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+}
 }

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/community_provider.dart';
 import '../../widgets/community_widgets.dart';
 import '../../utils/responsive.dart';
-import 'MyCommunityAccount.dart'; // Import the new page here
+import 'MyCommunityAccount.dart'; // Your real account page
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -14,19 +14,35 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen> {
   int _currentIndex = 0;
+  late final CommunityProvider _provider; // Single instance
 
-  // The pages to navigate between
-  final List<Widget> _pages = [
-    const CommunityView(),
-    const MyCommunityAccount(), // This is the placeholder for later
+  @override
+  void initState() {
+    super.initState();
+    // Create ONE provider instance for the entire screen
+    _provider = CommunityProvider();
+    // Pre-load community posts when screen opens
+    _provider.fetchPosts();
+  }
+
+  @override
+  void dispose() {
+    _provider.dispose();
+    super.dispose();
+  }
+
+  // The two tabs
+  final List<Widget> _pages = const [
+    CommunityView(),
+    MyCommunityAccount(),
   ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return ChangeNotifierProvider(
-      create: (_) => CommunityProvider(),
+    return ChangeNotifierProvider.value(
+      value: _provider, // Use the same instance for both tabs
       child: Scaffold(
         backgroundColor: theme.colorScheme.background,
         appBar: AppBar(
@@ -39,7 +55,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
           actions: [
             if (_currentIndex == 0)
               IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-           
           ],
         ),
         body: _pages[_currentIndex],
@@ -49,12 +64,16 @@ class _CommunityScreenState extends State<CommunityScreen> {
             setState(() {
               _currentIndex = index;
             });
+            // Optional: Load my posts when switching to Account tab
+            if (index == 1) {
+              _provider.fetchMyPosts();
+            }
           },
           selectedItemColor: theme.colorScheme.primary,
           unselectedItemColor: Colors.grey,
           showSelectedLabels: true,
           showUnselectedLabels: false,
-          type: BottomNavigationBarType.fixed, // Best for 2-4 items
+          type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.group_outlined),
@@ -94,26 +113,6 @@ class CommunityView extends StatelessWidget {
           if (index == 0) return const CreatePostSection();
           return SocialPostCard(post: provider.posts[index - 1]);
         },
-      ),
-    );
-  }
-}
-
-// --- Placeholder for your Account Page ---
-class MyCommunityAccount extends StatelessWidget {
-  const MyCommunityAccount({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircleAvatar(radius: 50, child: Icon(Icons.person, size: 50)),
-          const SizedBox(height: 20),
-          Text("My Community Profile", style: Theme.of(context).textTheme.titleLarge),
-          const Text("Posts and stats will appear here later."),
-        ],
       ),
     );
   }

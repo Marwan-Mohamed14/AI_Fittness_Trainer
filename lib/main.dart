@@ -8,7 +8,7 @@ import 'package:ai_personal_trainer/screens/UserDataPages/GenderScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/HeightScreen.dart';
 import 'package:ai_personal_trainer/screens/UserDataPages/WorkoutQuestionsScreen.dart';
 import 'package:ai_personal_trainer/screens/WorkoutPage.dart';
-import 'package:ai_personal_trainer/screens/community_screen.dart';
+import 'package:ai_personal_trainer/screens/Community/community_screen.dart';
 import 'package:ai_personal_trainer/screens/DailyCheckUpMealsScreen.dart';
 import 'package:ai_personal_trainer/screens/DailyCheckUpWorkoutScreen.dart';
 import 'package:ai_personal_trainer/screens/DietPage.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/community_provider.dart';
-import '../widgets/community_widgets.dart';
-import '../utils/responsive.dart';
+import '../../providers/community_provider.dart';
+import '../../widgets/community_widgets.dart';
+import '../../utils/responsive.dart';
 import 'MyCommunityAccount.dart'; // Import the new page here
 
 class CommunityScreen extends StatefulWidget {

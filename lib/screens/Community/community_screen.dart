@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/community_provider.dart';
-import '../widgets/community_widgets.dart';
-import '../utils/responsive.dart';
+import '../../providers/community_provider.dart';
+import '../../widgets/community_widgets.dart';
+import '../../utils/responsive.dart';
+import 'MyCommunityAccount.dart'; // Import the new page here
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -13,27 +14,19 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen> {
   int _currentIndex = 0;
-  late CommunityProvider _provider; // Store provider instance
 
-  @override
-  void initState() {
-    super.initState();
-    _provider = CommunityProvider(); // Create once
-    _provider.fetchPosts(); // Load initial posts
-  }
-
-  @override
-  void dispose() {
-    _provider.dispose(); // Clean up
-    super.dispose();
-  }
+  // The pages to navigate between
+  final List<Widget> _pages = [
+    const CommunityView(),
+    const MyCommunityAccount(), // This is the placeholder for later
+  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return ChangeNotifierProvider.value(
-      value: _provider, // Use existing instance
+    return ChangeNotifierProvider(
+      create: (_) => CommunityProvider(),
       child: Scaffold(
         backgroundColor: theme.colorScheme.background,
         appBar: AppBar(
@@ -46,15 +39,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
           actions: [
             if (_currentIndex == 0)
               IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+           
           ],
         ),
-        body: IndexedStack(
-          index: _currentIndex,
-          children: const [
-            CommunityView(),
-            MyCommunityAccount(),
-          ],
-        ),
+        body: _pages[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
@@ -66,6 +54,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
           unselectedItemColor: Colors.grey,
           showSelectedLabels: true,
           showUnselectedLabels: false,
+          type: BottomNavigationBarType.fixed, // Best for 2-4 items
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.group_outlined),
@@ -110,6 +99,7 @@ class CommunityView extends StatelessWidget {
   }
 }
 
+// --- Placeholder for your Account Page ---
 class MyCommunityAccount extends StatelessWidget {
   const MyCommunityAccount({super.key});
 

@@ -1,4 +1,4 @@
-import 'package:ai_personal_trainer/screens/community_screen.dart';
+import 'package:ai_personal_trainer/screens/Community/community_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

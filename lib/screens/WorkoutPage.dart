@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/controllers/Profilecontroller.dart';
 import 'package:ai_personal_trainer/models/WorkoutData.dart';
 import 'package:ai_personal_trainer/utils/responsive.dart';
+import 'package:ai_personal_trainer/services/exercise_video_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class WorkoutPlanScreen extends StatefulWidget {
   const WorkoutPlanScreen({super.key});
@@ -13,8 +16,10 @@ class WorkoutPlanScreen extends StatefulWidget {
 
 class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
   final ProfileController _profileController = Get.find<ProfileController>();
+  final ExerciseVideoService _videoService = ExerciseVideoService();
   WorkoutPlan? _workoutPlan;
   bool _isLoading = true;
+  Map<String, String> _videoUrls = {};
 
   @override
   void initState() {
@@ -25,8 +30,13 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
   Future<void> _loadWorkoutPlan() async {
     setState(() => _isLoading = true);
     final plan = await _profileController.loadWorkoutPlan();
+    
+    // Load video URLs for all exercises
+    final videoUrls = await _videoService.getAllVideoUrls();
+    
     setState(() {
       _workoutPlan = plan;
+      _videoUrls = videoUrls;
       _isLoading = false;
     });
   }
@@ -160,6 +170,7 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
                                   name: e.name,
                                   sets: e.sets,
                                   reps: e.reps,
+                                  videoUrl: e.videoUrl ?? _videoUrls[e.name.toLowerCase().trim()],
                                 )).toList(),
                               ),
                             ],
@@ -333,24 +344,160 @@ class _ExerciseItem {
   final String name;
   final String sets;
   final String reps;
+  final String? videoUrl;
 
   _ExerciseItem({
     required this.name,
     required this.sets,
     required this.reps,
+    this.videoUrl,
   });
 }
 
 class _ExerciseCard extends StatelessWidget {
   final _ExerciseItem item;
 
-  const _ExerciseCard({required this.item});
+  const _ExerciseCard({
+    required this.item,
+  });
+
+  Future<void> _handleVideoClick(BuildContext context) async {
+    if (item.videoUrl != null && item.videoUrl!.isNotEmpty) {
+      // Open video URL directly
+      await _openVideoUrl(context, item.videoUrl!);
+    }
+  }
+
+  Future<void> _openVideoUrl(BuildContext context, String videoUrl) async {
+    try {
+      String url = videoUrl.trim();
+      
+      // Check if it's a direct video URL - if so, prefer search URL for reliability
+      bool isDirectVideo = url.contains('youtube.com/watch?v=') || url.contains('youtu.be/');
+      
+      // If it's a direct video URL, use search URL instead for better reliability
+      // This ensures we always find videos even if the specific video ID is invalid
+      if (isDirectVideo) {
+        // Extract exercise name and create a search URL
+        String searchQuery = item.name.replaceAll(' ', '+') + '+how+to+do+proper+form';
+        url = 'https://www.youtube.com/results?search_query=$searchQuery';
+      } else {
+        // Convert YouTube search URLs to proper format
+        url = _convertYouTubeUrl(url);
+      }
+      
+      // Ensure URL has protocol
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://$url';
+      }
+
+      final Uri uri = Uri.parse(url);
+      
+      // For Android, try multiple launch methods
+      if (Platform.isAndroid) {
+        // For search URLs, always use browser
+        if (url.contains('youtube.com/results')) {
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          } else {
+            throw Exception('Cannot launch URL');
+          }
+        } else if (url.contains('youtube.com/watch') || url.contains('youtu.be/')) {
+          // Try YouTube app first if it's a YouTube video
+          try {
+            // Extract video ID
+            String? videoId = _extractYouTubeVideoId(url);
+            if (videoId != null) {
+              // Try YouTube app intent
+              final youtubeAppUri = Uri.parse('vnd.youtube:$videoId');
+              if (await canLaunchUrl(youtubeAppUri)) {
+                await launchUrl(youtubeAppUri);
+                return;
+              }
+            }
+          } catch (e) {
+            print('⚠️ Could not open YouTube app, trying browser: $e');
+          }
+          
+          // Fallback to browser
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          } else {
+            throw Exception('Cannot launch URL');
+          }
+        } else {
+          // Fallback to browser for any other URL
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          } else {
+            throw Exception('Cannot launch URL');
+          }
+        }
+      } else {
+        // For iOS/Web, use standard launch
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          throw Exception('Cannot launch URL');
+        }
+      }
+    } catch (e) {
+      print('❌ Error opening video URL: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open video. Please check your internet connection.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  // Convert YouTube search URLs or validate video URLs
+  String _convertYouTubeUrl(String url) {
+    // If it's already a valid YouTube video URL, return as is
+    if (url.contains('youtube.com/watch?v=') || url.contains('youtu.be/')) {
+      return url;
+    }
+    
+    // If it's a search URL, convert to a more reliable format
+    if (url.contains('youtube.com/results?search_query=')) {
+      // Extract search query
+      final match = RegExp(r'search_query=([^&]+)').firstMatch(url);
+      if (match != null) {
+        String query = match.group(1) ?? '';
+        // URL decode and re-encode properly
+        query = Uri.decodeComponent(query).replaceAll(' ', '+');
+        // Return a proper search URL that works on mobile
+        return 'https://www.youtube.com/results?search_query=$query';
+      }
+    }
+    
+    // If it's just a video ID, create proper URL
+    if (RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(url)) {
+      return 'https://www.youtube.com/watch?v=$url';
+    }
+    
+    return url;
+  }
+
+  // Extract YouTube video ID from URL
+  String? _extractYouTubeVideoId(String url) {
+    // Match youtube.com/watch?v=VIDEO_ID
+    RegExp regExp = RegExp(r'(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})');
+    final match = regExp.firstMatch(url);
+    return match?.group(1);
+  }
+
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     final isDark = theme.brightness == Brightness.dark;
+    final hasVideo = item.videoUrl != null && item.videoUrl!.isNotEmpty;
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -396,26 +543,39 @@ class _ExerciseCard extends StatelessWidget {
               ],
             ),
           ),
-          Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.secondaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.play_arrow,
-                  color: theme.colorScheme.onSecondaryContainer,
-                  size: 20,
-                ),
+          GestureDetector(
+            onTap: hasVideo ? () => _handleVideoClick(context) : null,
+            child: Opacity(
+              opacity: hasVideo ? 1.0 : 0.5,
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: hasVideo 
+                          ? theme.colorScheme.primaryContainer 
+                          : theme.colorScheme.surfaceVariant,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      hasVideo ? Icons.video_library : Icons.video_library_outlined,
+                      color: hasVideo 
+                          ? theme.colorScheme.onPrimaryContainer 
+                          : theme.colorScheme.onSurface.withOpacity(0.5),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    hasVideo ? 'Watch' : 'No Video',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7), 
+                      fontSize: 10
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Tutorial',
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7), fontSize: 10),
-              ),
-            ],
+            ),
           ),
         ],
       ),

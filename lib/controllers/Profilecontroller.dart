@@ -4,6 +4,7 @@ import 'package:ai_personal_trainer/services/Ai_plan_service.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/models/onboarding_data.dart';
 import 'package:ai_personal_trainer/services/ProfileService.dart';
+import 'package:ai_personal_trainer/services/exercise_video_service.dart';
 import 'package:flutter/material.dart';
 
 class ProfileController extends GetxController {
@@ -245,6 +246,12 @@ Future<void>generateAiPlans() async{
 
     await _profileService.saveProfile(userprofile);
     print('✅ Plans saved to Supabase!');
+    
+    // Parse and save video URLs to Supabase
+    final workoutPlan = WorkoutPlanParser.parseWorkoutPlan(plans['workout'] ?? '');
+    if (workoutPlan != null) {
+      await _saveVideoUrlsToDatabase(workoutPlan);
+    }
 
     
     Get.snackbar(
@@ -307,10 +314,40 @@ Future<WorkoutPlan?> loadWorkoutPlan() async {
       return null;
     }
     print('workout plan found, parsing...');
-    return WorkoutPlanParser.parseWorkoutPlan(profile.workoutPlan!);
+    final workoutPlan = WorkoutPlanParser.parseWorkoutPlan(profile.workoutPlan!);
+    
+    // Save video URLs to database if workout plan was parsed successfully
+    if (workoutPlan != null) {
+      await _saveVideoUrlsToDatabase(workoutPlan);
+    }
+    
+    return workoutPlan;
   } catch (e) {
     print('❌ Error loading workout plan: $e');
     return null;
+  }
+}
+
+Future<void> _saveVideoUrlsToDatabase(WorkoutPlan workoutPlan) async {
+  try {
+    final videoService = ExerciseVideoService();
+    int savedCount = 0;
+    
+    for (final day in workoutPlan.days) {
+      for (final exercise in day.exercises) {
+        if (exercise.videoUrl != null && exercise.videoUrl!.isNotEmpty) {
+          await videoService.saveVideoUrl(exercise.name, exercise.videoUrl!);
+          savedCount++;
+          print('💾 Saved video URL for: ${exercise.name}');
+        }
+      }
+    }
+    
+    if (savedCount > 0) {
+      print('✅ Saved $savedCount video URL(s) to database');
+    }
+  } catch (e) {
+    print('⚠️ Error saving video URLs to database: $e');
   }
 }
 

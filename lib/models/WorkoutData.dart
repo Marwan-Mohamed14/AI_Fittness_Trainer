@@ -2,11 +2,13 @@ class Exercise {
   final String name;
   final String sets;
   final String reps;
+  final String? videoUrl;
 
   Exercise({
     required this.name,
     required this.sets,
     required this.reps,
+    this.videoUrl,
   });
 }
 
@@ -324,9 +326,12 @@ class WorkoutPlanParser {
           name = name.replaceAll(RegExp(r'[:\-,\s]+$'), '').trim();
           
           if (name.isNotEmpty && !seenExercises.contains(name.toLowerCase())) {
-            exercises.add(Exercise(name: name, sets: sets, reps: reps));
+            // Look for video URL in the lines after this exercise
+            String? videoUrl = _extractVideoUrlForExercise(workoutContent, match.end, name);
+            
+            exercises.add(Exercise(name: name, sets: sets, reps: reps, videoUrl: videoUrl));
             seenExercises.add(name.toLowerCase());
-            print('✅ Added exercise (numbered): $name - $sets - $reps');
+            print('✅ Added exercise (numbered): $name - $sets - $reps${videoUrl != null ? " - Video: $videoUrl" : ""}');
           }
         } catch (e) {
           print('⚠️ Error parsing numbered exercise: $e');
@@ -542,9 +547,12 @@ class WorkoutPlanParser {
           }
 
           if (name.isNotEmpty && sets != null && reps != null && !seenExercises.contains(name.toLowerCase())) {
-            exercises.add(Exercise(name: name, sets: sets, reps: reps));
+            // Look for video URL in the match context
+            String? videoUrl = _extractVideoUrlForExercise(workoutContent, match.end, name);
+            
+            exercises.add(Exercise(name: name, sets: sets, reps: reps, videoUrl: videoUrl));
             seenExercises.add(name.toLowerCase());
-            print('✅ Added exercise (pattern 2): $name - $sets - $reps');
+            print('✅ Added exercise (pattern 2): $name - $sets - $reps${videoUrl != null ? " - Video: $videoUrl" : ""}');
           }
         } catch (e) {
           print('⚠️ Error parsing exercise: $e');
@@ -562,10 +570,13 @@ class WorkoutPlanParser {
       try {
         String name = _cleanExerciseName(match.group(1)?.trim() ?? '');
         if (name.isNotEmpty && !seenExercises.contains(name.toLowerCase())) {
+          String? videoUrl = _extractVideoUrlForExercise(workoutContent, match.end, name);
+          
           exercises.add(Exercise(
             name: name,
             sets: '${match.group(2)} Sets',
             reps: '${match.group(3)} Reps',
+            videoUrl: videoUrl,
           ));
           seenExercises.add(name.toLowerCase());
         }
@@ -581,10 +592,25 @@ class WorkoutPlanParser {
         if (_isExerciseNameLine(trimmed) && trimmed.length > 3 && trimmed.length < 50) {
           final name = _cleanExerciseName(trimmed);
           if (name.isNotEmpty && !seenExercises.contains(name.toLowerCase())) {
+            // Look for video URL in surrounding lines
+            int lineIndex = lines.indexOf(trimmed);
+            String? videoUrl;
+            if (lineIndex >= 0 && lineIndex + 1 < lines.length) {
+              for (int j = lineIndex + 1; j < lines.length && j <= lineIndex + 5; j++) {
+                final videoMatch = RegExp(r'(?:Video\s+URL?[:\-]?\s*|Video[:\-]?\s*)(https?://[^\s]+)', caseSensitive: false)
+                    .firstMatch(lines[j]);
+                if (videoMatch != null) {
+                  videoUrl = videoMatch.group(1)?.trim();
+                  break;
+                }
+              }
+            }
+            
             exercises.add(Exercise(
               name: name,
               sets: '3 Sets',
               reps: '10-12 Reps',
+              videoUrl: videoUrl,
             ));
             seenExercises.add(name.toLowerCase());
           }
@@ -646,6 +672,51 @@ class WorkoutPlanParser {
     cleaned = cleaned.replaceAll(RegExp(r'[:\-,\s]+$'), '').trim();
     
     return cleaned;
+  }
+
+  // Extract video URL for an exercise from the workout content
+  static String? _extractVideoUrlForExercise(String content, int startPosition, String exerciseName) {
+    try {
+      // Look for video URL in the next 500 characters after the exercise
+      final searchArea = content.substring(
+        startPosition, 
+        (startPosition + 500 < content.length) ? startPosition + 500 : content.length
+      );
+      
+      // Try multiple patterns for video URL
+      final videoPatterns = [
+        // Pattern 1: "Video URL: https://..."
+        RegExp(r'Video\s+URL[:\-]?\s*(https?://[^\s\n]+)', caseSensitive: false),
+        // Pattern 2: "Video: https://..."
+        RegExp(r'Video[:\-]\s*(https?://[^\s\n]+)', caseSensitive: false),
+        // Pattern 3: Just a YouTube URL on the next line
+        RegExp(r'(https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/results\?search_query=)[^\s\n]+)', caseSensitive: false),
+      ];
+      
+      for (final pattern in videoPatterns) {
+        final match = pattern.firstMatch(searchArea);
+        if (match != null) {
+          String url = match.group(1)?.trim() ?? '';
+          // Clean up URL - remove any trailing punctuation or brackets
+          url = url.replaceAll(RegExp(r'[.,;:!?)\]}>]+$'), '');
+          
+          // Validate it's a YouTube URL and normalize it
+          if (url.contains('youtube.com') || url.contains('youtu.be')) {
+            // Basic validation - ensure it's a proper YouTube URL
+            if (url.contains('youtube.com/watch?v=') || 
+                url.contains('youtu.be/') || 
+                url.contains('youtube.com/results?search_query=')) {
+              return url;
+            }
+          }
+        }
+      }
+      
+      return null;
+    } catch (e) {
+      print('⚠️ Error extracting video URL for $exerciseName: $e');
+      return null;
+    }
   }
 }
 

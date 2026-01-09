@@ -30,7 +30,6 @@ class DBHelper {
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
-       
           await db.execute('''
             CREATE TABLE daily_logs_new (
               date TEXT,
@@ -42,7 +41,6 @@ class DBHelper {
             )
           ''');
           
-        
           await db.execute('''
             INSERT INTO daily_logs_new (date, user_id, diet_done, workout_done, created_at)
             SELECT date, 'migrated_user', diet_done, workout_done, created_at

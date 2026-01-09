@@ -70,9 +70,29 @@ Carbs: [number]g
 Fat: [number]g
 
 ===WORKOUT PLAN===
-[Day 1]
-[Day 2]
-... (continue for all ${userData.trainingDays} days)
+For each day, format as follows:
+[DAY 1 - MUSCLE GROUP]
+Muscles: [target muscles]
+Duration: [estimated time] Min
+
+Exercises:
+1. [Exercise Name]: [Sets] sets, [Reps] reps
+   Video URL: [MUST provide a YouTube search URL in this format:
+   https://www.youtube.com/results?search_query=exercise+name+how+to+do+proper+form
+   IMPORTANT: Always use search URLs (not direct video links) to ensure videos are always available.
+   Format search query as: exercise+name+how+to+do+proper+form (replace spaces with +)
+   Example: For "Push Ups" use: https://www.youtube.com/results?search_query=push+ups+how+to+do+proper+form]
+
+Repeat for all ${userData.trainingDays} days.
+
+IMPORTANT FOR VIDEO URLS:
+- For EACH exercise, you MUST include a "Video URL:" line with a YouTube SEARCH URL (not direct video link)
+- ALWAYS use search URLs format: https://www.youtube.com/results?search_query=exercise+name+how+to+do+proper+form
+- Replace spaces with + in search queries
+- Use the exercise name in the search query
+- Add "+how+to+do+proper+form" to the end of the search query for better results
+- Make sure the video URL is on a separate line right after each exercise
+- Search URLs are more reliable than direct video links as they always show available videos
 
 CRITICAL RULES:
 1. VARIETY IS ESSENTIAL: Use completely different foods each day. Do NOT repeat the same meals.
@@ -84,6 +104,7 @@ CRITICAL RULES:
 7. WORKOUT LOCATION: ${userData.trainingLocation == 'Gym' ? 'Use gym equipment (machines, free weights, cables)' : 'Use bodyweight exercises and minimal equipment (dumbbells, resistance bands)'}.
 8. BE CREATIVE: Use diverse proteins (fish, lean meats, legumes, tofu, etc.), varied carbs (rice, quinoa, sweet potatoes, oats, etc.), and healthy fats (avocado, nuts, olive oil, etc.).
 9. NO REPETITION: Each day should have unique meal combinations. Vary cooking methods (grilled, baked, steamed, raw, etc.).
+10. VIDEO URLS REQUIRED: Every single exercise MUST have a Video URL line with a YouTube link. This is mandatory.
 
 START YOUR RESPONSE WITH "===DIET PLAN===":
 ''';

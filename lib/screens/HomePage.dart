@@ -77,16 +77,7 @@ class HomePage extends StatelessWidget {
             ),
           ],
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: CircleAvatar(
-              backgroundColor: theme.colorScheme.surface,
-              child: Icon(Icons.notifications,
-                  color: theme.colorScheme.onSurface),
-            ),
-          ),
-        ],
+        
       ),
       body: SafeArea(
         child: SingleChildScrollView(

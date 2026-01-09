@@ -51,33 +51,7 @@ class CreatePostSection extends StatelessWidget {
               ],
             ),
             const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.image, color: Colors.blue.shade400, size: 20),
-                    const SizedBox(width: 15),
-                    Icon(Icons.camera_alt, color: Colors.blue.shade400, size: 20),
-                  ],
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    _showCreatePostDialog(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: const Text(
-                    "Post",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
+            
           ],
         ),
       ),

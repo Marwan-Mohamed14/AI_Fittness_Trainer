@@ -4,6 +4,7 @@ import 'package:ai_personal_trainer/controllers/themecontroller.dart';
 import 'package:ai_personal_trainer/controllers/notificationcontroller.dart';
 import 'package:ai_personal_trainer/services/Authservice.dart';
 import 'package:ai_personal_trainer/utils/responsive.dart';
+import 'package:ai_personal_trainer/screens/dashboardscreen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -162,6 +163,23 @@ Obx(
 
               ],
             ),
+const SizedBox(height: 32),
+
+const _SectionHeader(title: 'INSIGHTS'),
+
+_SettingsCard(
+  children: [
+    ListTile(
+      leading: const Icon(Icons.dashboard_outlined),
+      title: const Text('Progress Dashboard'),
+      subtitle: const Text('View your monthly fitness stats'),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: () {
+        Get.to(() => const DashboardScreen());
+      },
+    ),
+  ],
+),
 
             const SizedBox(height: 32),
 

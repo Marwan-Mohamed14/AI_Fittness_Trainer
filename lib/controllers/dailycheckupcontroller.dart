@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../data/repositories/daily_log_repository.dart';
 import '../models/daily_log.dart';
 import '../services/Authservice.dart';
+import 'package:ai_personal_trainer/supabase_config.dart';
 
 class DailyCheckupController extends GetxController {
   final repo = DailyLogRepository();
@@ -98,7 +99,6 @@ class DailyCheckupController extends GetxController {
     await refreshStats();
   }
 
- 
   Future<void> refreshStats() async {
     final uid = userId;
     if (uid == null) {
@@ -119,7 +119,8 @@ class DailyCheckupController extends GetxController {
     }
 
     dietCount.value = await repo.countDietDays(uid, period.start, period.end);
-    workoutCount.value = await repo.countWorkoutDays(uid, period.start, period.end);
+    workoutCount.value =
+        await repo.countWorkoutDays(uid, period.start, period.end);
   }
 
   int _calculateStreak(List<DailyLog> logs) {
@@ -158,8 +159,38 @@ class DailyCheckupController extends GetxController {
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
-}
 
+  /// ==============================
+  /// Save today's daily log to Supabase
+  /// ==============================
+ Future<void> saveDailyLog(String? userId) async {
+  if (userId == null) return;
+
+  final today = DateTime.now().toIso8601String().split('T')[0]; // YYYY-MM-DD
+  final dietDoneValue =
+      mealCompletion.values.isNotEmpty ? mealCompletion.values.every((v) => v) : false;
+  final workoutDoneValue =
+      workoutCompletion.values.isNotEmpty ? workoutCompletion.values.any((v) => v) : false;
+
+  try {
+    await SupabaseConfig.client
+        .from('daily_logs')
+        .upsert(
+          {
+            'user_id': userId,
+            'date': today,
+            'diet_done': dietDoneValue ? 1 : 0,
+            'workout_done': workoutDoneValue ? 1 : 0,
+          },
+          
+          onConflict: 'user_id,date',
+        );
+    print("Daily log saved successfully for $today");
+  } catch (e) {
+    print("Failed to save daily log: $e");
+  }
+}
+}
 class _Period {
   final String start;
   final String end;

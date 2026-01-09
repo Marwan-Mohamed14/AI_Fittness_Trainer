@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../controllers/Profilecontroller.dart';
 import '../models/MealData.dart';
 import '../controllers/dailycheckupcontroller.dart';
@@ -111,7 +112,27 @@ class _MealCard extends StatelessWidget {
     return Obx(() {
       final done = controller.mealCompletion[label] ?? false; 
       return GestureDetector(
-        onTap: () => controller.updateMeal(label, !done), 
+onTap: () async {
+  // Toggle the meal
+  controller.updateMeal(label, !done);
+
+  // Get current user ID from Supabase
+  final userId = Supabase.instance.client.auth.currentUser?.id;
+
+  if (userId != null) {
+    // Save daily log immediately
+    await controller.saveDailyLog(userId);
+  } else {
+    Get.snackbar(
+      "Error",
+      "User not logged in",
+      backgroundColor: Colors.red.withOpacity(0.7),
+      colorText: Colors.white,
+    );
+  }
+},
+
+
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           padding: const EdgeInsets.all(16),

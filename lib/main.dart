@@ -23,7 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/controllers/notificationcontroller.dart';
-
+import 'package:ai_personal_trainer/screens/dashboardscreen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
@@ -233,6 +233,11 @@ class _MyAppState extends State<MyApp> {
                   name: '/community_screen',
                   page: () => const CommunityScreen(),
                 ),
+                GetPage(
+  name: '/dashboard',
+  page: () => const DashboardScreen(),
+),
+
               ],
             );
           },

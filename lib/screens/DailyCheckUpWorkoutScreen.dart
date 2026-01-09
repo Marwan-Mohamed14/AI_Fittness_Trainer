@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../controllers/Profilecontroller.dart';
 import '../models/WorkoutData.dart';
 import '../controllers/dailycheckupcontroller.dart';
@@ -114,16 +115,32 @@ class _RestDayCard extends StatelessWidget {
     return Obx(() {
       final done = controller.workoutCompletion[index] ?? false;
       return GestureDetector(
-        onTap: () {
-        if (!done) {
-          for (var i = 0; i < controller.workoutCompletion.length; i++) {
-              controller.updateWorkout(i, i == index);
-            }
-          } else {
-          controller.updateWorkout(index, false);
-          }
-        },
-        child: AnimatedContainer(
+ 
+
+            onTap: () async {
+  final userId = Supabase.instance.client.auth.currentUser?.id;
+
+  if (userId == null) {
+    Get.snackbar(
+      "Error",
+      "User not logged in",
+      backgroundColor: Colors.red.withOpacity(0.7),
+      colorText: Colors.white,
+    );
+    return;
+  }
+
+  if (!done) {
+    for (var i = 0; i < controller.workoutCompletion.length; i++) {
+      controller.updateWorkout(i, i == index);
+    }
+  } else {
+    controller.updateWorkout(index, false);
+  }
+
+  await controller.saveDailyLog(userId);
+},
+ child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
@@ -229,17 +246,32 @@ class _WorkoutDayCard extends StatelessWidget {
       final dayColor = _getDayTypeColor(dayType);
       
       return GestureDetector(
-        onTap: () {
-          if (!restDone || done) {
-         if (!done) {
-          for (var i = 0; i < controller.workoutCompletion.length; i++) {
-                controller.updateWorkout(i, i == index);
-              }
-            } else {
-            controller.updateWorkout(index, false);
-            }
-          }
-        },
+    onTap: () async {
+  final userId = Supabase.instance.client.auth.currentUser?.id;
+
+  if (userId == null) {
+    Get.snackbar(
+      "Error",
+      "User not logged in",
+      backgroundColor: Colors.red.withOpacity(0.7),
+      colorText: Colors.white,
+    );
+    return;
+  }
+
+  if (!restDone || done) {
+    if (!done) {
+      for (var i = 0; i < controller.workoutCompletion.length; i++) {
+        controller.updateWorkout(i, i == index);
+      }
+    } else {
+      controller.updateWorkout(index, false);
+    }
+
+    await controller.saveDailyLog(userId);
+  }
+},
+
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.only(bottom: 12),

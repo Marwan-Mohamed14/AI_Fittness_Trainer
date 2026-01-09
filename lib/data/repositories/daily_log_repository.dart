@@ -1,9 +1,13 @@
+import 'package:ai_personal_trainer/models/MonthlyStats.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../db_helper.dart';
 import '../../models/daily_log.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DailyLogRepository {
+  final supabase = Supabase.instance.client;
+
   Future<void> logToday({
     required String userId,
     bool? dietDone,
@@ -96,5 +100,44 @@ class DailyLogRepository {
     );
     if (result.isEmpty) return null;
     return DailyLog.fromMap(result.first);
+  }
+ Future<List<MonthlyStats>> getMonthlyStats(String userId) async {
+    final response = await supabase
+        .from('daily_logs')
+        .select()
+        .eq('user_id', userId)
+        .order('date', ascending: true);
+
+    if (response == null || response.isEmpty) return [];
+
+    final logs = (response as List)
+        .map((e) => DailyLog.fromMap(e as Map<String, dynamic>))
+        .toList();
+
+    // Group by month
+    final Map<String, List<DailyLog>> logsByMonth = {};
+    for (var log in logs) {
+      final month = log.date.substring(0, 7); // "YYYY-MM"
+      logsByMonth.putIfAbsent(month, () => []).add(log);
+    }
+
+    // Compute stats
+    final List<MonthlyStats> statsList = [];
+    logsByMonth.forEach((month, logs) {
+      final dietDays = logs.where((l) => l.dietDone).length;
+      final workoutDays = logs.where((l) => l.workoutDone).length;
+      final totalDays = logs.length;
+
+      statsList.add(MonthlyStats(
+        month: month,
+        dietDays: dietDays,
+        workoutDays: workoutDays,
+        totalDays: totalDays,
+      ));
+    });
+
+    // Sort months descending
+    statsList.sort((a, b) => b.month.compareTo(a.month));
+    return statsList;
   }
 }

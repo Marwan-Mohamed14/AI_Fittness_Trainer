@@ -4,14 +4,13 @@ import 'package:path/path.dart' as p; // You may need the 'path' package
 
 class StorageService {
   final _supabase = Supabase.instance.client;
-  final String _bucketName = 'community_posts'; // Make sure this bucket exists in Supabase
+final String _bucketName = 'image';
 
   /// Upload image and return the public URL
   Future<String> uploadImage(File imageFile) async {
     try {
       final fileName = '${DateTime.now().millisecondsSinceEpoch}_${p.basename(imageFile.path)}';
-      final path = 'posts/$fileName';
-
+      final path = '1nq2cb_1/$fileName';  
       // Upload file to bucket
       await _supabase.storage.from(_bucketName).upload(path, imageFile);
 

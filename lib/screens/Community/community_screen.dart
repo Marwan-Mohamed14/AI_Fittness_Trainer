@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/community_provider.dart';
 import '../../widgets/community_widgets.dart';
 import '../../utils/responsive.dart';
-import 'MyCommunityAccount.dart'; // Import the new page here
+import 'MyCommunityAccount.dart'; // Your real account page
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -14,21 +14,35 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen> {
   int _currentIndex = 0;
+  late final CommunityProvider _provider; // Single instance
 
-  // The pages to navigate between
-  final List<Widget> _pages = [
-    const CommunityView(),
-    const MyCommunityAccount(), 
+  @override
+  void initState() {
+    super.initState();
+    // Create ONE provider instance for the entire screen
+    _provider = CommunityProvider();
+    // Pre-load community posts when screen opens
+    _provider.fetchPosts();
+  }
+
+  @override
+  void dispose() {
+    _provider.dispose();
+    super.dispose();
+  }
+
+  // The two tabs
+  final List<Widget> _pages = const [
+    CommunityView(),
+    MyCommunityAccount(),
   ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Note: Wrapping here keeps the same Provider instance alive
-    // even when switching between the Feed and the Account page.
-    return ChangeNotifierProvider(
-      create: (_) => CommunityProvider(),
+    return ChangeNotifierProvider.value(
+      value: _provider, // Use the same instance for both tabs
       child: Scaffold(
         backgroundColor: theme.colorScheme.background,
         appBar: AppBar(
@@ -41,25 +55,25 @@ class _CommunityScreenState extends State<CommunityScreen> {
           actions: [
             if (_currentIndex == 0)
               IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-            IconButton(icon: const Icon(Icons.notifications_none), onPressed: () {}),
           ],
         ),
-        body: IndexedStack( // Using IndexedStack preserves the scroll position of your feed
-          index: _currentIndex,
-          children: _pages,
-        ),
+        body: _pages[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
             setState(() {
               _currentIndex = index;
             });
+            // Optional: Load my posts when switching to Account tab
+            if (index == 1) {
+              _provider.fetchMyPosts();
+            }
           },
           selectedItemColor: theme.colorScheme.primary,
           unselectedItemColor: Colors.grey,
           showSelectedLabels: true,
           showUnselectedLabels: false,
-          type: BottomNavigationBarType.fixed, // Best for 2-4 items
+          type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.group_outlined),

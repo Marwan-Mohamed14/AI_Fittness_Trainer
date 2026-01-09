@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/post_model.dart';
 import '../services/post_service.dart';
 import '../services/storage_service.dart';
@@ -9,10 +10,12 @@ class CommunityProvider extends ChangeNotifier {
   final StorageService _storageService = StorageService();
 
   List<Post> _posts = [];
+  List<Post> _myPosts=[];
   bool _isLoading = false;
   String? _error;
 
   List<Post> get posts => _posts;
+  List<Post> get myPosts => _myPosts;  
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -27,6 +30,22 @@ class CommunityProvider extends ChangeNotifier {
       notifyListeners();
 
       _posts = await _postService.fetchPosts();
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+  Future<void> fetchMyPosts() async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      _myPosts = await _postService.fetchMyPosts();
 
       _isLoading = false;
       notifyListeners();
@@ -114,5 +133,16 @@ class CommunityProvider extends ChangeNotifier {
 
   Future<void> refreshPosts() async {
     await fetchPosts();
+  }
+  String getCurrentUserName() {
+    final email = Supabase.instance.client.auth.currentUser?.email;
+    if (email != null) {
+      return email.split('@').first;
+    }
+    return 'You';
+  }
+
+  String? getCurrentUserId() {
+    return Supabase.instance.client.auth.currentUser?.id;
   }
 }

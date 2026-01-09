@@ -4,6 +4,7 @@ class Post {
   final String mediaUrl;
   final String mediaType; // 'image' or 'video'
   final String? caption;
+  
   final DateTime createdAt;
   
   // Additional fields

@@ -8,30 +8,14 @@ import 'package:ai_personal_trainer/supabase_config.dart';
 class DailyCheckupController extends GetxController {
   final repo = DailyLogRepository();
   final authService = AuthService();
-
-  /// ==============================
-  /// UI State
-  /// ==============================
-  final mealCompletion = <String, bool>{}.obs;
-  final workoutCompletion = <int, bool>{}.obs;
-
-  /// ==============================
-  /// Today Flags (SOURCE OF TRUTH)
-  /// ==============================
+  final RxMap<String, bool> mealCompletion = <String, bool>{}.obs;
+  final RxMap<int, bool> workoutCompletion = <int, bool>{}.obs;
   final todayLogged = false.obs;
   final todayDietDone = false.obs;
   final todayWorkoutDone = false.obs;
-
-  /// ==============================
-  /// Stats
-  /// ==============================
   final streak = 0.obs;
   final dietCount = 0.obs;
   final workoutCount = 0.obs;
-
-  /// ==============================
-  /// Getters
-  /// ==============================
   String? get userId => authService.getCurrentUserId();
 
   bool get dietDone =>
@@ -44,39 +28,22 @@ class DailyCheckupController extends GetxController {
 
   String get formattedDate =>
       DateFormat('EEEE, MMM d, yyyy').format(DateTime.now());
-
-  /// ==============================
-  /// Lifecycle
-  /// ==============================
   @override
   void onInit() {
     super.onInit();
-    _loadToday();
-    refreshStats();
+    _loadToday().then((_) => refreshStats());
   }
-
-  /// ==============================
-  /// Initialize UI Checkboxes
-  /// ==============================
   void initMeals(List<String> meals) {
-    if (mealCompletion.isNotEmpty) return;
-
     for (final meal in meals) {
-      mealCompletion[meal] = todayDietDone.value;
+      mealCompletion.putIfAbsent(meal, () => false);
     }
   }
 
   void initWorkout(int count) {
-    if (workoutCompletion.isNotEmpty) return;
-
     for (int i = 0; i < count; i++) {
-      workoutCompletion[i] = todayWorkoutDone.value;
+      workoutCompletion.putIfAbsent(i, () => false);
     }
   }
-
-  /// ==============================
-  /// Update UI
-  /// ==============================
   void updateMeal(String key, bool value) {
     mealCompletion[key] = value;
   }
@@ -84,50 +51,55 @@ class DailyCheckupController extends GetxController {
   void updateWorkout(int index, bool value) {
     workoutCompletion[index] = value;
   }
-
-  /// ==============================
-  /// Load Today From Supabase
-  /// ==============================
   Future<void> _loadToday() async {
     final uid = userId;
     if (uid == null) return;
-
-    final today = _today();
 
     final res = await SupabaseConfig.client
         .from('daily_logs')
         .select()
         .eq('user_id', uid)
-        .eq('date', today)
+        .eq('date', _today())
         .maybeSingle();
 
-    if (res == null) {
-      todayLogged.value = false;
-      todayDietDone.value = false;
-      todayWorkoutDone.value = false;
-      return;
-    }
+    if (res == null) return;
 
     todayLogged.value = true;
     todayDietDone.value = res['diet_done'] == 1;
     todayWorkoutDone.value = res['workout_done'] == 1;
+
+    final mealState = res['meal_state'];
+    if (mealState is Map) {
+      mealCompletion.assignAll(
+        mealState.map((k, v) => MapEntry(k.toString(), v == true)),
+      );
+    }
+
+    final workoutState = res['workout_state'];
+    if (workoutState is Map) {
+      workoutCompletion.assignAll(
+        workoutState.map(
+          (k, v) => MapEntry(int.parse(k.toString()), v == true),
+        ),
+      );
+    }
   }
 
-  /// ==============================
-  /// Save Today
-  /// ==============================
   Future<void> saveToday() async {
     final uid = userId;
     if (uid == null || !canLog) return;
 
-    final today = _today();
-
     await SupabaseConfig.client.from('daily_logs').upsert(
       {
         'user_id': uid,
-        'date': today,
+        'date': _today(),
         'diet_done': dietDone ? 1 : 0,
         'workout_done': workoutDone ? 1 : 0,
+
+        'meal_state': Map<String, bool>.from(mealCompletion),
+        'workout_state': workoutCompletion.map(
+          (k, v) => MapEntry(k.toString(), v),
+        ),
       },
       onConflict: 'user_id,date',
     );
@@ -135,13 +107,8 @@ class DailyCheckupController extends GetxController {
     todayLogged.value = true;
     todayDietDone.value = dietDone;
     todayWorkoutDone.value = workoutDone;
-
-    await refreshStats();
   }
 
-  /// ==============================
-  /// Stats
-  /// ==============================
   Future<void> refreshStats() async {
     final uid = userId;
     if (uid == null) return;
@@ -196,9 +163,6 @@ class DailyCheckupController extends GetxController {
   }
 }
 
-/// ==============================
-/// Period Model
-/// ==============================
 class _Period {
   final String start;
   final String end;

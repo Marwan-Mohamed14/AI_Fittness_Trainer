@@ -9,15 +9,30 @@ class DailyCheckupController extends GetxController {
   final repo = DailyLogRepository();
   final authService = AuthService();
 
-  var mealCompletion = <String, bool>{}.obs;
-  var workoutCompletion = <int, bool>{}.obs;
+  /// ==============================
+  /// UI State
+  /// ==============================
+  final mealCompletion = <String, bool>{}.obs;
+  final workoutCompletion = <int, bool>{}.obs;
 
-  var streak = 0.obs;
-  var dietCount = 0.obs;
-  var workoutCount = 0.obs;
-  var todayLogged = false.obs;
-  var todayDietDone = false.obs;
-  var todayWorkoutDone = false.obs;
+  /// ==============================
+  /// Today Flags (SOURCE OF TRUTH)
+  /// ==============================
+  final todayLogged = false.obs;
+  final todayDietDone = false.obs;
+  final todayWorkoutDone = false.obs;
+
+  /// ==============================
+  /// Stats
+  /// ==============================
+  final streak = 0.obs;
+  final dietCount = 0.obs;
+  final workoutCount = 0.obs;
+
+  /// ==============================
+  /// Getters
+  /// ==============================
+  String? get userId => authService.getCurrentUserId();
 
   bool get dietDone =>
       mealCompletion.isNotEmpty && mealCompletion.values.every((v) => v);
@@ -27,27 +42,41 @@ class DailyCheckupController extends GetxController {
 
   bool get canLog => dietDone || workoutDone;
 
-  String? get userId => authService.getCurrentUserId();
+  String get formattedDate =>
+      DateFormat('EEEE, MMM d, yyyy').format(DateTime.now());
 
+  /// ==============================
+  /// Lifecycle
+  /// ==============================
   @override
   void onInit() {
     super.onInit();
+    _loadToday();
     refreshStats();
-    checkTodayLog();
   }
 
+  /// ==============================
+  /// Initialize UI Checkboxes
+  /// ==============================
   void initMeals(List<String> meals) {
-    if (mealCompletion.isEmpty) {
-      for (var m in meals) mealCompletion[m] = false;
+    if (mealCompletion.isNotEmpty) return;
+
+    for (final meal in meals) {
+      mealCompletion[meal] = todayDietDone.value;
     }
   }
 
   void initWorkout(int count) {
-    if (workoutCompletion.isEmpty) {
-      for (var i = 0; i < count; i++) workoutCompletion[i] = false;
+    if (workoutCompletion.isNotEmpty) return;
+
+    for (int i = 0; i < count; i++) {
+      workoutCompletion[i] = todayWorkoutDone.value;
     }
   }
 
+  /// ==============================
+  /// Update UI
+  /// ==============================
   void updateMeal(String key, bool value) {
     mealCompletion[key] = value;
   }
@@ -56,69 +85,75 @@ class DailyCheckupController extends GetxController {
     workoutCompletion[index] = value;
   }
 
-  Future<void> checkTodayLog() async {
+  /// ==============================
+  /// Load Today From Supabase
+  /// ==============================
+  Future<void> _loadToday() async {
     final uid = userId;
-    if (uid == null) {
+    if (uid == null) return;
+
+    final today = _today();
+
+    final res = await SupabaseConfig.client
+        .from('daily_logs')
+        .select()
+        .eq('user_id', uid)
+        .eq('date', today)
+        .maybeSingle();
+
+    if (res == null) {
       todayLogged.value = false;
       todayDietDone.value = false;
       todayWorkoutDone.value = false;
       return;
     }
 
-    final todayLog = await repo.getTodayLog(uid);
-    if (todayLog != null) {
-      todayLogged.value = true;
-      todayDietDone.value = todayLog.dietDone;
-      todayWorkoutDone.value = todayLog.workoutDone;
-    } else {
-      todayLogged.value = false;
-      todayDietDone.value = false;
-      todayWorkoutDone.value = false;
-    }
+    todayLogged.value = true;
+    todayDietDone.value = res['diet_done'] == 1;
+    todayWorkoutDone.value = res['workout_done'] == 1;
   }
 
-  Future<void> logDayIfCompleted() async {
+  /// ==============================
+  /// Save Today
+  /// ==============================
+  Future<void> saveToday() async {
     final uid = userId;
-    if (uid == null) {
-      Get.snackbar("Error", "User not logged in");
-      return;
-    }
+    if (uid == null || !canLog) return;
 
-    if (!canLog) return;
+    final today = _today();
 
-    await repo.logToday(
-      userId: uid,
-      dietDone: dietDone,
-      workoutDone: workoutDone,
+    await SupabaseConfig.client.from('daily_logs').upsert(
+      {
+        'user_id': uid,
+        'date': today,
+        'diet_done': dietDone ? 1 : 0,
+        'workout_done': workoutDone ? 1 : 0,
+      },
+      onConflict: 'user_id,date',
     );
 
-    mealCompletion.clear();
-    workoutCompletion.clear();
+    todayLogged.value = true;
+    todayDietDone.value = dietDone;
+    todayWorkoutDone.value = workoutDone;
 
-    await checkTodayLog();
     await refreshStats();
   }
 
+  /// ==============================
+  /// Stats
+  /// ==============================
   Future<void> refreshStats() async {
     final uid = userId;
-    if (uid == null) {
-      streak.value = 0;
-      dietCount.value = 0;
-      workoutCount.value = 0;
-      return;
-    }
+    if (uid == null) return;
 
     final logs = await repo.getAllLogs(uid);
     streak.value = _calculateStreak(logs);
 
     final period = await _getCurrentPeriod(uid);
-    if (period == null) {
-      dietCount.value = 0;
-      workoutCount.value = 0;
-      return;
-    }
+    if (period == null) return;
 
-    dietCount.value = await repo.countDietDays(uid, period.start, period.end);
+    dietCount.value =
+        await repo.countDietDays(uid, period.start, period.end);
     workoutCount.value =
         await repo.countWorkoutDays(uid, period.start, period.end);
   }
@@ -128,8 +163,8 @@ class DailyCheckupController extends GetxController {
     DateTime current = DateTime.now();
 
     for (final log in logs) {
-      final logDate = DateTime.parse(log.date);
-      if ((log.dietDone || log.workoutDone) && _isSameDay(logDate, current)) {
+      final d = DateTime.parse(log.date);
+      if ((log.dietDone || log.workoutDone) && _isSameDay(d, current)) {
         s++;
         current = current.subtract(const Duration(days: 1));
       } else {
@@ -138,6 +173,12 @@ class DailyCheckupController extends GetxController {
     }
     return s;
   }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  String _today() =>
+      DateTime.now().toIso8601String().split('T')[0];
 
   Future<_Period?> _getCurrentPeriod(String userId) async {
     final startStr = await repo.getPeriodStart(userId);
@@ -153,46 +194,14 @@ class DailyCheckupController extends GetxController {
       end: DateFormat('yyyy-MM-dd').format(end),
     );
   }
-
-  String get formattedDate =>
-      DateFormat('EEEE, MMM d, yyyy').format(DateTime.now());
-
-  bool _isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
-
-  /// ==============================
-  /// Save today's daily log to Supabase
-  /// ==============================
- Future<void> saveDailyLog(String? userId) async {
-  if (userId == null) return;
-
-  final today = DateTime.now().toIso8601String().split('T')[0]; // YYYY-MM-DD
-  final dietDoneValue =
-      mealCompletion.values.isNotEmpty ? mealCompletion.values.every((v) => v) : false;
-  final workoutDoneValue =
-      workoutCompletion.values.isNotEmpty ? workoutCompletion.values.any((v) => v) : false;
-
-  try {
-    await SupabaseConfig.client
-        .from('daily_logs')
-        .upsert(
-          {
-            'user_id': userId,
-            'date': today,
-            'diet_done': dietDoneValue ? 1 : 0,
-            'workout_done': workoutDoneValue ? 1 : 0,
-          },
-          
-          onConflict: 'user_id,date',
-        );
-    print("Daily log saved successfully for $today");
-  } catch (e) {
-    print("Failed to save daily log: $e");
-  }
 }
-}
+
+/// ==============================
+/// Period Model
+/// ==============================
 class _Period {
   final String start;
   final String end;
+
   _Period({required this.start, required this.end});
 }

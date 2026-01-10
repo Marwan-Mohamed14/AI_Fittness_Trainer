@@ -112,25 +112,11 @@ class _MealCard extends StatelessWidget {
     return Obx(() {
       final done = controller.mealCompletion[label] ?? false; 
       return GestureDetector(
-onTap: () async {
-  // Toggle the meal
+onTap: () {
   controller.updateMeal(label, !done);
-
-  // Get current user ID from Supabase
-  final userId = Supabase.instance.client.auth.currentUser?.id;
-
-  if (userId != null) {
-    // Save daily log immediately
-    await controller.saveDailyLog(userId);
-  } else {
-    Get.snackbar(
-      "Error",
-      "User not logged in",
-      backgroundColor: Colors.red.withOpacity(0.7),
-      colorText: Colors.white,
-    );
-  }
-},
+  controller.saveToday();
+}
+,
 
 
         child: AnimatedContainer(

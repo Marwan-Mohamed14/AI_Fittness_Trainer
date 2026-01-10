@@ -367,7 +367,7 @@ class _DailyCheckUpCard extends StatelessWidget {
                 ),
                 onPressed: canLogNow
                     ? () async {
-                        await controller.logDayIfCompleted();
+                      
                         Get.snackbar(
                           "Great Job!",
                           "Daily progress logged successfully.",

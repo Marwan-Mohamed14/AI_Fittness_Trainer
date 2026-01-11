@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/controllers/Profilecontroller.dart';
 import 'package:ai_personal_trainer/models/WorkoutData.dart';
-import 'package:ai_personal_trainer/utils/responsive.dart';
 import 'package:ai_personal_trainer/services/exercise_video_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -44,19 +43,6 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final double screenPadding = Responsive.padding(context); 
-    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); 
-    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); 
-    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
-    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
-    final double boxPadding = Responsive.padding(context) / 2; 
-    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); 
-    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); 
-    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); 
-    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
     
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
@@ -293,44 +279,42 @@ class _DaySection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.2),
-                    shape: BoxShape.circle,
+            Flexible(
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: iconColor.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(iconData, color: iconColor, size: 20),
                   ),
-                  child: Icon(iconData, color: iconColor, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      dayTitle,
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          dayTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          muscles,
+                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      muscles,
-                      style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceVariant,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                duration,
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                  ),
+                ],
               ),
             ),
+           
           ],
         ),
         const SizedBox(height: 16),

@@ -44,7 +44,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Monthly Stats Cards
-              ...controller.monthlyStats.value
+              ...controller.monthlyStats
                   .map((stats) => MonthlyStatsCard(stats: stats))
                   .toList(),
             ],
@@ -60,15 +60,15 @@ class DashboardScreen extends StatelessWidget {
   Widget _buildChartCard(BuildContext context, DashboardController controller) {
     final theme = Theme.of(context);
 
-    final months = controller.monthlyStats.value
+    final months = controller.monthlyStats
         .map((m) => DateFormat.MMM().format(DateTime.parse('${m.month}-01')))
         .toList();
 
-    final dietData = controller.monthlyStats.value
+    final dietData = controller.monthlyStats
         .map((m) => m.totalDays == 0 ? 0.0 : (m.dietDays / m.totalDays * 100))
         .toList();
 
-    final workoutData = controller.monthlyStats.value
+    final workoutData = controller.monthlyStats
         .map((m) => m.totalDays == 0 ? 0.0 : (m.workoutDays / m.totalDays * 100))
         .toList();
 
@@ -219,15 +219,32 @@ class DashboardScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 12),
-            Row(
-              children: const [
-                Icon(Icons.circle, color: Colors.green, size: 12),
-                SizedBox(width: 4),
-                Text('Diet Adherence'),
-                SizedBox(width: 16),
-                Icon(Icons.circle, color: Colors.blue, size: 12),
-                SizedBox(width: 4),
-                Text('Workout Adherence'),
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.circle, color: Colors.green, size: 12),
+                    SizedBox(width: 4),
+                    Text('Diet Adherence'),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.circle, color: Colors.blue, size: 12),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        'Workout Adherence',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ],

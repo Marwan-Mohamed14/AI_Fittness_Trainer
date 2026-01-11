@@ -9,7 +9,6 @@ import 'UpdatePlans.dart';
 import 'NearbyGymsPage.dart';
 import 'DailyCheckUpMealsScreen.dart';
 import 'DailyCheckUpWorkoutScreen.dart';
-import '../utils/responsive.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -17,20 +16,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-   final double screenPadding = Responsive.padding(context); 
-    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); 
-    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); 
-    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
-    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
-    final double boxPadding = Responsive.padding(context) / 2; 
-    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); 
-    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); 
-    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); 
-    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
-     Get.put(DailyCheckupController());
+    Get.put(DailyCheckupController());
     final user = Supabase.instance.client.auth.currentUser;
     final firstName = (user?.userMetadata?['username'] as String? ?? 
                       user?.email?.split('@').first ?? 
@@ -121,32 +107,41 @@ class _ConsistencyTracker extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Consistency Tracker",
-                style: theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
+              Flexible(
+                child: Text(
+                  "Consistency Tracker",
+                  style: theme.textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.fade,
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.local_fire_department,
-                        color: Colors.orange, size: 18),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${controller.streak.value} Day Streak",
-                      style: const TextStyle(
-                        color: Colors.orange,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+              ),
+              Flexible(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.local_fire_department,
+                          color: Colors.orange, size: 18),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          "${controller.streak.value} Day Streak",
+                          style: const TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               )
             ],
@@ -525,8 +520,8 @@ class _BottomActions extends StatelessWidget {
         Expanded(
           child: _ActionCard(
             icon: Icons.next_plan,
-            title: 'Regenerate Plan',
-            subtitle: 'Adjust your plan on demand',
+            title: 'Regenerate',
+            subtitle: 'Update your plan',
             onTap: () {
               Navigator.push(
                 context,
@@ -575,6 +570,7 @@ class _ActionCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
+        height: 120, // Fixed height to ensure both buttons are same size
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: theme.brightness == Brightness.dark
@@ -599,21 +595,30 @@ class _ActionCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: theme.colorScheme.primary),
+            Icon(icon, color: theme.colorScheme.primary, size: 24),
             const SizedBox(height: 12),
-            Text(title,
+            Flexible(
+              child: Text(
+                title,
                 style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                    ?.copyWith(fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface
-                      .withOpacity(0.6),
-                  fontSize: 10),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            Flexible(
+              child: Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface
+                        .withOpacity(0.6),
+                    fontSize: 10),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),

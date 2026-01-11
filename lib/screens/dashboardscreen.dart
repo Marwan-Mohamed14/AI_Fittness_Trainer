@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ai_personal_trainer/controllers/dashboardcontroller.dart';
 import 'package:ai_personal_trainer/models/MonthlyStats.dart';
-import 'package:fl_chart/fl_chart.dart'; 
+import 'package:ai_personal_trainer/utils/responsive.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -33,7 +34,7 @@ class DashboardScreen extends StatelessWidget {
         }
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: Responsive.horizontalPadding(context),
           child: Column(
             children: [
               // =============================
@@ -78,10 +79,10 @@ class DashboardScreen extends StatelessWidget {
         List.generate(workoutData.length, (i) => FlSpot(i.toDouble(), workoutData[i]));
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.borderRadius(context, mobile: 18))),
       elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: Responsive.cardPadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -89,15 +90,16 @@ class DashboardScreen extends StatelessWidget {
               'Monthly Progress',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
+                fontSize: Responsive.fontSize(context, mobile: 16, tablet: 18, desktop: 20),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: Responsive.spacing(context, mobile: 16, tablet: 20, desktop: 24)),
 
             // =============================
             // Line Chart
             // =============================
             SizedBox(
-              height: 200,
+              height: Responsive.fontSize(context, mobile: 180, tablet: 220, desktop: 260),
               child: LineChart(
                 LineChartData(
                   gridData: FlGridData(show: true, drawVerticalLine: false),
@@ -155,92 +157,37 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: Responsive.spacing(context, mobile: 16, tablet: 20, desktop: 24)),
 
             // =============================
             // Original bar-like progress summary
             // =============================
-            Column(
-              children: List.generate(months.length, (index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(months[index], style: const TextStyle(fontSize: 14)),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: dietData[index].round(),
-                            child: Container(
-                              height: 16,
-                              color: Colors.green,
-                            ),
-                          ),
-                          Expanded(
-                            flex: 100 - dietData[index].round(),
-                            child: Container(
-                              height: 16,
-                              color: Colors.green.withOpacity(0.2),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text('${dietData[index].round()}%',
-                              style: const TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: workoutData[index].round(),
-                            child: Container(
-                              height: 16,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          Expanded(
-                            flex: 100 - workoutData[index].round(),
-                            child: Container(
-                              height: 16,
-                              color: Colors.blue.withOpacity(0.2),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text('${workoutData[index].round()}%',
-                              style: const TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ),
+   
 
-            const SizedBox(height: 12),
+            SizedBox(height: Responsive.spacing(context, mobile: 12, tablet: 16, desktop: 20)),
             Wrap(
-              spacing: 16,
-              runSpacing: 8,
+              spacing: Responsive.spacing(context, mobile: 16, tablet: 20),
+              runSpacing: Responsive.spacing(context, mobile: 8, tablet: 12),
               children: [
                 Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.circle, color: Colors.green, size: 12),
-                    SizedBox(width: 4),
-                    Text('Diet Adherence'),
+                  children: [
+                    Icon(Icons.circle, color: Colors.green, size: Responsive.iconSize(context, mobile: 12, tablet: 14)),
+                    SizedBox(width: Responsive.spacing(context, mobile: 4)),
+                    Text('Diet Adherence', style: TextStyle(fontSize: Responsive.fontSize(context, mobile: 12, tablet: 14))),
                   ],
                 ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.circle, color: Colors.blue, size: 12),
-                    const SizedBox(width: 4),
+                    Icon(Icons.circle, color: Colors.blue, size: Responsive.iconSize(context, mobile: 12, tablet: 14)),
+                    SizedBox(width: Responsive.spacing(context, mobile: 4)),
                     Flexible(
                       child: Text(
                         'Workout Adherence',
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
+                        style: TextStyle(fontSize: Responsive.fontSize(context, mobile: 12, tablet: 14)),
                       ),
                     ),
                   ],
@@ -274,28 +221,34 @@ class MonthlyStatsCard extends StatelessWidget {
         DateFormat('MMMM yyyy').format(DateTime.parse('${stats.month}-01'));
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: Responsive.spacing(context, mobile: 16, tablet: 20)),
       elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Responsive.borderRadius(context, mobile: 18))),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: Responsive.cardPadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               monthLabel,
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: Responsive.fontSize(context, mobile: 16, tablet: 18, desktop: 20),
+              ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: Responsive.spacing(context, mobile: 16, tablet: 20)),
             ProgressRow(label: 'Diet adherence', percent: dietPercent, color: Colors.green),
-            const SizedBox(height: 12),
+            SizedBox(height: Responsive.spacing(context, mobile: 12, tablet: 16)),
             ProgressRow(label: 'Workout adherence', percent: workoutPercent, color: Colors.blue),
-            const SizedBox(height: 12),
+            SizedBox(height: Responsive.spacing(context, mobile: 12, tablet: 16)),
             Divider(color: Colors.grey.withOpacity(0.3)),
-            const SizedBox(height: 8),
+            SizedBox(height: Responsive.spacing(context, mobile: 8, tablet: 12)),
             Text(
               'Active days: ${stats.totalDays}',
-              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+                fontSize: Responsive.fontSize(context, mobile: 12, tablet: 14),
+              ),
             ),
           ],
         ),
@@ -320,14 +273,18 @@ class ProgressRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: [Text(label), const Spacer(), Text('$percent%')],
+          children: [
+            Text(label, style: TextStyle(fontSize: Responsive.fontSize(context, mobile: 14, tablet: 16))),
+            const Spacer(),
+            Text('$percent%', style: TextStyle(fontSize: Responsive.fontSize(context, mobile: 14, tablet: 16))),
+          ],
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: Responsive.spacing(context, mobile: 6, tablet: 8)),
         ClipRRect(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(Responsive.borderRadius(context, mobile: 10)),
           child: LinearProgressIndicator(
             value: percent / 100,
-            minHeight: 8,
+            minHeight: Responsive.fontSize(context, mobile: 8, tablet: 10),
             color: color,
             backgroundColor: color.withOpacity(0.2),
           ),

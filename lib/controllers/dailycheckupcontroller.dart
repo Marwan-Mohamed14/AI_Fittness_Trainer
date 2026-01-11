@@ -46,42 +46,54 @@ class DailyCheckupController extends GetxController {
   }
   void updateMeal(String key, bool value) {
     mealCompletion[key] = value;
+    // Don't save here - only save when button is clicked
   }
 
   void updateWorkout(int index, bool value) {
     workoutCompletion[index] = value;
+    // Don't save here - only save when button is clicked
   }
   Future<void> _loadToday() async {
     final uid = userId;
     if (uid == null) return;
 
+    // Reset state for new day
+    final todayStr = _today();
     final res = await SupabaseConfig.client
         .from('daily_logs')
         .select()
         .eq('user_id', uid)
-        .eq('date', _today())
+        .eq('date', todayStr)
         .maybeSingle();
 
-    if (res == null) return;
+    // Reset state
+    todayLogged.value = false;
+    todayDietDone.value = false;
+    todayWorkoutDone.value = false;
+    mealCompletion.clear();
+    workoutCompletion.clear();
 
-    todayLogged.value = true;
-    todayDietDone.value = res['diet_done'] == 1;
-    todayWorkoutDone.value = res['workout_done'] == 1;
+    if (res != null) {
+      // Only mark as logged if there's actual data for today
+      todayLogged.value = true;
+      todayDietDone.value = res['diet_done'] == 1;
+      todayWorkoutDone.value = res['workout_done'] == 1;
 
-    final mealState = res['meal_state'];
-    if (mealState is Map) {
-      mealCompletion.assignAll(
-        mealState.map((k, v) => MapEntry(k.toString(), v == true)),
-      );
-    }
+      final mealState = res['meal_state'];
+      if (mealState is Map) {
+        mealCompletion.assignAll(
+          mealState.map((k, v) => MapEntry(k.toString(), v == true)),
+        );
+      }
 
-    final workoutState = res['workout_state'];
-    if (workoutState is Map) {
-      workoutCompletion.assignAll(
-        workoutState.map(
-          (k, v) => MapEntry(int.parse(k.toString()), v == true),
-        ),
-      );
+      final workoutState = res['workout_state'];
+      if (workoutState is Map) {
+        workoutCompletion.assignAll(
+          workoutState.map(
+            (k, v) => MapEntry(int.parse(k.toString()), v == true),
+          ),
+        );
+      }
     }
   }
 
@@ -95,7 +107,6 @@ class DailyCheckupController extends GetxController {
         'date': _today(),
         'diet_done': dietDone ? 1 : 0,
         'workout_done': workoutDone ? 1 : 0,
-
         'meal_state': Map<String, bool>.from(mealCompletion),
         'workout_state': workoutCompletion.map(
           (k, v) => MapEntry(k.toString(), v),
@@ -107,6 +118,9 @@ class DailyCheckupController extends GetxController {
     todayLogged.value = true;
     todayDietDone.value = dietDone;
     todayWorkoutDone.value = workoutDone;
+    
+    // Refresh stats after saving
+    await refreshStats();
   }
 
   Future<void> refreshStats() async {
@@ -126,19 +140,64 @@ class DailyCheckupController extends GetxController {
   }
 
   int _calculateStreak(List<DailyLog> logs) {
-    int s = 0;
-    DateTime current = DateTime.now();
-
-    for (final log in logs) {
-      final d = DateTime.parse(log.date);
-      if ((log.dietDone || log.workoutDone) && _isSameDay(d, current)) {
-        s++;
-        current = current.subtract(const Duration(days: 1));
+    if (logs.isEmpty) return 0;
+    
+    // Sort logs by date descending (most recent first)
+    logs.sort((a, b) => b.date.compareTo(a.date));
+    
+    int streak = 0;
+    DateTime currentDate = DateTime.now();
+    currentDate = DateTime(currentDate.year, currentDate.month, currentDate.day);
+    
+    int logIndex = 0;
+    
+    // Check if today is logged
+    if (logIndex < logs.length) {
+      final firstLog = logs[logIndex];
+      final firstLogDate = DateTime.parse(firstLog.date);
+      final firstLogDateOnly = DateTime(firstLogDate.year, firstLogDate.month, firstLogDate.day);
+      
+      if (_isSameDay(firstLogDateOnly, currentDate)) {
+        // Today is logged, check if it's done
+        if (firstLog.dietDone || firstLog.workoutDone) {
+          streak++;
+          logIndex++;
+          currentDate = currentDate.subtract(const Duration(days: 1));
+        } else {
+          // Today is logged but not done, streak is 0
+          return 0;
+        }
       } else {
-        break;
+        // Today is not logged, streak starts from yesterday
+        currentDate = currentDate.subtract(const Duration(days: 1));
       }
     }
-    return s;
+    
+    // Count consecutive days going backwards
+    while (logIndex < logs.length) {
+      final log = logs[logIndex];
+      final logDate = DateTime.parse(log.date);
+      final logDateOnly = DateTime(logDate.year, logDate.month, logDate.day);
+      
+      if (_isSameDay(logDateOnly, currentDate)) {
+        if (log.dietDone || log.workoutDone) {
+          streak++;
+          logIndex++;
+          currentDate = currentDate.subtract(const Duration(days: 1));
+        } else {
+          // Found a day that's logged but not done, break streak
+          break;
+        }
+      } else if (logDateOnly.isBefore(currentDate)) {
+        // There's a gap, break streak
+        break;
+      } else {
+        // Skip this log (shouldn't happen with sorted list)
+        logIndex++;
+      }
+    }
+    
+    return streak;
   }
 
   bool _isSameDay(DateTime a, DateTime b) =>
@@ -148,17 +207,15 @@ class DailyCheckupController extends GetxController {
       DateTime.now().toIso8601String().split('T')[0];
 
   Future<_Period?> _getCurrentPeriod(String userId) async {
-    final startStr = await repo.getPeriodStart(userId);
-    if (startStr == null) return null;
-
-    final start = DateTime.parse(startStr);
-    final end = start.add(const Duration(days: 29));
-
-    if (DateTime.now().isAfter(end)) return null;
-
+    // Always use a rolling 30-day window from today
+    final now = DateTime.now();
+    final todayOnly = DateTime(now.year, now.month, now.day);
+    final periodStart = todayOnly.subtract(const Duration(days: 29));
+    final periodEnd = todayOnly;
+    
     return _Period(
-      start: DateFormat('yyyy-MM-dd').format(start),
-      end: DateFormat('yyyy-MM-dd').format(end),
+      start: DateFormat('yyyy-MM-dd').format(periodStart),
+      end: DateFormat('yyyy-MM-dd').format(periodEnd),
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../controllers/Profilecontroller.dart';
 import '../models/MealData.dart';
 import '../controllers/dailycheckupcontroller.dart';
@@ -112,11 +111,9 @@ class _MealCard extends StatelessWidget {
     return Obx(() {
       final done = controller.mealCompletion[label] ?? false; 
       return GestureDetector(
-onTap: () {
-  controller.updateMeal(label, !done);
-  controller.saveToday();
-}
-,
+        onTap: () {
+          controller.updateMeal(label, !done);
+        },
 
 
         child: AnimatedContainer(

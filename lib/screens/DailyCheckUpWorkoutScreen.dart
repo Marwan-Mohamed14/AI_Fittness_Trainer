@@ -120,8 +120,6 @@ class _RestDayCard extends StatelessWidget {
           for (var i = 0; i < controller.workoutCompletion.length; i++) {
             controller.updateWorkout(i, i == index);
           }
-
-          controller.saveToday();
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
@@ -198,8 +196,6 @@ class _WorkoutDayCard extends StatelessWidget {
           for (var i = 0; i < controller.workoutCompletion.length; i++) {
             controller.updateWorkout(i, i == index);
           }
-
-          controller.saveToday();
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),

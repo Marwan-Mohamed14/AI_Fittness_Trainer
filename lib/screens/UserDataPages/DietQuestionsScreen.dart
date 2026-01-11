@@ -34,7 +34,15 @@ class _DietQuestionsScreenState extends State<DietQuestionsScreen>
 
   
     final data = _profileController.onboardingData.value;
-    dietPreference = data.dietPreference;
+    // Normalize diet preference value to match dropdown items
+    final savedPreference = data.dietPreference;
+    if (savedPreference == 'High-Protein') {
+      dietPreference = 'High Protein';
+    } else if (savedPreference == 'Low-Carb') {
+      dietPreference = 'Low Carb';
+    } else {
+      dietPreference = savedPreference;
+    }
     meals = data.mealsPerDay ?? 3;
     budget = data.budget ?? "Medium";
     currentWeight = data.weight?.toDouble() ?? 80;

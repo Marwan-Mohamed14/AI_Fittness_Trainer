@@ -323,7 +323,7 @@ class WorkoutPlanParser {
           String reps = '${match.group(3)} Reps';
           
        
-          name = name.replaceAll(RegExp(r'[:\-,\s]+$'), '').trim();
+          name = _cleanExerciseName(name);
           
           if (name.isNotEmpty && !seenExercises.contains(name.toLowerCase())) {
             // Look for video URL in the lines after this exercise
@@ -666,9 +666,12 @@ class WorkoutPlanParser {
         .replaceAll(RegExp(r'Sets?[:\-]?\s*\d+', caseSensitive: false), '')
         .replaceAll(RegExp(r'Reps?[:\-]?\s*[\d\-]+', caseSensitive: false), '')
         .replaceAll(RegExp(r',\s*\d+\s*(?:sets?|reps?)', caseSensitive: false), '')
+        .replaceAll(RegExp(r'[⭐★☆]', caseSensitive: false), '') // Remove star emojis
+        .replaceAll(RegExp(r'\s*star\s*', caseSensitive: true), ' ') // Remove "star" text
+        .replaceAll('**', '') // Remove Markdown bold markers (double asterisks)
         .trim();
     
- 
+
     cleaned = cleaned.replaceAll(RegExp(r'[:\-,\s]+$'), '').trim();
     
     return cleaned;

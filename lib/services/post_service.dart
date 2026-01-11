@@ -148,7 +148,7 @@ class PostService {
         posts.add(Post.fromJson({
           ...postData,
           'user_name': postData['user_name'] ?? 'FitUser',      
-          'user_avatar': null, // No avatar
+          'user_avatar': null, 
           'likes_count': likesCount,
           'comments_count': postData['comments_count'] ?? 0,
           'is_liked_by_me': userLike != null,

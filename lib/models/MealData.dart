@@ -103,106 +103,116 @@ class DietPlanParser {
     }
   }
 
-  static MealData? _extractMeal(String text, String mealType) {
-    try {
-      // Find the start of this meal section
-      final mealStartPattern = RegExp('\\[$mealType\\]', caseSensitive: false);
-      final mealStartMatch = mealStartPattern.firstMatch(text);
-      
-      if (mealStartMatch == null) {
-        return null;
-      }
-
-      final mealStart = mealStartMatch.end;
-
-      // Find the end of this meal section (start of next meal or DAILY_TOTAL)
-      final nextSectionPattern = RegExp(
-        r'\[(BREAKFAST|LUNCH|DINNER|SNACK|MEAL\s*\d+|DAILY_TOTAL)\]',
-        caseSensitive: false,
-      );
-      
-      final nextSectionMatches = nextSectionPattern.allMatches(text);
-      int mealEnd = text.length;
-      
-      for (final match in nextSectionMatches) {
-        if (match.start > mealStart) {
-          mealEnd = match.start;
-          break;
-        }
-      }
-
-      // Extract just this meal's content
-      final mealText = text.substring(mealStart, mealEnd).trim();
-      
-      if (mealText.isEmpty) {
-        return null;
-      }
-      
-      print('📝 Extracting $mealType (${mealText.length} chars)');
-
-      // Extract name
-      String name = '';
-      final nameMatch = RegExp(r'Name:\s*(.+?)(?=\n|$)', caseSensitive: false).firstMatch(mealText);
-      if (nameMatch != null) {
-        name = nameMatch.group(1)?.trim() ?? '';
-      }
-
-      // Extract portions - everything between "Portions:" and "Calories:"
-      String portions = '';
-      final portionsMatch = RegExp(
-        r'Portions?:\s*\n?(.*?)(?=Calories:)',
-        dotAll: true,
-        caseSensitive: false,
-      ).firstMatch(mealText);
-      
-      if (portionsMatch != null) {
-        portions = portionsMatch.group(1)?.trim() ?? '';
-        
-        if (portions.isNotEmpty) {
-          // Clean up: remove bullets/dashes, join lines with commas
-          portions = portions
-              .split('\n')
-              .map((line) => line.trim())
-              .where((line) => line.isNotEmpty)
-              .map((line) => line.replaceFirst(RegExp(r'^[-•*]\s*'), ''))
-              .where((line) => line.isNotEmpty)
-              .join(', ');
-        }
-      }
-
-      // Extract calories
-      final caloriesMatch = RegExp(
-        r'Calories:\s*(\d+)',
-        caseSensitive: false,
-      ).firstMatch(mealText);
-      final calories = int.tryParse(caloriesMatch?.group(1) ?? '0') ?? 0;
-
-      // Extract macros
-      final proteinMatch = RegExp(r'Protein:\s*(\d+)g', caseSensitive: false).firstMatch(mealText);
-      final carbsMatch = RegExp(r'Carbs:\s*(\d+)g', caseSensitive: false).firstMatch(mealText);
-      final fatMatch = RegExp(r'Fat:\s*(\d+)g', caseSensitive: false).firstMatch(mealText);
-
-      final protein = int.tryParse(proteinMatch?.group(1) ?? '0') ?? 0;
-      final carbs = int.tryParse(carbsMatch?.group(1) ?? '0') ?? 0;
-      final fat = int.tryParse(fatMatch?.group(1) ?? '0') ?? 0;
-
-      print('   Name: $name');
-      print('   Portions: ${portions.length > 50 ? portions.substring(0, 50) + "..." : portions}');
-      print('   Macros: ${calories}kcal, P:${protein}g, C:${carbs}g, F:${fat}g');
-
-      return MealData(
-        name: name.isNotEmpty ? name : '$mealType Meal',
-        portions: portions.isNotEmpty ? portions : 'See plan',
-        calories: calories,
-        protein: protein,
-        carbs: carbs,
-        fat: fat,
-      );
-    } catch (e) {
-      print('❌ Error extracting $mealType: $e');
+ static MealData? _extractMeal(String text, String mealType) {
+  try {
+    // Find the start of this meal section
+    final mealStartPattern = RegExp('\\[$mealType\\]', caseSensitive: false);
+    final mealStartMatch = mealStartPattern.firstMatch(text);
+    
+    if (mealStartMatch == null) {
       return null;
     }
+
+    final mealStart = mealStartMatch.end;
+
+    // Find the end of this meal section (start of next meal or DAILY_TOTAL)
+    final nextSectionPattern = RegExp(
+      r'\[(BREAKFAST|LUNCH|DINNER|SNACK|MEAL\s*\d+|DAILY_TOTAL)\]',
+      caseSensitive: false,
+    );
+    
+    final nextSectionMatches = nextSectionPattern.allMatches(text);
+    int mealEnd = text.length;
+    
+    for (final match in nextSectionMatches) {
+      if (match.start > mealStart) {
+        mealEnd = match.start;
+        break;
+      }
+    }
+
+    // Extract just this meal's content
+    final mealText = text.substring(mealStart, mealEnd).trim();
+    
+    if (mealText.isEmpty) {
+      return null;
+    }
+    
+    print('📝 Extracting $mealType (${mealText.length} chars)');
+
+    // Extract name
+    String name = '';
+    final nameMatch = RegExp(r'Name:\s*(.+?)(?=\n|$)', caseSensitive: false).firstMatch(mealText);
+    if (nameMatch != null) {
+      name = nameMatch.group(1)?.trim() ?? '';
+    }
+
+    // Extract portions - everything between "Portions:" and "Calories:"
+    String portions = '';
+    final portionsMatch = RegExp(
+      r'Portions?:\s*\n?(.*?)(?=Calories:)',
+      dotAll: true,
+      caseSensitive: false,
+    ).firstMatch(mealText);
+    
+    if (portionsMatch != null) {
+      portions = portionsMatch.group(1)?.trim() ?? '';
+      
+      if (portions.isNotEmpty) {
+        // Clean up: remove bullets/dashes, join lines with commas
+        portions = portions
+            .split('\n')
+            .map((line) => line.trim())
+            .where((line) => line.isNotEmpty)
+            .map((line) => line.replaceFirst(RegExp(r'^[-•*]\s*'), ''))
+            .where((line) => line.isNotEmpty)
+            .join(', ');
+      }
+    }
+
+    // Extract declared calories
+    final caloriesMatch = RegExp(
+      r'Calories:\s*(\d+)',
+      caseSensitive: false,
+    ).firstMatch(mealText);
+    final declaredCalories = int.tryParse(caloriesMatch?.group(1) ?? '0') ?? 0;
+
+    // Extract macros FIRST (for validation)
+    final proteinMatch = RegExp(r'Protein:\s*(\d+)g', caseSensitive: false).firstMatch(mealText);
+    final carbsMatch = RegExp(r'Carbs:\s*(\d+)g', caseSensitive: false).firstMatch(mealText);
+    final fatMatch = RegExp(r'Fat:\s*(\d+)g', caseSensitive: false).firstMatch(mealText);
+
+    final protein = int.tryParse(proteinMatch?.group(1) ?? '0') ?? 0;
+    final carbs = int.tryParse(carbsMatch?.group(1) ?? '0') ?? 0;
+    final fat = int.tryParse(fatMatch?.group(1) ?? '0') ?? 0;
+
+    // Calculate expected calories from macros (4kcal/g protein/carbs, 9kcal/g fat)
+    final calculatedCalories = protein * 4 + carbs * 4 + fat * 9;
+
+    // Decide final calories: use calculated if declared is way off
+    final finalCalories = (calculatedCalories - declaredCalories).abs() > 150 
+        ? calculatedCalories 
+        : declaredCalories;
+
+    // Debug logging
+    print('   Name: $name');
+    print('   Portions: ${portions.length > 50 ? portions.substring(0, 50) + "..." : portions}');
+    print('   Declared: ${declaredCalories}kcal | Calculated from macros: ${calculatedCalories}kcal');
+    print('   Using final: ${finalCalories}kcal (P:${protein}g C:${carbs}g F:${fat}g)');
+
+    return MealData(
+      name: name.isNotEmpty ? name : '$mealType Meal',
+      portions: portions.isNotEmpty ? portions : 'See plan',
+      calories: finalCalories,  // ← Corrected value (handles AI mistakes)
+      protein: protein,
+      carbs: carbs,
+      fat: fat,
+    );
+  } catch (e) {
+    print('❌ Error extracting $mealType: $e');
+    return null;
   }
+}
 
   static Map<String, int> _extractDailyTotals(String text) {
     try {

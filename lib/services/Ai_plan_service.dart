@@ -44,31 +44,50 @@ class AiPlanService {
 String _buildWeeklyPlanPrompt(OnboardingData userData) {
   final baseCalories = _calculateBaseCalories(userData);
   final mealsPerDay = userData.mealsPerDay ?? 3;
+  final targetCalories = baseCalories;
   
   return '''
-Create a personalized ${userData.trainingDays}-day fitness plan for a ${userData.age}-year-old ${userData.gender}.
+You are a strict, precise nutritionist. Your response MUST be mathematically accurate.
+
+Create EXACTLY $mealsPerDay meals per day that SUM TO approximately $targetCalories kcal (range: ${targetCalories-200}–${targetCalories+200}).
 
 USER PROFILE:
-- Current Weight: ${userData.weight}kg
-- Target Weight: ${userData.targetWeight}kg
-- Goal: ${userData.workoutGoal}
-- Experience Level: ${userData.workoutLevel}
+- Age: ${userData.age}
+- Weight: ${userData.weight}kg → Target: ${userData.targetWeight}kg
+- Goal: ${userData.workoutGoal} → MUST be maintenance or slight surplus (~$targetCalories kcal)
 - Training: ${userData.trainingDays} days/week at ${userData.trainingLocation}
+- Meals per day: EXACTLY $mealsPerDay
 - Diet Preference: ${userData.dietPreference ?? 'Normal'}
-- Meals per day: $mealsPerDay
-- Budget: ${userData.budget ?? 'Medium'}
-- Allergies/Restrictions: ${userData.allergies?.join(', ') ?? 'None'}
+- Allergies: ${userData.allergies?.join(', ') ?? 'None'}
 
-IMPORTANT FORMAT REQUIREMENTS (MUST FOLLOW EXACTLY):
+CRITICAL RULES - VIOLATION = INVALID RESPONSE:
+1. The SUM of all meal calories MUST EQUAL the [DAILY_TOTAL] calories (within ±50 kcal)
+2. Scale portions LARGE enough to reach the total (e.g., 200–300g protein source, 200g+ carbs per meal)
+3. Protein: 1.8–2.2g/kg bodyweight minimum
+4. Do NOT use tiny portions — be generous with food amounts
+5. Calculate macros accurately: Protein 4kcal/g, Carbs 4kcal/g, Fat 9kcal/g
+6. After writing meals, DOUBLE-CHECK the sum and adjust portions if needed
+7. VARIETY: Completely different meals every day
+8. Format EXACTLY as below — no extra text
+
 ===DIET PLAN===
-${_generateMealFormat(mealsPerDay)}
+[BREAKFAST]
+Name: [realistic high-calorie dish]
+Portions:
+- [large portion item]: [amount] → [kcal], [protein]g protein, [carbs]g carbs, [fat]g fat
+- ...
+Calories: [meal total kcal]
+Protein: [g]
+Carbs: [g]
+Fat: [g]
+
+... repeat for exactly $mealsPerDay meals ...
 
 [DAILY_TOTAL]
-Calories: [number] kcal
-Protein: [number]g
-Carbs: [number]g
-Fat: [number]g
-
+Calories: [MUST BE EXACT SUM of meal calories]
+Protein: [sum]
+Carbs: [sum]
+Fat: [sum]
 ===WORKOUT PLAN===
 For each day, format as follows:
 [DAY 1 - MUSCLE GROUP]
@@ -183,7 +202,7 @@ START YOUR RESPONSE WITH "===DIET PLAN===":
           }
         ],
         'temperature': 0.5,  //control creativity of responses more lower more precise
-        'max_tokens': 8000,
+        'max_tokens': 20000,
         'stream': false, //getting full response at once
       }),
     );

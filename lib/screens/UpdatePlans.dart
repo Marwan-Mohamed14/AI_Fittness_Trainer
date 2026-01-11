@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../controllers/Profilecontroller.dart';
 import '../services/ProfileService.dart';
@@ -65,7 +66,15 @@ class _UpdatePlansState extends State<UpdatePlans>
           _selectedWorkoutLevel = data.workoutLevel;
           _selectedTrainingDays = data.trainingDays;
           _selectedTrainingLocation = data.trainingLocation;
-          _selectedDietPreference = data.dietPreference;
+          // Normalize diet preference value to match options
+          final savedPreference = data.dietPreference;
+          if (savedPreference == 'High-Protein') {
+            _selectedDietPreference = 'High Protein';
+          } else if (savedPreference == 'Low-Carb') {
+            _selectedDietPreference = 'Low Carb';
+          } else {
+            _selectedDietPreference = savedPreference;
+          }
           _selectedActivityLevel = data.activityLevel;
         });
       }
@@ -226,6 +235,8 @@ class _UpdatePlansState extends State<UpdatePlans>
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
+    int? minValue,
+    int? maxValue,
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -244,6 +255,15 @@ class _UpdatePlansState extends State<UpdatePlans>
       child: TextField(
         controller: controller,
         keyboardType: keyboardType ?? TextInputType.text,
+        inputFormatters: minValue != null && maxValue != null
+            ? [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(maxValue.toString().length),
+                _NumericRangeFormatter(minValue: minValue, maxValue: maxValue),
+              ]
+            : keyboardType == TextInputType.number
+                ? [FilteringTextInputFormatter.digitsOnly]
+                : null,
         style: TextStyle(color: theme.colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: label,
@@ -320,16 +340,20 @@ class _UpdatePlansState extends State<UpdatePlans>
               children: [
                 _buildTextField(
                   controller: _ageController,
-                  label: 'Age',
+                  label: 'Age (10-80)',
                   icon: Icons.cake_outlined,
                   keyboardType: TextInputType.number,
+                  minValue: 10,
+                  maxValue: 80,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _heightController,
-                  label: 'Height (cm)',
+                  label: 'Height (80-230 cm)',
                   icon: Icons.height,
                   keyboardType: TextInputType.number,
+                  minValue: 80,
+                  maxValue: 230,
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -366,16 +390,20 @@ class _UpdatePlansState extends State<UpdatePlans>
               children: [
                 _buildTextField(
                   controller: _weightController,
-                  label: 'Current Weight (kg)',
+                  label: 'Current Weight (30-200 kg)',
                   icon: Icons.scale,
                   keyboardType: TextInputType.number,
+                  minValue: 30,
+                  maxValue: 200,
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _targetWeightController,
-                  label: 'Target Weight (kg)',
+                  label: 'Target Weight (30-200 kg)',
                   icon: Icons.flag_outlined,
                   keyboardType: TextInputType.number,
+                  minValue: 30,
+                  maxValue: 200,
                 ),
               ],
             ),
@@ -458,7 +486,7 @@ class _UpdatePlansState extends State<UpdatePlans>
                 ),
                 const SizedBox(height: 12),
                 Wrap(
-                  children: List.generate(7, (i) {
+                  children: List.generate(6, (i) {
                     int days = i + 1;
                     return _buildChip(
                       '$days ${days == 1 ? 'Day' : 'Days'}',
@@ -504,19 +532,19 @@ class _UpdatePlansState extends State<UpdatePlans>
             child: Wrap(
               children: [
                 _buildChip(
-                  'Low-Carb',
-                  _selectedDietPreference == 'Low-Carb',
-                  () => setState(() => _selectedDietPreference = 'Low-Carb'),
-                ),
-                _buildChip(
                   'Normal',
                   _selectedDietPreference == 'Normal',
                   () => setState(() => _selectedDietPreference = 'Normal'),
                 ),
                 _buildChip(
-                  'High-Protein',
-                  _selectedDietPreference == 'High-Protein',
-                  () => setState(() => _selectedDietPreference = 'High-Protein'),
+                  'Low Carb',
+                  _selectedDietPreference == 'Low Carb',
+                  () => setState(() => _selectedDietPreference = 'Low Carb'),
+                ),
+                _buildChip(
+                  'High Protein',
+                  _selectedDietPreference == 'High Protein',
+                  () => setState(() => _selectedDietPreference = 'High Protein'),
                 ),
                 _buildChip(
                   'Vegetarian',
@@ -524,9 +552,9 @@ class _UpdatePlansState extends State<UpdatePlans>
                   () => setState(() => _selectedDietPreference = 'Vegetarian'),
                 ),
                 _buildChip(
-                  'Vegan',
-                  _selectedDietPreference == 'Vegan',
-                  () => setState(() => _selectedDietPreference = 'Vegan'),
+                  'Keto',
+                  _selectedDietPreference == 'Keto',
+                  () => setState(() => _selectedDietPreference = 'Keto'),
                 ),
               ],
             ),
@@ -534,11 +562,29 @@ class _UpdatePlansState extends State<UpdatePlans>
           _buildInputCard(
             label: 'Meal Planning',
             icon: Icons.restaurant_outlined,
-            child: _buildTextField(
-              controller: _mealsPerDayController,
-              label: 'Meals Per Day',
-              icon: Icons.dining_outlined,
-              keyboardType: TextInputType.number,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Meals per day',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  children: [2, 3, 4, 5].map((mealCount) {
+                    final isSelected = _mealsPerDayController.text == mealCount.toString();
+                    return _buildChip(
+                      '$mealCount meals',
+                      isSelected,
+                      () => setState(() => _mealsPerDayController.text = mealCount.toString()),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
           ),
           _buildInputCard(
@@ -801,5 +847,44 @@ class _UpdatePlansState extends State<UpdatePlans>
         ],
       ),
     );
+  }
+}
+
+// Custom formatter to limit numeric input range
+class _NumericRangeFormatter extends TextInputFormatter {
+  final int minValue;
+  final int maxValue;
+
+  _NumericRangeFormatter({required this.minValue, required this.maxValue});
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    final int? value = int.tryParse(newValue.text);
+    if (value == null) {
+      return oldValue;
+    }
+
+    if (value < minValue) {
+      return TextEditingValue(
+        text: minValue.toString(),
+        selection: TextSelection.collapsed(offset: minValue.toString().length),
+      );
+    }
+
+    if (value > maxValue) {
+      return TextEditingValue(
+        text: maxValue.toString(),
+        selection: TextSelection.collapsed(offset: maxValue.toString().length),
+      );
+    }
+
+    return newValue;
   }
 }

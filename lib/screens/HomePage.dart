@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../controllers/dailycheckupcontroller.dart';
+import '../utils/responsive.dart';
 import 'edit_user_info_page.dart';
 import 'UpdatePlans.dart';
 import 'NearbyGymsPage.dart';
@@ -66,22 +67,29 @@ class HomePage extends StatelessWidget {
         
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              children: const [
-                _ConsistencyTracker(),
-                SizedBox(height: 20),
-                _DailyCheckUpCard(),
-                SizedBox(height: 20),
-                _NearestGymCard(),
-                SizedBox(height: 20),
-                _BottomActions(),
-              ],
-            ),
-          ),
+        child: OrientationBuilder(
+          builder: (context, orientation) {
+            final padding = Responsive.padding(context);
+            final spacing = Responsive.spacing(context, mobile: 20, tablet: 24, desktop: 28);
+            
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding * 0.8),
+                child: Column(
+                  children: [
+                    _ConsistencyTracker(),
+                    SizedBox(height: spacing),
+                    _DailyCheckUpCard(),
+                    SizedBox(height: spacing),
+                    _NearestGymCard(),
+                    SizedBox(height: spacing),
+                    _BottomActions(),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -95,6 +103,8 @@ class _ConsistencyTracker extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final controller = Get.find<DailyCheckupController>();
+    final spacing = Responsive.spacing(context, mobile: 16, tablet: 20, desktop: 24);
+    final titleSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24);
 
     return Obx(() {
       final workoutProgress =
@@ -110,15 +120,19 @@ class _ConsistencyTracker extends StatelessWidget {
               Flexible(
                 child: Text(
                   "Consistency Tracker",
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: titleSize,
+                  ),
                   overflow: TextOverflow.fade,
                 ),
               ),
               Flexible(
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Responsive.spacing(context, mobile: 12, tablet: 14, desktop: 16),
+                    vertical: Responsive.spacing(context, mobile: 6, tablet: 7, desktop: 8),
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.orange.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -126,16 +140,19 @@ class _ConsistencyTracker extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.local_fire_department,
-                          color: Colors.orange, size: 18),
-                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.local_fire_department,
+                        color: Colors.orange,
+                        size: Responsive.iconSize(context, mobile: 18, tablet: 20, desktop: 22),
+                      ),
+                      SizedBox(width: Responsive.spacing(context, mobile: 4, tablet: 5, desktop: 6)),
                       Flexible(
                         child: Text(
                           "${controller.streak.value} Day Streak",
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.orange,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: Responsive.fontSize(context, mobile: 12, tablet: 13, desktop: 14),
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -146,7 +163,7 @@ class _ConsistencyTracker extends StatelessWidget {
               )
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: spacing),
           Row(
             children: [
               Expanded(
@@ -159,7 +176,7 @@ class _ConsistencyTracker extends StatelessWidget {
                   color: Colors.blue,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: Responsive.spacing(context, mobile: 12, tablet: 14, desktop: 16)),
               Expanded(
                 child: _GoalProgressCard(
                   label: "Diet Plan",
@@ -196,13 +213,16 @@ class _GoalProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-      return Container(
-      padding: const EdgeInsets.all(16),
+    final padding = Responsive.padding(context);
+    final borderRadius = Responsive.borderRadius(context, mobile: 20, tablet: 22, desktop: 24);
+    
+    return Container(
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         color: theme.brightness == Brightness.dark
             ? theme.colorScheme.surface
             : const Color(0xFFFAFBFC), 
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: theme.brightness == Brightness.light
             ? Border.all(
                 color: Colors.black.withOpacity(0.15),
@@ -225,29 +245,48 @@ class _GoalProgressCard extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                radius: 14,
+                radius: Responsive.iconSize(context, mobile: 14, tablet: 16, desktop: 18) / 2,
                 backgroundColor: color.withOpacity(0.1),
-                child: Icon(icon, color: color, size: 16),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: Responsive.iconSize(context, mobile: 16, tablet: 18, desktop: 20),
+                ),
               ),
-              const SizedBox(width: 8),
-              Text(label,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+              SizedBox(width: Responsive.spacing(context, mobile: 8, tablet: 10, desktop: 12)),
+              Flexible(
+                child: Text(
+                  label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: Responsive.fontSize(context, mobile: 14, tablet: 15, desktop: 16),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: Responsive.spacing(context, mobile: 20, tablet: 24, desktop: 28)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Monthly Goal",
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: Colors.grey, fontSize: 10)),
-              Text(progressText,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: Colors.grey, fontSize: 10)),
+              Text(
+                "Monthly Goal",
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey,
+                  fontSize: Responsive.fontSize(context, mobile: 10, tablet: 11, desktop: 12),
+                ),
+              ),
+              Text(
+                progressText,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey,
+                  fontSize: Responsive.fontSize(context, mobile: 10, tablet: 11, desktop: 12),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: Responsive.spacing(context, mobile: 8, tablet: 10, desktop: 12)),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
@@ -270,14 +309,15 @@ class _DailyCheckUpCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final controller = Get.find<DailyCheckupController>();
-
+    final padding = Responsive.padding(context);
+    final borderRadius = Responsive.borderRadius(context, mobile: 24, tablet: 26, desktop: 28);
     final isDark = theme.brightness == Brightness.dark;
     
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         color: isDark ? theme.colorScheme.surface : const Color(0xFFFAFBFC),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: !isDark
             ? Border.all(
                 color: Colors.black.withOpacity(0.15),
@@ -309,19 +349,23 @@ class _DailyCheckUpCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: Responsive.spacing(context, mobile: 6, tablet: 8, desktop: 10)),
           Text(
             controller.formattedDate,
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: Colors.grey),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.grey,
+              fontSize: Responsive.fontSize(context, mobile: 12, tablet: 13, desktop: 14),
+            ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: Responsive.spacing(context, mobile: 6, tablet: 8, desktop: 10)),
           Text(
             "Confirm your diet & workout for today.",
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: Colors.grey),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.grey,
+              fontSize: Responsive.fontSize(context, mobile: 12, tablet: 13, desktop: 14),
+            ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: Responsive.spacing(context, mobile: 20, tablet: 24, desktop: 28)),
           Row(
             children: [
               Expanded(
@@ -333,7 +377,7 @@ class _DailyCheckUpCard extends StatelessWidget {
                   },
                 )),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: Responsive.spacing(context, mobile: 12, tablet: 14, desktop: 16)),
               Expanded(
                 child: Obx(() => _SelectionTile(
                   label: "Workout",
@@ -345,20 +389,24 @@ class _DailyCheckUpCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: Responsive.spacing(context, mobile: 20, tablet: 24, desktop: 28)),
           Obx(() {
             final alreadyLogged = controller.todayLogged.value;
             final canLogNow = controller.canLog && !alreadyLogged;
+            final buttonHeight = Responsive.spacing(context, mobile: 55, tablet: 60, desktop: 65);
             
             return SizedBox(
               width: double.infinity,
-              height: 55,
+              height: buttonHeight,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       canLogNow ? theme.colorScheme.primary : Colors.grey,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
+                    borderRadius: BorderRadius.circular(
+                      Responsive.borderRadius(context, mobile: 15, tablet: 16, desktop: 18),
+                    ),
+                  ),
                 ),
                 onPressed: canLogNow
                     ? () async {
@@ -374,14 +422,19 @@ class _DailyCheckUpCard extends StatelessWidget {
                   children: [
                     Text(
                       alreadyLogged ? "Already Logged Today" : "Log Daily Progress",
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: Responsive.fontSize(context, mobile: 16, tablet: 17, desktop: 18),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     if (!alreadyLogged) ...[
-                      const SizedBox(width: 10),
-                      const Icon(Icons.arrow_forward, color: Colors.white),
+                      SizedBox(width: Responsive.spacing(context, mobile: 10, tablet: 12, desktop: 14)),
+                      Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: Responsive.iconSize(context, mobile: 20, tablet: 22, desktop: 24),
+                      ),
                     ],
                   ],
                 ),
@@ -475,17 +528,21 @@ class _NearestGymCard extends StatelessWidget {
         );
       },
       child: Container(
-        height: 160,
+        height: Responsive.spacing(context, mobile: 160, tablet: 180, desktop: 200),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(
+            Responsive.borderRadius(context, mobile: 18, tablet: 20, desktop: 22),
+          ),
           image: const DecorationImage(image: AssetImage('assets/GYMBG.png'),
             fit: BoxFit.cover,
           ),
         ),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(Responsive.padding(context)),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(
+              Responsive.borderRadius(context, mobile: 18, tablet: 20, desktop: 22),
+            ),
             color: Colors.black.withOpacity(0.5),
           ),
           child: Row(
@@ -570,13 +627,15 @@ class _ActionCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
-        height: 120, // Fixed height to ensure both buttons are same size
-        padding: const EdgeInsets.all(16),
+        height: Responsive.spacing(context, mobile: 120, tablet: 140, desktop: 160),
+        padding: EdgeInsets.all(Responsive.padding(context)),
         decoration: BoxDecoration(
           color: theme.brightness == Brightness.dark
               ? theme.colorScheme.surface
               : const Color(0xFFFAFBFC),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(
+            Responsive.borderRadius(context, mobile: 18, tablet: 20, desktop: 22),
+          ),
           border: theme.brightness == Brightness.light
               ? Border.all(
                   color: Colors.black.withOpacity(0.15),
@@ -597,25 +656,31 @@ class _ActionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: theme.colorScheme.primary, size: 24),
-            const SizedBox(height: 12),
+            Icon(
+              icon,
+              color: theme.colorScheme.primary,
+              size: Responsive.iconSize(context, mobile: 24, tablet: 26, desktop: 28),
+            ),
+            SizedBox(height: Responsive.spacing(context, mobile: 12, tablet: 14, desktop: 16)),
             Flexible(
               child: Text(
                 title,
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: Responsive.fontSize(context, mobile: 14, tablet: 15, desktop: 16),
+                ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: Responsive.spacing(context, mobile: 4, tablet: 5, desktop: 6)),
             Flexible(
               child: Text(
                 subtitle,
                 style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface
-                        .withOpacity(0.6),
-                    fontSize: 10),
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  fontSize: Responsive.fontSize(context, mobile: 10, tablet: 11, desktop: 12),
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

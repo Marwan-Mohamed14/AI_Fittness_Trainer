@@ -50,7 +50,6 @@ class _UpdatePlansState extends State<UpdatePlans>
   }
 
   void _loadProfileData() {
-  
     _profileController.loadExistingProfile().then((_) {
       if (mounted) {
         setState(() {
@@ -66,7 +65,7 @@ class _UpdatePlansState extends State<UpdatePlans>
           _selectedWorkoutLevel = data.workoutLevel;
           _selectedTrainingDays = data.trainingDays;
           _selectedTrainingLocation = data.trainingLocation;
-          // Normalize diet preference value to match options
+          
           final savedPreference = data.dietPreference;
           if (savedPreference == 'High-Protein') {
             _selectedDietPreference = 'High Protein';
@@ -80,44 +79,27 @@ class _UpdatePlansState extends State<UpdatePlans>
       }
     });
   }
-  void _showSuccessDialog() {
-  Get.dialog(
-    AlertDialog(
-      backgroundColor: const Color(0xFF1A1F2E),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      title: const Text(
-        'Success 🎉',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      content: const Text(
-        'Your profile has been updated successfully.',
-        style: TextStyle(color: Colors.white70),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Get.back(); 
-            Get.offAllNamed('/home'); 
-          },
-          child: const Text(
-            'Go to Home',
-            style: TextStyle(
-              color: Colors.deepPurple,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    ),
-    barrierDismissible: false, 
-  );
-}
 
+  void _showSuccessDialog() {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: const Color(0xFF1A1F2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Success 🎉', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: const Text('Your profile has been updated successfully.', style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+              Get.offAllNamed('/home');
+            },
+            child: const Text('Go to Home', style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
+  }
 
   @override
   void dispose() {
@@ -131,56 +113,25 @@ class _UpdatePlansState extends State<UpdatePlans>
     super.dispose();
   }
 
-  Widget _buildInputCard({
-    required String label,
-    required Widget child,
-    IconData? icon,
-  }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
+  // --- UI Helper Methods ---
+
+  Widget _buildInputCard({required String label, required Widget child, IconData? icon}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: isDark
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF1A1F2E).withOpacity(0.8),
-                  const Color(0xFF141722).withOpacity(0.9),
-                ],
-              )
-            : null,
-        color: !isDark ? const Color(0xFFFAFBFC) : null, 
+        gradient: isDark ? LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [const Color(0xFF1A1F2E).withOpacity(0.8), const Color(0xFF141722).withOpacity(0.9)],
+        ) : null,
+        color: !isDark ? const Color(0xFFFAFBFC) : null,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.15), 
-          width: isDark ? 1 : 1.5, 
+          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.15),
+          width: isDark ? 1 : 1.5,
         ),
-        boxShadow: isDark
-            ? [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08), 
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,39 +141,18 @@ class _UpdatePlansState extends State<UpdatePlans>
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.deepPurple.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 20,
-                  ),
+                  decoration: BoxDecoration(color: Colors.deepPurple.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+                  child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600)),
               ],
             ),
             const SizedBox(height: 16),
           ] else
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           child,
         ],
@@ -238,47 +168,31 @@ class _UpdatePlansState extends State<UpdatePlans>
     int? minValue,
     int? maxValue,
   }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F111A) : const Color(0xFFFAFBFC),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.15), 
-          width: isDark ? 1 : 1.5, 
+          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.15),
+          width: isDark ? 1 : 1.5,
         ),
       ),
       child: TextField(
         controller: controller,
-        keyboardType: keyboardType ?? TextInputType.text,
-        inputFormatters: minValue != null && maxValue != null
-            ? [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(maxValue.toString().length),
-                _NumericRangeFormatter(minValue: minValue, maxValue: maxValue),
-              ]
-            : keyboardType == TextInputType.number
-                ? [FilteringTextInputFormatter.digitsOnly]
-                : null,
-        style: TextStyle(color: theme.colorScheme.onSurface),
+        keyboardType: keyboardType,
+        inputFormatters: [
+          if (keyboardType == TextInputType.number) FilteringTextInputFormatter.digitsOnly,
+          if (keyboardType == TextInputType.number && maxValue != null)
+            _NumericRangeFormatter(maxValue: maxValue),
+        ],
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: label,
-          hintStyle: TextStyle(
-            color: theme.colorScheme.onSurface.withOpacity(0.4),
-          ),
-          prefixIcon: Icon(
-            icon,
-            color: theme.colorScheme.primary.withOpacity(0.7),
-          ),
+          hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+          prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),
     );
@@ -287,7 +201,6 @@ class _UpdatePlansState extends State<UpdatePlans>
   Widget _buildChip(String label, bool isSelected, VoidCallback onTap) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -295,38 +208,20 @@ class _UpdatePlansState extends State<UpdatePlans>
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         margin: const EdgeInsets.only(right: 8, bottom: 8),
         decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [
-                    theme.colorScheme.primary,
-                    theme.colorScheme.primary.withOpacity(0.8),
-                  ],
-                )
-              : null,
+          gradient: isSelected ? LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.primary.withOpacity(0.8)]) : null,
           color: isSelected ? null : (isDark ? const Color(0xFF0F111A) : const Color(0xFFFAFBFC)),
           borderRadius: BorderRadius.circular(25),
           border: Border.all(
-            color: isSelected
-                ? theme.colorScheme.primary.withOpacity(0.5)
-                : (isDark
-                    ? Colors.white.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.15)), 
-            width: isSelected ? 2 : (isDark ? 1 : 1.5), 
+            color: isSelected ? theme.colorScheme.primary : (isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.15)),
+            width: isSelected ? 2 : 1,
           ),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected
-                ? Colors.white
-                : theme.colorScheme.onSurface.withOpacity(0.7),
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-          ),
-        ),
+        child: Text(label, style: TextStyle(color: isSelected ? Colors.white : theme.colorScheme.onSurface.withOpacity(0.7), fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
       ),
     );
   }
+
+  // --- Tab Widgets ---
 
   Widget _buildPersonalInfoTab() {
     return SingleChildScrollView(
@@ -338,46 +233,14 @@ class _UpdatePlansState extends State<UpdatePlans>
             icon: Icons.person_outline,
             child: Column(
               children: [
-                _buildTextField(
-                  controller: _ageController,
-                  label: 'Age (10-80)',
-                  icon: Icons.cake_outlined,
-                  keyboardType: TextInputType.number,
-                  minValue: 10,
-                  maxValue: 80,
-                ),
+                _buildTextField(controller: _ageController, label: 'Age (10-80)', icon: Icons.cake_outlined, keyboardType: TextInputType.number, maxValue: 80),
                 const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _heightController,
-                  label: 'Height (80-230 cm)',
-                  icon: Icons.height,
-                  keyboardType: TextInputType.number,
-                  minValue: 80,
-                  maxValue: 230,
-                ),
+                _buildTextField(controller: _heightController, label: 'Height (80-230 cm)', icon: Icons.height, keyboardType: TextInputType.number, maxValue: 230),
                 const SizedBox(height: 16),
-                Text(
-                  'Gender',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 12),
                 Wrap(
                   children: [
-                    _buildChip(
-                      'Male',
-                      _selectedGender == 'Male',
-                      () => setState(() => _selectedGender = 'Male'),
-                    ),
-                    _buildChip(
-                      'Female',
-                      _selectedGender == 'Female',
-                      () => setState(() => _selectedGender = 'Female'),
-                    ),
-                    
+                    _buildChip('Male', _selectedGender == 'Male', () => setState(() => _selectedGender = 'Male')),
+                    _buildChip('Female', _selectedGender == 'Female', () => setState(() => _selectedGender = 'Female')),
                   ],
                 ),
               ],
@@ -388,27 +251,12 @@ class _UpdatePlansState extends State<UpdatePlans>
             icon: Icons.monitor_weight_outlined,
             child: Column(
               children: [
-                _buildTextField(
-                  controller: _weightController,
-                  label: 'Current Weight (30-200 kg)',
-                  icon: Icons.scale,
-                  keyboardType: TextInputType.number,
-                  minValue: 30,
-                  maxValue: 200,
-                ),
+                _buildTextField(controller: _weightController, label: 'Current Weight (30-200 kg)', icon: Icons.scale, keyboardType: TextInputType.number, maxValue: 200),
                 const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _targetWeightController,
-                  label: 'Target Weight (30-200 kg)',
-                  icon: Icons.flag_outlined,
-                  keyboardType: TextInputType.number,
-                  minValue: 30,
-                  maxValue: 200,
-                ),
+                _buildTextField(controller: _targetWeightController, label: 'Target Weight (30-200 kg)', icon: Icons.flag_outlined, keyboardType: TextInputType.number, maxValue: 200),
               ],
             ),
           ),
-         
         ],
       ),
     );
@@ -423,97 +271,37 @@ class _UpdatePlansState extends State<UpdatePlans>
             label: 'Workout Goal',
             icon: Icons.fitness_center,
             child: Wrap(
-              children: [
-                _buildChip(
-                  'Lose Weight',
-                  _selectedWorkoutGoal == 'Lose Weight',
-                  () => setState(() => _selectedWorkoutGoal = 'Lose Weight'),
-                ),
-                _buildChip(
-                  'Build Muscle',
-                  _selectedWorkoutGoal == 'Build Muscle',
-                  () => setState(() => _selectedWorkoutGoal = 'Build Muscle'),
-                ),
-                _buildChip(
-                  'Gain Strength',
-                  _selectedWorkoutGoal == 'Gain Strength',
-                  () => setState(() => _selectedWorkoutGoal = 'Gain Strength'),
-                ),
-                _buildChip(
-                  'Maintain Fitness',
-                  _selectedWorkoutGoal == 'Maintain Fitness',
-                  () => setState(() => _selectedWorkoutGoal = 'Maintain Fitness'),
-                ),
-              ],
+              children: ['Lose Weight', 'Build Muscle', 'Gain Strength', 'Maintain Fitness']
+                  .map((goal) => _buildChip(goal, _selectedWorkoutGoal == goal, () => setState(() => _selectedWorkoutGoal = goal)))
+                  .toList(),
             ),
           ),
           _buildInputCard(
             label: 'Experience Level',
             icon: Icons.trending_up,
             child: Wrap(
-              children: [
-                _buildChip(
-                  'Beginner',
-                  _selectedWorkoutLevel == 'Beginner',
-                  () => setState(() => _selectedWorkoutLevel = 'Beginner'),
-                ),
-                _buildChip(
-                  'Intermediate',
-                  _selectedWorkoutLevel == 'Intermediate',
-                  () => setState(() => _selectedWorkoutLevel = 'Intermediate'),
-                ),
-                _buildChip(
-                  'Advanced',
-                  _selectedWorkoutLevel == 'Advanced',
-                  () => setState(() => _selectedWorkoutLevel = 'Advanced'),
-                ),
-              ],
+              children: ['Beginner', 'Intermediate', 'Advanced']
+                  .map((lvl) => _buildChip(lvl, _selectedWorkoutLevel == lvl, () => setState(() => _selectedWorkoutLevel = lvl)))
+                  .toList(),
             ),
           ),
           _buildInputCard(
             label: 'Training Frequency',
             icon: Icons.calendar_today,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Days per week',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  children: List.generate(6, (i) {
-                    int days = i + 1;
-                    return _buildChip(
-                      '$days ${days == 1 ? 'Day' : 'Days'}',
-                      _selectedTrainingDays == days,
-                      () => setState(() => _selectedTrainingDays = days),
-                    );
-                  }),
-                ),
-              ],
+            child: Wrap(
+              children: List.generate(6, (i) {
+                int days = i + 1;
+                return _buildChip('$days ${days == 1 ? 'Day' : 'Days'}', _selectedTrainingDays == days, () => setState(() => _selectedTrainingDays = days));
+              }),
             ),
           ),
           _buildInputCard(
             label: 'Training Location',
             icon: Icons.place_outlined,
             child: Wrap(
-              children: [
-                _buildChip(
-                  'Gym',
-                  _selectedTrainingLocation == 'Gym',
-                  () => setState(() => _selectedTrainingLocation = 'Gym'),
-                ),
-                _buildChip(
-                  'Home',
-                  _selectedTrainingLocation == 'Home',
-                  () => setState(() => _selectedTrainingLocation = 'Home'),
-                ),
-              ],
+              children: ['Gym', 'Home']
+                  .map((loc) => _buildChip(loc, _selectedTrainingLocation == loc, () => setState(() => _selectedTrainingLocation = loc)))
+                  .toList(),
             ),
           ),
         ],
@@ -530,71 +318,24 @@ class _UpdatePlansState extends State<UpdatePlans>
             label: 'Diet Preference',
             icon: Icons.restaurant_menu,
             child: Wrap(
-              children: [
-                _buildChip(
-                  'Normal',
-                  _selectedDietPreference == 'Normal',
-                  () => setState(() => _selectedDietPreference = 'Normal'),
-                ),
-                _buildChip(
-                  'Low Carb',
-                  _selectedDietPreference == 'Low Carb',
-                  () => setState(() => _selectedDietPreference = 'Low Carb'),
-                ),
-                _buildChip(
-                  'High Protein',
-                  _selectedDietPreference == 'High Protein',
-                  () => setState(() => _selectedDietPreference = 'High Protein'),
-                ),
-                _buildChip(
-                  'Vegetarian',
-                  _selectedDietPreference == 'Vegetarian',
-                  () => setState(() => _selectedDietPreference = 'Vegetarian'),
-                ),
-                _buildChip(
-                  'Keto',
-                  _selectedDietPreference == 'Keto',
-                  () => setState(() => _selectedDietPreference = 'Keto'),
-                ),
-              ],
+              children: ['Normal', 'Low Carb', 'High Protein', 'Vegetarian', 'Keto']
+                  .map((diet) => _buildChip(diet, _selectedDietPreference == diet, () => setState(() => _selectedDietPreference = diet)))
+                  .toList(),
             ),
           ),
           _buildInputCard(
             label: 'Meal Planning',
             icon: Icons.restaurant_outlined,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Meals per day',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  children: [2, 3, 4, 5].map((mealCount) {
-                    final isSelected = _mealsPerDayController.text == mealCount.toString();
-                    return _buildChip(
-                      '$mealCount meals',
-                      isSelected,
-                      () => setState(() => _mealsPerDayController.text = mealCount.toString()),
-                    );
-                  }).toList(),
-                ),
-              ],
+            child: Wrap(
+              children: [2, 3, 4, 5].map((count) {
+                return _buildChip('$count meals', _mealsPerDayController.text == count.toString(), () => setState(() => _mealsPerDayController.text = count.toString()));
+              }).toList(),
             ),
           ),
           _buildInputCard(
             label: 'Food Restrictions',
             icon: Icons.warning_amber_rounded,
-            child: _buildTextField(
-              controller: _allergiesController,
-              label: 'Allergies (comma separated)',
-              icon: Icons.info_outline,
-            ),
+            child: _buildTextField(controller: _allergiesController, label: 'Allergies (comma separated)', icon: Icons.info_outline),
           ),
         ],
       ),
@@ -604,82 +345,57 @@ class _UpdatePlansState extends State<UpdatePlans>
   Widget _buildSummaryTab() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _buildInputCard(
-            label: 'Profile Summary',
-            icon: Icons.summarize,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSummaryRow('Age', _ageController.text.isEmpty ? 'Not set' : '${_ageController.text} years'),
-                _buildSummaryRow('Height', _heightController.text.isEmpty ? 'Not set' : '${_heightController.text} cm'),
-                _buildSummaryRow('Gender', _selectedGender ?? 'Not set'),
-                _buildSummaryRow('Current Weight', _weightController.text.isEmpty ? 'Not set' : '${_weightController.text} kg'),
-                _buildSummaryRow('Target Weight', _targetWeightController.text.isEmpty ? 'Not set' : '${_targetWeightController.text} kg'),
-                _buildSummaryRow('Activity Level', _selectedActivityLevel ?? 'Not set'),
-                _buildSummaryRow('Workout Goal', _selectedWorkoutGoal ?? 'Not set'),
-                _buildSummaryRow('Experience', _selectedWorkoutLevel ?? 'Not set'),
-                _buildSummaryRow('Training Days', _selectedTrainingDays == null ? 'Not set' : '$_selectedTrainingDays days/week'),
-                _buildSummaryRow('Location', _selectedTrainingLocation ?? 'Not set'),
-                _buildSummaryRow('Diet Type', _selectedDietPreference ?? 'Not set'),
-                _buildSummaryRow('Meals/Day', _mealsPerDayController.text.isEmpty ? 'Not set' : '${_mealsPerDayController.text}'),
-                if (_allergiesController.text.isNotEmpty)
-                  _buildSummaryRow('Allergies', _allergiesController.text),
-              ],
-            ),
-          ),
-        ],
+      child: _buildInputCard(
+        label: 'Profile Summary',
+        icon: Icons.summarize,
+        child: Column(
+          children: [
+            _buildSummaryRow('Age', _ageController.text.isEmpty ? 'Not set' : '${_ageController.text} years'),
+            _buildSummaryRow('Height', _heightController.text.isEmpty ? 'Not set' : '${_heightController.text} cm'),
+            _buildSummaryRow('Current Weight', _weightController.text.isEmpty ? 'Not set' : '${_weightController.text} kg'),
+            _buildSummaryRow('Target Weight', _targetWeightController.text.isEmpty ? 'Not set' : '${_targetWeightController.text} kg'),
+            _buildSummaryRow('Workout Goal', _selectedWorkoutGoal ?? 'Not set'),
+            _buildSummaryRow('Diet Type', _selectedDietPreference ?? 'Not set'),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSummaryRow(String label, String value) {
-    final theme = Theme.of(context);
-    
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
-              fontSize: 14,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 14)),
+          Text(value, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
+  // --- Logical Operations ---
+
   Future<void> _saveProfile() async {
-    setState(() {
-      _isLoading = true;
-    });
+    // Basic final validation
+    final age = int.tryParse(_ageController.text) ?? 0;
+    if (age < 10 || age > 80) {
+      Get.snackbar('Invalid Input', 'Age must be between 10 and 80', backgroundColor: Colors.orange);
+      return;
+    }
+
+    setState(() => _isLoading = true);
 
     try {
-      List<String>? allergies;
-      if (_allergiesController.text.trim().isNotEmpty) {
-        allergies = _allergiesController.text
-            .split(',')
-            .map((e) => e.trim())
-            .where((e) => e.isNotEmpty)
-            .toList();
-      }
+      List<String>? allergies = _allergiesController.text.isNotEmpty 
+          ? _allergiesController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList() 
+          : null;
 
       await _profileController.loadExistingProfile();
       final currentData = _profileController.onboardingData.value;
-      currentData.age = int.tryParse(_ageController.text);
+      
+      currentData.age = age;
       currentData.height = int.tryParse(_heightController.text);
       currentData.gender = _selectedGender;
       currentData.workoutGoal = _selectedWorkoutGoal;
@@ -693,13 +409,8 @@ class _UpdatePlansState extends State<UpdatePlans>
       currentData.activityLevel = _selectedActivityLevel;
       currentData.allergies = allergies;
 
-      Get.snackbar(
-        'Generating Plan',
-        'Creating your personalized fitness and diet plan...',
-        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.7),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+      Get.snackbar('Generating Plan', 'Creating your personalized fitness plan...', 
+          backgroundColor: Theme.of(context).colorScheme.primary, colorText: Colors.white);
 
       final aiPlanService = AiPlanService();
       final generatedPlans = await aiPlanService.generateWeeklyPlan(currentData);
@@ -707,74 +418,31 @@ class _UpdatePlansState extends State<UpdatePlans>
       currentData.dietPlan = generatedPlans['diet'];
       currentData.workoutPlan = generatedPlans['workout'];
 
-      final profileService = ProfileService();
-      await profileService.saveProfile(currentData);
+      await ProfileService().saveProfile(currentData);
       _profileController.onboardingData.value = currentData;
 
       _showSuccessDialog();
-
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to update profile: ${e.toString()}',
-        backgroundColor: Colors.red.withOpacity(0.7),
-        colorText: Colors.white,
-      );
+      Get.snackbar('Error', 'Failed to update: ${e.toString()}', backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-   final double screenPadding = Responsive.padding(context); 
-    final double sectionFontSize = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double titleFontSize = Responsive.fontSize(context, mobile: 24, tablet: 26, desktop: 28); 
-    final double buttonFontSize = Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18); 
-    final double iconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
-    final double exerciseIconSize = Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24); 
-    final double boxPadding = Responsive.padding(context) / 2; 
-    final double cardRadius = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double cardSpacing = Responsive.fontSize(context, mobile: 12, tablet: 14, desktop: 16); 
-    final double smallSpacing = Responsive.fontSize(context, mobile: 6, tablet: 8, desktop: 10); 
-    final double largeSpacing = Responsive.fontSize(context, mobile: 20, tablet: 24, desktop: 28); 
-    final double iconCircleSize = Responsive.fontSize(context, mobile: 40, tablet: 44, desktop: 48); 
-    final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
-    
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: BackButton(color: theme.colorScheme.onSurface),
-        title: Text(
-          'Update Plans',
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
+        title: const Text('Update Plans', style: TextStyle(fontWeight: FontWeight.bold)),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: theme.colorScheme.primary,
-          indicatorWeight: 3,
-          labelColor: theme.colorScheme.primary,
-          unselectedLabelColor: theme.colorScheme.onSurface.withOpacity(0.5),
-          labelStyle: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
           tabs: const [
-            Tab(icon: Icon(Icons.person, size: 20), text: 'Personal'),
-            Tab(icon: Icon(Icons.fitness_center, size: 20), text: 'Workout'),
-            Tab(icon: Icon(Icons.restaurant, size: 20), text: 'Diet'),
-            Tab(icon: Icon(Icons.summarize, size: 20), text: 'Summary'),
+            Tab(icon: Icon(Icons.person), text: 'Personal'),
+            Tab(icon: Icon(Icons.fitness_center), text: 'Workout'),
+            Tab(icon: Icon(Icons.restaurant), text: 'Diet'),
+            Tab(icon: Icon(Icons.summarize), text: 'Summary'),
           ],
         ),
       ),
@@ -783,64 +451,23 @@ class _UpdatePlansState extends State<UpdatePlans>
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                _buildPersonalInfoTab(),
-                _buildWorkoutTab(),
-                _buildDietTab(),
-                _buildSummaryTab(),
-              ],
+              children: [_buildPersonalInfoTab(), _buildWorkoutTab(), _buildDietTab(), _buildSummaryTab()],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(theme.brightness == Brightness.dark ? 0.3 : 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, -4),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
-              ],
-            ),
-            child: SafeArea(
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    elevation: 5,
-                  ),
-                  onPressed: _isLoading ? null : _saveProfile,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.save, color: Colors.white),
-                            SizedBox(width: 8),
-                            Text(
-                              'Regenerate Plans & Save',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
+                onPressed: _isLoading ? null : _saveProfile,
+                child: _isLoading 
+                  ? const CircularProgressIndicator(color: Colors.white) 
+                  : const Text('Regenerate Plans & Save', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -850,41 +477,25 @@ class _UpdatePlansState extends State<UpdatePlans>
   }
 }
 
-// Custom formatter to limit numeric input range
+/// Corrected Formatter: Prevents values larger than max, but allows typing/deleting.
 class _NumericRangeFormatter extends TextInputFormatter {
-  final int minValue;
   final int maxValue;
 
-  _NumericRangeFormatter({required this.minValue, required this.maxValue});
+  _NumericRangeFormatter({required this.maxValue});
 
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (newValue.text.isEmpty) {
-      return newValue;
-    }
-
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) return newValue;
+    
     final int? value = int.tryParse(newValue.text);
-    if (value == null) {
+    
+    // If input is not a number OR it exceeds the maximum allowed, reject it.
+    if (value == null || value > maxValue) {
       return oldValue;
     }
-
-    if (value < minValue) {
-      return TextEditingValue(
-        text: minValue.toString(),
-        selection: TextSelection.collapsed(offset: minValue.toString().length),
-      );
-    }
-
-    if (value > maxValue) {
-      return TextEditingValue(
-        text: maxValue.toString(),
-        selection: TextSelection.collapsed(offset: maxValue.toString().length),
-      );
-    }
-
+    
+    // Allow the value even if it's below a "minimum" during typing,
+    // otherwise the user could never type "10" if the min is 10.
     return newValue;
   }
 }

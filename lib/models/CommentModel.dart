@@ -19,4 +19,11 @@ class Comment {
       createdAt: DateTime.parse(json['created_at']),
     );
   }
+  String get timeAgo {
+    final difference = DateTime.now().difference(createdAt);
+    if (difference.inMinutes < 1) return 'Just now';
+    if (difference.inHours < 1) return '${difference.inMinutes}m ago';
+    if (difference.inDays < 1) return '${difference.inHours}h ago';
+    return '${difference.inDays}d ago';
+  }
 }

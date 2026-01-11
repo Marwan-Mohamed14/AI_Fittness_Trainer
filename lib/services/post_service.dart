@@ -1,9 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/post_model.dart';
+import '../models/CommentModel.dart';
 
 class PostService {
   final SupabaseClient _supabase = Supabase.instance.client;
-
+  
   /// Get current user ID
   String? getCurrentUserId() {
     return _supabase.auth.currentUser?.id;
@@ -95,9 +96,9 @@ class PostService {
         posts.add(Post.fromJson({
           ...postData,
           'user_name': userName,
-          'user_avatar': null, // No avatar
+          'user_avatar': null, 
           'likes_count': likesCount,
-          'comments_count': 0,
+          'comments_count': postData['comments_count'] ?? 0,
           'is_liked_by_me': userLike != null,
         }));
       }
@@ -149,7 +150,7 @@ class PostService {
           'user_name': postData['user_name'] ?? 'FitUser',      
           'user_avatar': null, // No avatar
           'likes_count': likesCount,
-          'comments_count': 0,
+          'comments_count': postData['comments_count'] ?? 0,
           'is_liked_by_me': userLike != null,
         }));
       }
@@ -213,4 +214,60 @@ class PostService {
       throw Exception('Failed to delete post');
     }
   }
+  Future<List<Comment>> fetchComments(String postId) async {
+  try {
+    print('Fetching comments for postId: $postId');
+
+    final response = await _supabase
+        .from('comments')
+        .select()
+        .eq('post_id', postId)
+        .order('created_at', ascending: true);
+
+    print('Raw response from Supabase: $response'); // ← This is key!
+    print('Number of comments fetched: ${response.length}');
+
+    final comments = response.map((data) {
+      print('Parsing comment data: $data'); // See each row
+      return Comment.fromJson(data);
+    }).toList();
+
+    print('Successfully parsed ${comments.length} comments');
+    return comments;
+  } catch (e, stack) {
+    print('Fetch comments ERROR: $e');
+    print('Stack trace: $stack');
+    rethrow;
+  }
+}
+  
+  Future<void> addComment(String postId, String content) async {
+  final userId = getCurrentUserId();
+  if (userId == null) throw Exception('User not logged in');
+
+  try {
+    await _supabase.from('comments').insert({
+      'post_id': postId,  
+      'user_id': userId,
+      'user_name': getCurrentUserName(),
+      'content': content.trim(),
+    });
+
+    final postResponse = await _supabase
+        .from('posts')
+        .select('comments_count')
+        .eq('id', postId)
+        .single();
+
+    final currentCount = (postResponse['comments_count'] as int?) ?? 0;
+
+    await _supabase
+        .from('posts')
+        .update({'comments_count': currentCount + 1})
+        .eq('id', postId);
+  } catch (e) {
+    print('Error adding comment: $e');
+    rethrow;
+  }
+}
 }

@@ -185,26 +185,9 @@ class _CreatePostDialogState extends State<CreatePostDialog> {
               ),
               const SizedBox(height: 16),
               if (_selectedImage != null)
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(_selectedImage!, width: double.infinity, height: 200, fit: BoxFit.cover),
-                    ),
-                    if (!_isUploading)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: IconButton(
-                          onPressed: () => setState(() => _selectedImage = null),
-                          icon: const Icon(Icons.close),
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.black.withOpacity(0.6),
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                  ],
+                _ResponsivePreviewImage(
+                  imageFile: _selectedImage!,
+                  onRemove: _isUploading ? null : () => setState(() => _selectedImage = null),
                 )
               else
                 GestureDetector(
@@ -291,16 +274,7 @@ class SocialPostCard extends StatelessWidget {
             Text(post.caption!),
           ],
           const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              post.mediaUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 300,
-              errorBuilder: (context, error, stack) => Container(height: 300, color: Colors.grey[300], child: const Icon(Icons.error_outline, size: 48)),
-            ),
-          ),
+          _ResponsivePostImage(imageUrl: post.mediaUrl),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -350,6 +324,137 @@ class SocialPostCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Separate StatefulWidget for responsive post images that rebuilds on orientation change
+class _ResponsivePostImage extends StatefulWidget {
+  final String imageUrl;
+
+  const _ResponsivePostImage({required this.imageUrl});
+
+  @override
+  State<_ResponsivePostImage> createState() => _ResponsivePostImageState();
+}
+
+class _ResponsivePostImageState extends State<_ResponsivePostImage> {
+  @override
+  Widget build(BuildContext context) {
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        final size = MediaQuery.of(context).size;
+        final screenHeight = size.height;
+        final isLandscape = orientation == Orientation.landscape;
+        
+        // Calculate image height as percentage of screen height
+        double imageHeight;
+        if (isLandscape) {
+          // Landscape: use smaller percentage
+          imageHeight = screenHeight * 0.35;
+          imageHeight = imageHeight.clamp(200.0, 400.0);
+        } else {
+          // Portrait: use larger percentage
+          imageHeight = screenHeight * 0.45;
+          imageHeight = imageHeight.clamp(250.0, 500.0);
+        }
+        
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.network(
+            widget.imageUrl,
+            fit: BoxFit.contain,
+            width: double.infinity,
+            height: imageHeight,
+            key: ValueKey('${widget.imageUrl}_${orientation.name}_${imageHeight}'), // Force rebuild on orientation change
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                height: imageHeight,
+                color: Colors.grey[300],
+                child: Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                  ),
+                ),
+              );
+            },
+            errorBuilder: (context, error, stack) => Container(
+              height: imageHeight,
+              color: Colors.grey[300],
+              child: const Icon(Icons.error_outline, size: 48),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// Separate StatefulWidget for responsive preview images in create post dialog
+class _ResponsivePreviewImage extends StatefulWidget {
+  final File imageFile;
+  final VoidCallback? onRemove;
+
+  const _ResponsivePreviewImage({
+    required this.imageFile,
+    this.onRemove,
+  });
+
+  @override
+  State<_ResponsivePreviewImage> createState() => _ResponsivePreviewImageState();
+}
+
+class _ResponsivePreviewImageState extends State<_ResponsivePreviewImage> {
+  @override
+  Widget build(BuildContext context) {
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        final size = MediaQuery.of(context).size;
+        final screenHeight = size.height;
+        final isLandscape = orientation == Orientation.landscape;
+        
+        // Calculate image height as percentage of screen height
+        double imageHeight;
+        if (isLandscape) {
+          imageHeight = screenHeight * 0.25;
+          imageHeight = imageHeight.clamp(150.0, 300.0);
+        } else {
+          imageHeight = screenHeight * 0.30;
+          imageHeight = imageHeight.clamp(180.0, 350.0);
+        }
+        
+        return Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.file(
+                widget.imageFile,
+                width: double.infinity,
+                height: imageHeight,
+                fit: BoxFit.cover,
+                key: ValueKey('preview_${orientation.name}_${imageHeight}'), // Force rebuild on orientation change
+              ),
+            ),
+            if (widget.onRemove != null)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  onPressed: widget.onRemove,
+                  icon: const Icon(Icons.close),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black.withOpacity(0.6),
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

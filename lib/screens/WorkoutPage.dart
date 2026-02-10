@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/controllers/Profilecontroller.dart';
 import 'package:ai_personal_trainer/models/WorkoutData.dart';
+import 'package:ai_personal_trainer/utils/responsive.dart';
 import 'package:ai_personal_trainer/services/exercise_video_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -111,41 +112,46 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
                   ),
                 )
               : SafeArea(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 24),
-                        if (_workoutPlan!.weeklyFocus != null)
-                          _WeeklyFocusCard(focus: _workoutPlan!.weeklyFocus!),
-                        if (_workoutPlan!.weeklyFocus != null) const SizedBox(height: 24),
-                        ..._workoutPlan!.days.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final day = entry.value;
-                          final iconColors = [
-                            Colors.orange,
-                            Colors.blueAccent,
-                            Colors.purpleAccent,
-                            Colors.greenAccent,
-                            Colors.redAccent,
-                            Colors.tealAccent,
-                            Colors.pinkAccent,
-                          ];
-                          final iconDataList = [
-                            Icons.fitness_center,
-                            Icons.rowing,
-                            Icons.directions_run,
-                            Icons.sports_mma,
-                            Icons.pool,
-                            Icons.directions_bike,
-                            Icons.self_improvement,
-                          ];
-                          
-                          return Column(
-                            children: [
-                              if (index > 0) const SizedBox(height: 24),
+                  child: OrientationBuilder(
+                    builder: (context, orientation) {
+                      final padding = Responsive.padding(context);
+                      final spacing = Responsive.spacing(context, mobile: 24, tablet: 28, desktop: 32);
+                      
+                      return SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: EdgeInsets.all(padding),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: spacing),
+                            if (_workoutPlan!.weeklyFocus != null)
+                              _WeeklyFocusCard(focus: _workoutPlan!.weeklyFocus!),
+                            if (_workoutPlan!.weeklyFocus != null) SizedBox(height: spacing),
+                            ..._workoutPlan!.days.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final day = entry.value;
+                              final iconColors = [
+                                Colors.orange,
+                                Colors.blueAccent,
+                                Colors.purpleAccent,
+                                Colors.greenAccent,
+                                Colors.redAccent,
+                                Colors.tealAccent,
+                                Colors.pinkAccent,
+                              ];
+                              final iconDataList = [
+                                Icons.fitness_center,
+                                Icons.rowing,
+                                Icons.directions_run,
+                                Icons.sports_mma,
+                                Icons.pool,
+                                Icons.directions_bike,
+                                Icons.self_improvement,
+                              ];
+                              
+                              return Column(
+                                children: [
+                                  if (index > 0) SizedBox(height: spacing),
                               _DaySection(
                                 dayTitle: day.dayTitle,
                                 muscles: day.muscles,
@@ -159,11 +165,13 @@ class _WorkoutPlanScreenState extends State<WorkoutPlanScreen> {
                                   videoUrl: e.videoUrl ?? _videoUrls[e.name.toLowerCase().trim()],
                                 )).toList(),
                               ),
-                            ],
-                          );
-                        }).toList(),
-                      ],
-                    ),
+                                ],
+                              );
+                            }).toList(),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
     );

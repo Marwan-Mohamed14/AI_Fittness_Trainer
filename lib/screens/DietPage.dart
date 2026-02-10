@@ -105,35 +105,45 @@ class _DietPlanScreenState extends State<DietPlanScreen> {
           final mealPlan = snapshot.data!;
 
           return SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _DailyGoalCard(mealPlan: mealPlan),
-                  const SizedBox(height: 24),
-                  Text(
-                    "Today's Meals",
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  ...mealPlan.meals.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final meal = entry.value;
-                    final mealTitles = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Meal 5'];
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: _MealCard(
-                        title: index < mealTitles.length ? mealTitles[index] : 'Meal ${index + 1}',
-                        meal: meal,
+            child: OrientationBuilder(
+              builder: (context, orientation) {
+                final padding = Responsive.padding(context);
+                final spacing = Responsive.spacing(context, mobile: 24, tablet: 28, desktop: 32);
+                
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding * 0.8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _DailyGoalCard(mealPlan: mealPlan),
+                      SizedBox(height: spacing),
+                      Text(
+                        "Today's Meals",
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24),
+                        ),
                       ),
-                    );
-                  }),
-                  const SizedBox(height: 40),
-                ],
-              ),
+                      SizedBox(height: Responsive.spacing(context, mobile: 16, tablet: 20, desktop: 24)),
+                      ...mealPlan.meals.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final meal = entry.value;
+                        final mealTitles = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Meal 5'];
+
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: Responsive.spacing(context, mobile: 20, tablet: 24, desktop: 28)),
+                          child: _MealCard(
+                            title: index < mealTitles.length ? mealTitles[index] : 'Meal ${index + 1}',
+                            meal: meal,
+                          ),
+                        );
+                      }),
+                      SizedBox(height: Responsive.spacing(context, mobile: 40, tablet: 48, desktop: 56)),
+                    ],
+                  ),
+                );
+              },
             ),
           );
         },
@@ -159,10 +169,12 @@ class _DailyGoalCard extends StatelessWidget {
     final fatTarget = (targetCalories * 0.3 / 9).round();
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: Responsive.cardPadding(context),
       decoration: BoxDecoration(
         color: isDark ? theme.colorScheme.surface : const Color(0xFFFAFBFC),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(
+          Responsive.borderRadius(context, mobile: 24, tablet: 26, desktop: 28),
+        ),
         border: !isDark ? Border.all(color: Colors.black.withOpacity(0.15), width: 1.5) : null,
         boxShadow: !isDark ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 3))] : null,
       ),
@@ -171,24 +183,35 @@ class _DailyGoalCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.track_changes, color: theme.colorScheme.primary, size: 20),
-              const SizedBox(width: 8),
+              Icon(
+                Icons.track_changes,
+                color: theme.colorScheme.primary,
+                size: Responsive.iconSize(context, mobile: 20, tablet: 22, desktop: 24),
+              ),
+              SizedBox(width: Responsive.spacing(context, mobile: 8, tablet: 10, desktop: 12)),
               Text(
                 'Daily Goal',
-                style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.grey),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                  fontSize: Responsive.fontSize(context, mobile: 14, tablet: 15, desktop: 16),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: Responsive.spacing(context, mobile: 8, tablet: 10, desktop: 12)),
           Text(
             '$currentCalories / $targetCalories kcal',
-            style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: Responsive.fontSize(context, mobile: 20, tablet: 22, desktop: 24),
+            ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: Responsive.spacing(context, mobile: 20, tablet: 24, desktop: 28)),
           _MacroProgressBar(label: 'Carbs', current: mealPlan.totalCarbs, target: carbsTarget, color: Colors.green),
-          const SizedBox(height: 12),
+          SizedBox(height: Responsive.spacing(context, mobile: 12, tablet: 14, desktop: 16)),
           _MacroProgressBar(label: 'Protein', current: mealPlan.totalProtein, target: proteinTarget, color: Colors.blue),
-          const SizedBox(height: 12),
+          SizedBox(height: Responsive.spacing(context, mobile: 12, tablet: 14, desktop: 16)),
           _MacroProgressBar(label: 'Fat', current: mealPlan.totalFat, target: fatTarget, color: Colors.orange),
         ],
       ),
@@ -214,13 +237,27 @@ class _MacroProgressBar extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-            Text('${current}g', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: Responsive.fontSize(context, mobile: 13, tablet: 14, desktop: 15),
+              ),
+            ),
+            Text(
+              '${current}g',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: Responsive.fontSize(context, mobile: 13, tablet: 14, desktop: 15),
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: Responsive.spacing(context, mobile: 6, tablet: 8, desktop: 10)),
         ClipRRect(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(
+            Responsive.borderRadius(context, mobile: 10, tablet: 12, desktop: 14),
+          ),
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 8,

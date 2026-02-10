@@ -104,16 +104,45 @@ class CommunityView extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return RefreshIndicator(
-      onRefresh: () => provider.fetchPosts(),
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: padding, vertical: 10),
-        itemCount: provider.posts.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) return const CreatePostSection();
-          return SocialPostCard(post: provider.posts[index - 1]);
-        },
-      ),
+    return Column(
+      children: [
+        // NEW: Banner for new posts
+        if (provider.newPostsCount > 0)
+          GestureDetector(
+            onTap: () {
+              provider.fetchPosts(); // Refresh feed
+              provider.resetNewPostsCount(); // Reset counter (add this method in provider)
+            },
+            child: Container(
+              width: double.infinity,
+              color: Colors.blue,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                '${provider.newPostsCount} new post${provider.newPostsCount > 1 ? "s" : ""} • Tap to load',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () => provider.fetchPosts(),
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: padding, vertical: 10),
+              itemCount: provider.posts.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) return const CreatePostSection();
+                return SocialPostCard(post: provider.posts[index - 1]);
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

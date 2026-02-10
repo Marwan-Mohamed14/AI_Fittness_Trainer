@@ -13,7 +13,9 @@ class CommunityProvider extends ChangeNotifier {
   List<Post> _myPosts=[];
   bool _isLoading = false;
   String? _error;
-
+  late RealtimeChannel _postsChannel;
+int _newPostsCount = 0;
+int get newPostsCount => _newPostsCount;
   List<Post> get posts => _posts;
   List<Post> get myPosts => _myPosts;  
   bool get isLoading => _isLoading;
@@ -21,6 +23,39 @@ class CommunityProvider extends ChangeNotifier {
 
   CommunityProvider() {
     fetchPosts();
+    _listenToNewPosts();
+  }
+
+void _listenToNewPosts() {
+    _postsChannel = Supabase.instance.client
+        .channel('public:posts')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'posts',
+          callback: (payload) {
+            print('New post inserted: ${payload.newRecord}');
+
+            final newPostData = payload.newRecord;
+            final newPost = Post.fromJson({
+              ...newPostData,
+              'user_name': newPostData['user_name'] ?? 'FitUser',
+              'user_avatar': null,
+              'likes_count': 0,
+              'comments_count': 0,
+              'is_liked_by_me': false, // New post → not liked yet
+            });
+
+            _posts.insert(0, newPost); // Add to top
+            notifyListeners(); // Refresh UI instantly for everyone
+          },
+        )
+        .subscribe();
+  }
+  @override
+  void dispose() {
+    _postsChannel.unsubscribe(); 
+    super.dispose();
   }
 
   Future<void> fetchPosts() async {
@@ -73,6 +108,9 @@ class CommunityProvider extends ChangeNotifier {
         mediaType: 'image',
         caption: caption,
       );
+      if (newPost.userId != getCurrentUserId()) {
+      _newPostsCount++;
+    }
 
       _posts.insert(0, newPost);
       _isLoading = false;
@@ -84,6 +122,15 @@ class CommunityProvider extends ChangeNotifier {
       rethrow;
     }
   }
+  void incrementNewPostsCount() {
+  _newPostsCount++;
+  notifyListeners();
+}
+
+void resetNewPostsCount() {
+  _newPostsCount = 0;
+  notifyListeners();
+}
 
   Future<void> toggleLike(String postId) async {
     try {

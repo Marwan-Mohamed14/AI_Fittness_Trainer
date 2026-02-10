@@ -108,7 +108,7 @@ void toogleWorkout(bool value) {
 
     Get.snackbar(
       '🏋️ Workout Time!',
-      'adont forget to log your workouts today!',
+      'dont forget to log your workouts today!',
       snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.purple.withOpacity(0.9),
       colorText: Colors.white,

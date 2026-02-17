@@ -1,4 +1,5 @@
 import 'package:ai_personal_trainer/models/MealData.dart';
+import 'package:dartx/dartx.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ai_personal_trainer/controllers/Profilecontroller.dart';
@@ -280,7 +281,7 @@ class _MealCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final foodItems = _parseFoodItems(meal.portions, meal);
+    final foodItems = _parseFoodItems(meal.portions);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,8 +291,17 @@ class _MealCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              Text('${meal.calories} kcal', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+              Text(
+                title, 
+                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                '${meal.calories} kcal', 
+                style: TextStyle(
+                  color: theme.colorScheme.primary, 
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
@@ -313,20 +323,33 @@ class _MealCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(foodItem['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                      if (foodItem['serving']!.isNotEmpty)
-                        Text(foodItem['serving']!, style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 12)),
+                      Text(
+                        foodItem['name'] ?? '', 
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold, 
+                          fontSize: 15,
+                        ),
+                      ),
+                      if (foodItem['amount'] != null && foodItem['amount']!.isNotEmpty)
+                        Text(
+                          foodItem['amount']!, 
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.5), 
+                            fontSize: 12,
+                          ),
+                        ),
                     ],
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                  
-                    Text('P: ${foodItem['protein']}g C: ${foodItem['carbs']}g', 
-                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 11)),
-                  ],
-                ),
+                if (foodItem['calories'] != null && int.parse(foodItem['calories']!) > 0)
+                  Text(
+                    '${foodItem['calories']} kcal',
+                    style: TextStyle(
+                      color: theme.colorScheme.primary.withOpacity(0.8),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
               ],
             ),
           );
@@ -335,34 +358,48 @@ class _MealCard extends StatelessWidget {
     );
   }
 
-  // Helper to parse portions string into items
-  List<Map<String, dynamic>> _parseFoodItems(String portions, MealData meal) {
+  // Simplified parser - just extract name, amount, and calories
+  List<Map<String, String?>> _parseFoodItems(String portions) {
     if (portions.isEmpty) return [];
-    final items = portions.split(RegExp(r'[,;\n]')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-    final foodItems = items.where((item) {
-      final lowerItem = item.toLowerCase();
-      return !RegExp(r'\b(protein|carbs?|fats?)\b').hasMatch(lowerItem) && !RegExp(r'^\d+\.?\d*g?\)?$').hasMatch(lowerItem);
-    }).toList();
+    
+    // Split by newlines (each food item is on its own line)
+    final items = portions
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
 
-    return foodItems.asMap().entries.map((entry) {
-      final item = entry.value;
-      final calorieMatch = RegExp(r'\((\d+)\s*calor').firstMatch(item);
-      final itemCalories = calorieMatch != null ? int.parse(calorieMatch.group(1)!) : 0;
-      String name = item.replaceAll(RegExp(r'\(\d+\s*calor.*'), '').trim();
-      String serving = '';
-      final servingMatch = RegExp(r'^([\d.]+\s*(?:cup|g|oz|bowl|tbsp|tsp|slice|piece)?s?)\s+(.+)', caseSensitive: false).firstMatch(name);
-      if (servingMatch != null) {
-        serving = servingMatch.group(1)?.trim() ?? '';
-        name = servingMatch.group(2)?.trim() ?? name;
+    return items.map((item) {
+      // Format: "Food name: amount → calorieskcal"
+      // Example: "Grilled chicken breast: 250g → 360kcal"
+      
+      final parts = item.split('→');
+      final beforeArrow = parts.isNotEmpty ? parts[0].trim() : item;
+      final afterArrow = parts.length > 1 ? parts[1].trim() : '';
+      
+      // Extract name and amount
+      String name = '';
+      String amount = '';
+      
+      if (beforeArrow.contains(':')) {
+        final colonSplit = beforeArrow.split(':');
+        name = colonSplit[0].trim();
+        amount = colonSplit.length > 1 ? colonSplit[1].trim() : '';
+      } else {
+        name = beforeArrow;
       }
-      final ratio = meal.calories > 0 && itemCalories > 0 ? itemCalories / meal.calories : 1.0 / foodItems.length;
+      
+      // Extract calories
+      int? calories;
+      final calorieMatch = RegExp(r'(\d+)kcal').firstMatch(afterArrow);
+      if (calorieMatch != null) {
+        calories = int.tryParse(calorieMatch.group(1)!);
+      }
+
       return {
         'name': name,
-        'serving': serving,
-        'calories': itemCalories,
-        'protein': (meal.protein * ratio).round(),
-        'carbs': (meal.carbs * ratio).round(),
-        'fat': (meal.fat * ratio).round(),
+        'amount': amount,
+        'calories': calories?.toString(),
       };
     }).toList();
   }

@@ -105,7 +105,6 @@ class DietPlanParser {
 
  static MealData? _extractMeal(String text, String mealType) {
   try {
-    // Find the start of this meal section
     final mealStartPattern = RegExp('\\[$mealType\\]', caseSensitive: false);
     final mealStartMatch = mealStartPattern.firstMatch(text);
     
@@ -115,7 +114,6 @@ class DietPlanParser {
 
     final mealStart = mealStartMatch.end;
 
-    // Find the end of this meal section (start of next meal or DAILY_TOTAL)
     final nextSectionPattern = RegExp(
       r'\[(BREAKFAST|LUNCH|DINNER|SNACK|MEAL\s*\d+|DAILY_TOTAL)\]',
       caseSensitive: false,
@@ -131,7 +129,6 @@ class DietPlanParser {
       }
     }
 
-    // Extract just this meal's content
     final mealText = text.substring(mealStart, mealEnd).trim();
     
     if (mealText.isEmpty) {
@@ -147,10 +144,10 @@ class DietPlanParser {
       name = nameMatch.group(1)?.trim() ?? '';
     }
 
-    // Extract portions - everything between "Portions:" and "Calories:"
+    // Extract portions
     String portions = '';
     final portionsMatch = RegExp(
-      r'Portions?:\s*\n?(.*?)(?=Calories:)',
+      r'Portions?:\s*\n?(.*?)(?=\nCalories:)',
       dotAll: true,
       caseSensitive: false,
     ).firstMatch(mealText);
@@ -159,14 +156,23 @@ class DietPlanParser {
       portions = portionsMatch.group(1)?.trim() ?? '';
       
       if (portions.isNotEmpty) {
-        // Clean up: remove bullets/dashes, join lines with commas
         portions = portions
             .split('\n')
             .map((line) => line.trim())
             .where((line) => line.isNotEmpty)
-            .map((line) => line.replaceFirst(RegExp(r'^[-•*]\s*'), ''))
+            .map((line) {
+              // Remove leading dash/bullet
+              line = line.replaceFirst(RegExp(r'^[-•*]\s*'), '');
+              
+              // ✅ NEW: Remove the macro details (everything after the arrow including macros)
+              // Keep format: "food: amount → calories" only
+              // Remove: ", Xg protein, Xg carbs, Xg fat"
+              line = line.replaceAll(RegExp(r',\s*\d+g\s+protein.*$'), '');
+              
+              return line;
+            })
             .where((line) => line.isNotEmpty)
-            .join(', ');
+            .join('\n');
       }
     }
 
@@ -177,7 +183,7 @@ class DietPlanParser {
     ).firstMatch(mealText);
     final declaredCalories = int.tryParse(caloriesMatch?.group(1) ?? '0') ?? 0;
 
-    // Extract macros FIRST (for validation)
+    // Extract macros
     final proteinMatch = RegExp(r'Protein:\s*(\d+)g', caseSensitive: false).firstMatch(mealText);
     final carbsMatch = RegExp(r'Carbs:\s*(\d+)g', caseSensitive: false).firstMatch(mealText);
     final fatMatch = RegExp(r'Fat:\s*(\d+)g', caseSensitive: false).firstMatch(mealText);
@@ -186,24 +192,20 @@ class DietPlanParser {
     final carbs = int.tryParse(carbsMatch?.group(1) ?? '0') ?? 0;
     final fat = int.tryParse(fatMatch?.group(1) ?? '0') ?? 0;
 
-    // Calculate expected calories from macros (4kcal/g protein/carbs, 9kcal/g fat)
     final calculatedCalories = protein * 4 + carbs * 4 + fat * 9;
-
-    // Decide final calories: use calculated if declared is way off
     final finalCalories = (calculatedCalories - declaredCalories).abs() > 150 
         ? calculatedCalories 
         : declaredCalories;
 
-    // Debug logging
     print('   Name: $name');
     print('   Portions: ${portions.length > 50 ? portions.substring(0, 50) + "..." : portions}');
-    print('   Declared: ${declaredCalories}kcal | Calculated from macros: ${calculatedCalories}kcal');
+    print('   Declared: ${declaredCalories}kcal | Calculated: ${calculatedCalories}kcal');
     print('   Using final: ${finalCalories}kcal (P:${protein}g C:${carbs}g F:${fat}g)');
 
     return MealData(
       name: name.isNotEmpty ? name : '$mealType Meal',
       portions: portions.isNotEmpty ? portions : 'See plan',
-      calories: finalCalories,  // ← Corrected value (handles AI mistakes)
+      calories: finalCalories,
       protein: protein,
       carbs: carbs,
       fat: fat,

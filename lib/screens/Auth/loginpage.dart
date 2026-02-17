@@ -18,12 +18,19 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
 
-  final Authcontroller authController = Get.put(Authcontroller());
+  // ✅ FIXED: Use Get.find() if exists, otherwise create new
+  late final Authcontroller authController;
 
   @override
   void initState() {
     super.initState();
     
+    // ✅ Initialize controller properly
+    if (Get.isRegistered<Authcontroller>()) {
+      authController = Get.find<Authcontroller>();
+    } else {
+      authController = Get.put(Authcontroller());
+    }
 
     _animController = AnimationController(
       vsync: this,
@@ -78,7 +85,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   return Stack(
                     alignment: Alignment.center,
                     children: [
-                    
                       Container(
                         width: 120,
                         height: 120,
@@ -93,7 +99,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           ],
                         ),
                       ),
-                     
                       Container(
                         width: 100,
                         height: 100,
@@ -106,7 +111,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           ),
                         ),
                       ),
-                
                       Transform.scale(
                         scale: _scaleAnimation.value,
                         child: const Icon(
@@ -115,7 +119,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           color: Colors.white,
                         ),
                       ),
-               
                       Positioned(
                         top: 22,
                         right: 28,
@@ -130,7 +133,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               ),
              const SizedBox(height: 50),
 
-            
               const Text(
                 "Welcome Back",
                 style: TextStyle(
@@ -151,7 +153,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
               const SizedBox(height: 40),
 
-            
               _buildTextField(
                 controller: authController.emailController,
                 hintText: "Email",
@@ -160,7 +161,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
               const SizedBox(height: 20),
 
-           
               _buildTextField(
                 controller: authController.passwordController,
                 hintText: "Password",

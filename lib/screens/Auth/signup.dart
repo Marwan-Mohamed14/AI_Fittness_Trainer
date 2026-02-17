@@ -1,9 +1,7 @@
 import 'package:ai_personal_trainer/controllers/Authcontroller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ai_personal_trainer/services/Authservice.dart';
 import 'package:ai_personal_trainer/utils/responsive.dart';
-
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -13,24 +11,25 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateMixin {
-
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
   
   bool _isPasswordHidden = true;
-  final bool _isConfirmPasswordHidden = true;
 
   late AnimationController _animController;
   late Animation<double> _rotationAnimation;
 
-final Authcontroller authController = Get.put(Authcontroller());
-
+  // ✅ FIXED: Use Get.find() if exists, otherwise create new
+  late final Authcontroller authController;
 
   @override
   void initState() {
     super.initState();
+    
+    // ✅ Initialize controller properly
+    if (Get.isRegistered<Authcontroller>()) {
+      authController = Get.find<Authcontroller>();
+    } else {
+      authController = Get.put(Authcontroller());
+    }
     
     _animController = AnimationController(
       vsync: this,
@@ -45,13 +44,8 @@ final Authcontroller authController = Get.put(Authcontroller());
   @override
   void dispose() {
     _animController.dispose();
-    _nameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +65,7 @@ final Authcontroller authController = Get.put(Authcontroller());
     final double tutorialFontSize = Responsive.fontSize(context, mobile: 10, tablet: 12, desktop: 14); 
     
     return Scaffold(
-      backgroundColor: const Color(0xFF0F111A), // Dark Gym Theme
+      backgroundColor: const Color(0xFF0F111A),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -86,7 +80,6 @@ final Authcontroller authController = Get.put(Authcontroller());
                   return Stack(
                     alignment: Alignment.center,
                     children: [
-                    
                       Container(
                         width: 100,
                         height: 100,
@@ -102,7 +95,6 @@ final Authcontroller authController = Get.put(Authcontroller());
                           ],
                         ),
                       ),
-                     
                       Transform.rotate(
                         angle: _rotationAnimation.value,
                         child: Container(
@@ -129,7 +121,6 @@ final Authcontroller authController = Get.put(Authcontroller());
                           ),
                         ),
                       ),
-                    
                       const Icon(
                         Icons.person_add_alt_1,
                         size: 45,
@@ -142,7 +133,6 @@ final Authcontroller authController = Get.put(Authcontroller());
             
               const SizedBox(height: 40),
 
-             
               const Text(
                 "Create Account",
                 style: TextStyle(
@@ -172,7 +162,6 @@ final Authcontroller authController = Get.put(Authcontroller());
 
               const SizedBox(height: 20),
 
-            
               _buildTextField(
                 controller: authController.emailController,
                 hintText: "Email Address",
@@ -181,7 +170,6 @@ final Authcontroller authController = Get.put(Authcontroller());
 
               const SizedBox(height: 20),
 
-             
               _buildTextField(
                 controller: authController.passwordController,
                 hintText: "Password",
@@ -197,14 +185,15 @@ final Authcontroller authController = Get.put(Authcontroller());
 
               const SizedBox(height: 30),
 
-            
-              SizedBox(
+              Obx(() => SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () async{
-                   await authController.signUp();
-                  },
+                  onPressed: authController.isLoading.value
+                      ? null
+                      : () async {
+                          await authController.signUp();
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
                     shape: RoundedRectangleBorder(
@@ -213,20 +202,28 @@ final Authcontroller authController = Get.put(Authcontroller());
                     elevation: 5,
                     shadowColor: Colors.deepPurple.withOpacity(0.4),
                   ),
-                  child: const Text(
-                    "Sign Up",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: authController.isLoading.value
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          "Sign Up",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
-              ),
+              )),
 
               const SizedBox(height: 30),
 
-             
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -236,7 +233,7 @@ final Authcontroller authController = Get.put(Authcontroller());
                   ),
                   GestureDetector(
                     onTap: () {
-                       Get.back(); 
+                      Get.back(); 
                     },
                     child: const Text(
                       "Log In",
@@ -255,7 +252,6 @@ final Authcontroller authController = Get.put(Authcontroller());
       ),
     );
   }
-
 
   Widget _buildTextField({
     required TextEditingController controller,

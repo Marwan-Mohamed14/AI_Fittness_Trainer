@@ -21,7 +21,6 @@ class AiPlanService {
       final prompt = _buildWeeklyPlanPrompt(userData);
       final response = await _callGroqAPI(prompt);
       final plans = _parsePlans(response);
-
       print('\n✅ Plans generated successfully!');
       return plans;
     } catch (e) {
@@ -30,31 +29,24 @@ class AiPlanService {
     }
   }
 
-  // ─────────────────────────────────────────────
-  // CALORIE CALCULATOR
-  // ─────────────────────────────────────────────
   // ═══════════════════════════════════════════════════
   // STEP 1 — CALORIE CALCULATOR
   // Formula: Mifflin-St Jeor BMR × Activity × Goal
   // ═══════════════════════════════════════════════════
   int _calculateBaseCalories(OnboardingData userData) {
-    final double weight      = userData.weight?.toDouble()       ?? 70;
-    final double targetWeight= userData.targetWeight?.toDouble() ?? weight;
-    final double height      = userData.height?.toDouble()       ?? 175;
-    final int    age         = userData.age                      ?? 25;
-    final bool   isMale      = userData.gender?.toLowerCase()    == 'male';
-    final int    days        = userData.trainingDays             ?? 0;
+    final double weight       = userData.weight?.toDouble()       ?? 70;
+    final double targetWeight = userData.targetWeight?.toDouble() ?? weight;
+    final double height       = userData.height?.toDouble()       ?? 175;
+    final int    age          = userData.age                      ?? 25;
+    final bool   isMale       = userData.gender?.toLowerCase()    == 'male';
+    final int    days         = userData.trainingDays             ?? 0;
 
-    // ── 1A. Adjust BMR weight for obese users (BMI > 30) ──
-    // Prevents over-estimating metabolism for obese individuals
     final double bmi = weight / ((height / 100) * (height / 100));
     final double bmrWeight;
     if (bmi > 30) {
-      // Devine ideal body weight formula
       final double idealWeight = isMale
           ? 50.0 + 2.3 * ((height - 152.4) / 2.54)
           : 45.5 + 2.3 * ((height - 152.4) / 2.54);
-      // Adjusted = ideal + 25% of excess
       bmrWeight = idealWeight + 0.25 * (weight - idealWeight);
       print('   BMI: ${bmi.toStringAsFixed(1)} → Obese, adjusted BMR weight: ${bmrWeight.toStringAsFixed(1)}kg');
     } else {
@@ -62,56 +54,40 @@ class AiPlanService {
       print('   BMI: ${bmi.toStringAsFixed(1)} → Normal, using actual weight: ${weight}kg');
     }
 
-    // ── 1B. Mifflin-St Jeor BMR ──
     final double bmr = (10 * bmrWeight) + (6.25 * height) - (5 * age) + (isMale ? 5 : -161);
 
-    // ── 1C. TDEE: BMR × Activity multiplier ──
     final double activity;
-    if      (days >= 6) activity = 1.90;   // 6-7 days: athlete
-    else if (days >= 5) activity = 1.725;  // 5 days:   very active
-    else if (days >= 3) activity = 1.55;   // 3-4 days: moderately active
-    else if (days >= 1) activity = 1.375;  // 1-2 days: lightly active
-    else                activity = 1.20;   // 0 days:   sedentary
+    if      (days >= 6) activity = 1.90;
+    else if (days >= 5) activity = 1.725;
+    else if (days >= 3) activity = 1.55;
+    else if (days >= 1) activity = 1.375;
+    else                activity = 1.20;
     final double tdee = bmr * activity;
 
-    // ── 1D. Goal adjustment based on weight difference ──
-    //
-    // CUTTING  → calorie DEFICIT  (lose fat)
-    // BULKING  → calorie SURPLUS  (gain muscle/weight)
-    // SAME     → use workout goal to decide small surplus or maintenance
-    //
-    final double diff          = targetWeight - weight; // negative = cutting, positive = bulking
-    final double kg            = diff.abs();
+    final double diff = targetWeight - weight;
+    final double kg   = diff.abs();
     final double adjustment;
     final String label;
 
     if (diff < -1) {
-      // ── CUTTING ──
-      // Standard rate: 0.5–1% of bodyweight per week
-      // 1kg fat = 7,700 kcal → 0.75kg/week loss = 5,775 kcal/week = 825 kcal/day deficit
-      // Scale deficit based on how overweight the person is
       final double deficitPct;
-      if      (kg >= 30) deficitPct = 0.35; // 35% deficit — very heavy, needs aggressive cut
-      else if (kg >= 20) deficitPct = 0.30; // 30% deficit — significantly overweight
-      else if (kg >= 10) deficitPct = 0.25; // 25% deficit — moderately overweight
-      else if (kg >= 5)  deficitPct = 0.20; // 20% deficit — slightly overweight
-      else               deficitPct = 0.15; // 15% deficit — small cut
+      if      (kg >= 30) deficitPct = 0.35;
+      else if (kg >= 20) deficitPct = 0.30;
+      else if (kg >= 10) deficitPct = 0.25;
+      else if (kg >= 5)  deficitPct = 0.20;
+      else               deficitPct = 0.15;
       adjustment = 1.0 - deficitPct;
       final int kcalDeficit = (tdee * deficitPct).round();
       label = 'CUTTING ${kg.toStringAsFixed(0)}kg → ${(deficitPct*100).round()}% deficit (-$kcalDeficit kcal/day)';
     } else if (diff > 1) {
-      // ── BULKING ──
-      // Natural lifters can gain max 0.25kg muscle/week
-      // Clean bulk = small surplus to minimise fat gain
       final double surplusPct;
-      if      (kg >= 15) surplusPct = 0.10; // 10% surplus — needs significant mass
-      else if (kg >= 5)  surplusPct = 0.07; // 7% surplus  — moderate bulk
-      else               surplusPct = 0.05; // 5% surplus  — lean bulk
+      if      (kg >= 15) surplusPct = 0.10;
+      else if (kg >= 5)  surplusPct = 0.07;
+      else               surplusPct = 0.05;
       adjustment = 1.0 + surplusPct;
       final int kcalSurplus = (tdee * surplusPct).round();
       label = 'BULKING ${kg.toStringAsFixed(0)}kg → ${(surplusPct*100).round()}% surplus (+$kcalSurplus kcal/day)';
     } else {
-      // ── MAINTENANCE / RECOMPOSITION ──
       final String goal = userData.workoutGoal?.toLowerCase() ?? '';
       if (goal.contains('build') || goal.contains('muscle') || goal.contains('strength')) {
         adjustment = 1.05;
@@ -122,13 +98,10 @@ class AiPlanService {
       }
     }
 
-    // Safety floor: never below 1,400 kcal (male) or 1,200 kcal (female)
     final int floor  = isMale ? 1400 : 1200;
     final int result = (tdee * adjustment).round().clamp(floor, 4500);
-
     print('🎯 Goal: $label');
     print('   BMR: ${bmr.round()} kcal | TDEE: ${tdee.round()} kcal → Final: $result kcal');
-
     return result;
   }
 
@@ -137,41 +110,31 @@ class AiPlanService {
   // Protein first → Fat second → Carbs fill the rest
   // ═══════════════════════════════════════════════════
   Map<String, int> _calculateMacros(OnboardingData userData, int calories) {
-    final double weight    = userData.weight?.toDouble()       ?? 70;
-    final double targetWt  = userData.targetWeight?.toDouble() ?? weight;
-    final bool   isCutting = (targetWt - weight) < -1;
-    final bool   isBulking = (targetWt - weight) > 1;
+    final double weight   = userData.weight?.toDouble()       ?? 70;
+    final double targetWt = userData.targetWeight?.toDouble() ?? weight;
+    final bool isCutting  = (targetWt - weight) < -1;
+    final bool isBulking  = (targetWt - weight) > 1;
 
-    // ── 2A. Protein ──
-    // Use target weight for cutting so protein isn't inflated by excess body fat
-    final double proteinBase   = isCutting ? targetWt : weight;
-    final double proteinPerKg  = isCutting ? 2.3       // high protein to preserve muscle
-                                : isBulking ? 2.0       // moderate-high for building
-                                :             1.8;      // maintenance
+    final double proteinBase  = isCutting ? targetWt : weight;
+    final double proteinPerKg = isCutting ? 2.3 : isBulking ? 2.0 : 1.8;
     final int protein    = (proteinBase * proteinPerKg).round();
     final int proteinCal = protein * 4;
-
-    // ── 2B. Fat ──
-    // 25% of total calories — enough for hormones, joints, fat-soluble vitamins
-    final int fatCal = (calories * 0.25).round();
-    final int fat    = (fatCal / 9).round();
-
-    // ── 2C. Carbs = remaining calories ──
-    final int carbCal = (calories - proteinCal - fatCal).clamp(0, 99999);
-    final int carbs   = (carbCal / 4).round();
+    final int fatCal     = (calories * 0.25).round();
+    final int fat        = (fatCal / 9).round();
+    final int carbCal    = (calories - proteinCal - fatCal).clamp(0, 99999);
+    final int carbs      = (carbCal / 4).round();
 
     print('📊 MACRO BREAKDOWN:');
     print('   Calories: $calories kcal');
     print('   Protein:  ${protein}g  ($proteinCal kcal / ${(proteinCal * 100 / calories).round()}%)');
     print('   Carbs:    ${carbs}g  ($carbCal kcal / ${(carbCal * 100 / calories).round()}%)');
     print('   Fat:      ${fat}g  ($fatCal kcal / ${(fatCal * 100 / calories).round()}%)');
-
     return {'calories': calories, 'protein': protein, 'carbs': carbs, 'fat': fat};
   }
 
-  // ─────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════
   // BUDGET FOOD GUIDE
-  // ─────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════
   Map<String, String> _getBudgetFoodGuide(String? budget) {
     switch (budget?.toLowerCase()) {
       case 'low':
@@ -190,7 +153,7 @@ class AiPlanService {
               'FATS: avocado, extra virgin olive oil, mixed nuts, almond butter, chia seeds, flaxseeds, coconut oil, tahini',
           'forbidden': 'No restrictions — use premium quality ingredients',
         };
-      default: // medium
+      default:
         return {
           'label': 'MEDIUM BUDGET',
           'allowed': 'PROTEINS: chicken breast/thighs, eggs, canned tuna, lean ground beef, cottage cheese, plain yogurt, lentils, chickpeas, tofu\n'
@@ -201,25 +164,106 @@ class AiPlanService {
     }
   }
 
-  // ─────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════
+  // WORKOUT SPLIT SELECTOR
+  // Returns split name, structure hint, and sets/reps guide
+  // ═══════════════════════════════════════════════════
+  Map<String, String> _getWorkoutSplit(OnboardingData userData) {
+    final int    days  = userData.trainingDays ?? 3;
+    final String level = userData.workoutLevel?.toLowerCase() ?? 'beginner';
+    final bool   isAdv = level == 'advanced';
+
+    final String setsReps = isAdv
+        ? '4-5 sets/6-12 reps compounds, 3-4 sets/8-15 reps isolation'
+        : level == 'intermediate'
+            ? '3-4 sets/8-12 reps compounds, 3 sets/10-15 reps isolation'
+            : '3 sets/10-15 reps compounds, 2-3 sets/12-15 reps isolation';
+
+    final String name;
+    final String structure;
+
+    if (days == 1) {
+      name = 'Full Body';
+      structure = 'DAY 1 - FULL BODY (7-8 ex): flat bench[chest mid], pull-up[back width], squat[quads], overhead press[shoulder front], lateral raise[shoulder side], barbell curl[biceps], tricep pushdown[triceps], hanging leg raise[abs], romanian deadlift[hamstrings]';
+    } else if (days == 2) {
+      name = 'Upper / Lower Split';
+      structure =
+          'DAY 1 - UPPER BODY (8 ex): incline press[chest upper], flat bench[chest mid], lat pulldown[back width], barbell row[back thickness], overhead press[shoulder front], lateral raise[shoulder side], hammer curl[biceps long head], skull crusher[triceps long head], plank[abs]\n'
+          'DAY 2 - LOWER BODY (7 ex): squat[quads], leg extension[quads iso], romanian deadlift[hamstrings], leg curl[hamstrings iso], hip thrust[glutes], calf raise, reverse crunch[abs]';
+    } else if (days == 3) {
+      name = 'Push / Pull / Legs';
+      structure =
+          'DAY 1 - PUSH (7 ex): flat bench[chest lower], incline press[chest upper], cable fly[chest iso], overhead press[shoulder front], lateral raise[shoulder side], overhead tricep ext[triceps long head], cable pushdown[triceps lateral head]\n'
+          'DAY 2 - PULL (7 ex): pull-up[back width], barbell row[back thickness], seated cable row[back lower], face pull[rear delt], incline curl[biceps long head], preacher curl[biceps short head], hanging leg raise[abs]\n'
+          'DAY 3 - LEGS (8 ex): squat[quads], leg extension[quads iso], romanian deadlift[hamstrings], leg curl[hamstrings iso], hip thrust[glutes], calf raise, hanging leg raise[abs lower], plank[abs core]';
+    } else if (days == 4) {
+      name = 'Bro Split';
+      structure =
+          'DAY 1 - CHEST + TRICEPS (6 ex): flat bench[chest lower], incline press[chest upper], cable fly[chest iso], skull crusher[triceps long head], cable pushdown[triceps lateral head], close-grip bench[triceps medial]\n'
+          'DAY 2 - BACK + BICEPS (6 ex): pull-up[back width], barbell row[back thickness], seated row[back lower], incline curl[biceps long head], preacher curl[biceps short head], face pull[rear delt]\n'
+          'DAY 3 - LEGS (7 ex): squat[quads], leg extension[quads iso], romanian deadlift[hamstrings], leg curl[hamstrings iso], hip thrust[glutes], calf raise, hanging leg raise[abs]\n'
+          'DAY 4 - SHOULDERS + ABS (6 ex): overhead press[shoulder front], lateral raise[shoulder side], rear delt fly[shoulder rear], cable crunch[abs upper], hanging leg raise[abs lower], russian twist[abs obliques]';
+    } else if (days == 5 && !isAdv) {
+      name = 'Chest+Tri / Back+Bi / Legs / Shoulders / Arms+Abs';
+      structure =
+          'DAY 1 - CHEST + TRICEPS (6 ex): flat bench[chest lower], incline press[chest upper], cable fly[chest iso], skull crusher[triceps long head], cable pushdown[triceps lateral head], close-grip bench[triceps medial]\n'
+          'DAY 2 - BACK + BICEPS (6 ex): pull-up[back width], barbell row[back thickness], seated row[back lower], barbell curl[biceps long head], preacher curl[biceps short head], face pull[rear delt]\n'
+          'DAY 3 - LEGS (7 ex): squat[quads], leg extension[quads iso], romanian deadlift[hamstrings], leg curl[hamstrings iso], hip thrust[glutes], calf raise, hanging leg raise[abs]\n'
+          'DAY 4 - SHOULDERS (6 ex): overhead press[shoulder front], lateral raise[shoulder side], rear delt fly[shoulder rear], shrugs[traps], arnold press[shoulder iso], plank[abs]\n'
+          'DAY 5 - ARMS + ABS (6 ex): barbell curl[biceps long head], preacher curl[biceps short head], hammer curl[brachialis], overhead tricep ext[triceps long head], cable pushdown[triceps lateral head], hanging leg raise + cable crunch[abs]';
+    } else if (days == 5 && isAdv) {
+      name = 'Arnold Split';
+      structure =
+          'PRINCIPLE: Each muscle group trained TWICE with DIFFERENT exercises\n'
+          'DAY 1 - CHEST + BACK (7-8 ex): flat bench[chest lower], pull-up[back width], incline DB press[chest upper], barbell row[back thickness], cable fly[chest iso], seated row[back lower], face pull[rear delt], plank[abs]\n'
+          'DAY 2 - SHOULDERS + ARMS (7-8 ex): overhead press[shoulder front], lateral raise[shoulder side], rear delt fly, barbell curl[biceps long head], preacher curl[biceps short head], skull crusher[triceps long head], cable pushdown[triceps lateral head], cable crunch[abs]\n'
+          'DAY 3 - LEGS (7 ex): squat, leg extension, romanian deadlift, leg curl, hip thrust, calf raise, hanging leg raise[abs]\n'
+          'DAY 4 - CHEST + BACK (7-8 ex — DIFFERENT from Day 1): incline barbell[chest upper], close grip pulldown[back width], decline DB[chest lower], single-arm row[back thickness], DB fly[chest iso], straight-arm pulldown[back lower], reverse pec deck[rear delt], ab wheel[abs]\n'
+          'DAY 5 - SHOULDERS + ARMS (7-8 ex — DIFFERENT from Day 2): arnold press[shoulder front], cable lateral raise[shoulder side], face pull[rear delt], hammer curl[biceps long head], concentration curl[biceps short head], french press[triceps long head], tricep dips[triceps lateral head], bicycle crunch[abs]';
+    } else if (days == 6 && !isAdv) {
+      name = 'Bro Split + Cardio Day';
+      structure =
+          'DAY 1 - CHEST + TRICEPS (6 ex): flat bench[chest lower], incline press[chest upper], cable fly[chest iso], skull crusher[triceps long head], cable pushdown[triceps lateral head], close-grip bench[triceps medial]\n'
+          'DAY 2 - BACK + BICEPS (6 ex): pull-up[back width], barbell row[back thickness], seated row[back lower], barbell curl[biceps long head], preacher curl[biceps short head], face pull[rear delt]\n'
+          'DAY 3 - LEGS (7 ex): squat[quads], leg extension[quads iso], romanian deadlift[hamstrings], leg curl[hamstrings iso], hip thrust[glutes], calf raise, hanging leg raise[abs]\n'
+          'DAY 4 - SHOULDERS + ABS (6 ex): overhead press[shoulder front], lateral raise[shoulder side], rear delt fly[shoulder rear], cable crunch[abs upper], hanging leg raise[abs lower], russian twist[abs obliques]\n'
+          'DAY 5 - FULL ARMS (6 ex): barbell curl[biceps long head], preacher curl[biceps short head], hammer curl[brachialis], overhead tricep ext[triceps long head], cable pushdown[triceps lateral head], hanging leg raise + cable crunch[abs]\n'
+          'DAY 6 - CARDIO + ABS (5 ex): 20-30min treadmill/elliptical/bike[cardio], cable crunch[abs upper], hanging leg raise[abs lower], russian twist[abs obliques], plank[abs core]';
+    } else {
+      name = 'Arnold Split + Cardio Day';
+      structure =
+          'PRINCIPLE: Each muscle trained TWICE with DIFFERENT exercises + Cardio Day 6\n'
+          'DAY 1 - CHEST + BACK (7-8 ex): flat bench[chest lower], pull-up[back width], incline DB press[chest upper], barbell row[back thickness], cable fly[chest iso], seated row[back lower], face pull[rear delt], plank[abs]\n'
+          'DAY 2 - SHOULDERS + ARMS (7-8 ex): overhead press[shoulder front], lateral raise[shoulder side], rear delt fly, barbell curl[biceps long head], preacher curl[biceps short head], skull crusher[triceps long head], cable pushdown[triceps lateral head], cable crunch[abs]\n'
+          'DAY 3 - LEGS (7 ex): squat, leg extension, romanian deadlift, leg curl, hip thrust, calf raise, hanging leg raise[abs]\n'
+          'DAY 4 - CHEST + BACK (7-8 ex — DIFFERENT from Day 1): incline barbell[chest upper], close grip pulldown[back width], decline DB[chest lower], single-arm row[back thickness], DB fly[chest iso], straight-arm pulldown[back lower], reverse pec deck[rear delt], ab wheel[abs]\n'
+          'DAY 5 - SHOULDERS + ARMS (7-8 ex — DIFFERENT from Day 2): arnold press[shoulder front], cable lateral raise[shoulder side], face pull[rear delt], hammer curl[biceps long head], concentration curl[biceps short head], french press[triceps long head], tricep dips[triceps lateral head], bicycle crunch[abs]\n'
+          'DAY 6 - CARDIO + ABS (5 ex): 20-30min cardio[cardio], cable crunch[abs upper], hanging leg raise[abs lower], bicycle crunch[abs obliques], ab wheel[abs core]';
+    }
+
+    return {'name': name, 'structure': structure, 'setsReps': setsReps};
+  }
+
+  // ═══════════════════════════════════════════════════
   // PROMPT BUILDER
-  // ─────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════
   String _buildWeeklyPlanPrompt(OnboardingData userData) {
-    final int calories     = _calculateBaseCalories(userData);
-    final macros           = _calculateMacros(userData, calories);
-    final int protein      = macros['protein']!;
-    final int carbs        = macros['carbs']!;
-    final int fat          = macros['fat']!;
-    final int mealsPerDay  = userData.mealsPerDay ?? 3;
-    final budgetGuide      = _getBudgetFoodGuide(userData.budget);
+    final int calories    = _calculateBaseCalories(userData);
+    final macros          = _calculateMacros(userData, calories);
+    final int protein     = macros['protein']!;
+    final int carbs       = macros['carbs']!;
+    final int fat         = macros['fat']!;
+    final int mealsPerDay = userData.mealsPerDay ?? 3;
+    final budgetGuide     = _getBudgetFoodGuide(userData.budget);
+    final split           = _getWorkoutSplit(userData);
+    final bool isGym      = (userData.trainingLocation?.toLowerCase() ?? 'gym') == 'gym';
 
     print('   Meals per day: $mealsPerDay');
-    print('   Budget: ${budgetGuide['label']}\n');
-
-    
+    print('   Budget: ${budgetGuide['label']}');
+    print('   Split: ${split['name']}\n');
 
     return """
-You are a professional sports nutritionist. Generate a precise diet and workout plan.
+You are a professional sports nutritionist and certified personal trainer. Generate a precise diet and workout plan.
 
 ══ USER ══
 Age: ${userData.age} | Gender: ${userData.gender} | Height: ${userData.height}cm
@@ -267,10 +311,7 @@ ${budgetGuide['allowed']}
 ${budgetGuide['forbidden']}
 
 ══ DIET PREFERENCE ══
-${userData.dietPreference == 'Vegetarian' ? '⚠️ NO MEAT OR FISH. Use eggs, tofu, lentils, beans, dairy as protein sources.' : ''}
-${userData.dietPreference == 'Keto' ? '⚠️ KETO: Max 30g carbs/day. Use fats and protein to fill remaining calories.' : ''}
-${userData.dietPreference == 'High Protein' ? '⚠️ HIGH PROTEIN: Prioritise protein. Add protein-dense foods to every meal.' : ''}
-${userData.dietPreference == 'Low Carb' ? '⚠️ LOW CARB: Max 100g carbs/day. Replace carbs with fats.' : ''}
+${userData.dietPreference == 'Vegetarian' ? '⚠️ NO MEAT OR FISH. Use eggs, tofu, lentils, beans, dairy as protein sources.' : ''}${userData.dietPreference == 'Keto' ? '⚠️ KETO: Max 30g carbs/day. Use fats and protein to fill remaining calories.' : ''}${userData.dietPreference == 'High Protein' ? '⚠️ HIGH PROTEIN: Prioritise protein. Add protein-dense foods to every meal.' : ''}${userData.dietPreference == 'Low Carb' ? '⚠️ LOW CARB: Max 100g carbs/day. Replace carbs with fats.' : ''}
 
 ══ OUTPUT FORMAT ══
 ===DIET PLAN===
@@ -296,12 +337,28 @@ Protein: [g]
 Carbs: [g]
 Fat: [g]
 
+[DINNER]
+Name: [meal name]
+Portions:
+- [food]: [amount] → [kcal]
+- [food]: [amount] → [kcal]
+- [food]: [amount] → [kcal]
+Calories: [total for this meal]
+Protein: [g]
+Carbs: [g]
+Fat: [g]
+${mealsPerDay >= 4 ? '''
+[SNACK]
+Name: [meal name]
+Portions:
+- [food]: [amount] → [kcal]
+- [food]: [amount] → [kcal]
 Calories: [total for this meal]
 Protein: [g]
 Carbs: [g]
 Fat: [g]''' : ''}
-
-${mealsPerDay >= 5 ? '''[MEAL 5]
+${mealsPerDay >= 5 ? '''
+[MEAL 5]
 Name: [meal name]
 Portions:
 - [food]: [amount] → [kcal]
@@ -318,20 +375,32 @@ Carbs: ${carbs}g
 Fat: ${fat}g
 
 ===WORKOUT PLAN===
-[DAY 1 - MUSCLE GROUP]
+SPLIT: ${split['name']} | LEVEL: ${userData.workoutLevel ?? 'Beginner'} | SETS/REPS: ${split['setsReps']}
+EQUIPMENT: ${isGym ? 'Gym (barbells, dumbbells, cables, machines)' : 'Bodyweight only'}
+STRUCTURE TO FOLLOW EXACTLY:
+${split['structure']}
+
+STRICT RULES:
+- Generate ALL ${userData.trainingDays} days following the structure above
+- MINIMUM 5 exercises per day, TARGET 6, MAX 8
+- Never 2 exercises for the same muscle region in one day
+- Biceps: always mix long head + short head | Triceps: mix long head + lateral head
+- Shoulders: always include front delt + side delt + rear delt
+- Every exercise MUST have a Video URL on the very next line
+
+FORMAT FOR EVERY DAY:
+[DAY 1 - MUSCLE GROUP NAME]
 Muscles: [targets]
-Duration: [min]
+Duration: [X] Min
 
 Exercises:
 1. [Exercise Name]: [sets] sets, [reps] reps
    Video URL: https://www.youtube.com/results?search_query=[exercise+name]+how+to+do+proper+form
 
-[Repeat for ${userData.trainingDays} workout days]
+2. [Exercise Name]: [sets] sets, [reps] reps
+   Video URL: https://www.youtube.com/results?search_query=[exercise+name]+how+to+do+proper+form
 
-WORKOUT RULES:
-- ${userData.trainingLocation == 'Gym' ? 'Use gym equipment (barbells, dumbbells, machines, cables)' : 'Bodyweight exercises only — no gym required'}
-- 4–6 exercises per day
-- Video URL is MANDATORY for every exercise
+[Repeat for remaining days]
 
 START NOW WITH ===DIET PLAN===:
 """;
@@ -362,7 +431,7 @@ START NOW WITH ===DIET PLAN===:
           },
           {'role': 'user', 'content': prompt},
         ],
-        'temperature': 0.3, // Lower = more precise, less creative
+        'temperature': 0.3,
         'max_tokens': 8000,
         'stream': false,
       }),
@@ -394,17 +463,14 @@ START NOW WITH ===DIET PLAN===:
       print('✅ Found both markers!');
       final dietContent    = response.substring(dietMatch.end,    workoutMatch.start).trim();
       final workoutContent = response.substring(workoutMatch.end).trim();
-
       print('📊 Diet plan:    ${dietContent.length} chars');
       print('📊 Workout plan: ${workoutContent.length} chars');
-
       return {
         'diet':    dietContent.isEmpty    ? 'Empty diet plan'    : dietContent,
         'workout': workoutContent.isEmpty ? 'Empty workout plan' : workoutContent,
       };
     }
 
-    // Fallback
     final altDiet    = RegExp(r'DIET\s*PLAN',    caseSensitive: false).firstMatch(response);
     final altWorkout = RegExp(r'WORKOUT\s*PLAN', caseSensitive: false).firstMatch(response);
 

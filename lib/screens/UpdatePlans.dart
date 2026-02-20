@@ -31,6 +31,8 @@ class _UpdatePlansState extends State<UpdatePlans>
   String? _selectedTrainingLocation;
   String? _selectedDietPreference;
   String? _selectedActivityLevel;
+  String? _selectedBudget;
+
 
   @override
   void initState() {
@@ -65,6 +67,7 @@ class _UpdatePlansState extends State<UpdatePlans>
           _selectedWorkoutLevel = data.workoutLevel;
           _selectedTrainingDays = data.trainingDays;
           _selectedTrainingLocation = data.trainingLocation;
+          _selectedBudget = data.budget;
           
           final savedPreference = data.dietPreference;
           if (savedPreference == 'High-Protein') {
@@ -323,6 +326,19 @@ class _UpdatePlansState extends State<UpdatePlans>
                   .toList(),
             ),
           ),
+              _buildInputCard(
+            label: 'Budget',
+            icon: Icons.wallet_outlined,
+            child: Wrap(
+             children: ['Low', 'Medium', 'High']
+                 .map((b) => _buildChip(
+                  b,
+                 _selectedBudget == b,
+                    () => setState(() => _selectedBudget = b),
+                ))
+              .toList(),
+  ),
+),
           _buildInputCard(
             label: 'Meal Planning',
             icon: Icons.restaurant_outlined,
@@ -356,6 +372,8 @@ class _UpdatePlansState extends State<UpdatePlans>
             _buildSummaryRow('Target Weight', _targetWeightController.text.isEmpty ? 'Not set' : '${_targetWeightController.text} kg'),
             _buildSummaryRow('Workout Goal', _selectedWorkoutGoal ?? 'Not set'),
             _buildSummaryRow('Diet Type', _selectedDietPreference ?? 'Not set'),
+            _buildSummaryRow('Budget', _selectedBudget ?? 'Not set'),
+
           ],
         ),
       ),
@@ -408,6 +426,8 @@ class _UpdatePlansState extends State<UpdatePlans>
       currentData.targetWeight = int.tryParse(_targetWeightController.text);
       currentData.activityLevel = _selectedActivityLevel;
       currentData.allergies = allergies;
+      currentData.budget = _selectedBudget;
+
 
       Get.snackbar('Generating Plan', 'Creating your personalized fitness plan...', 
           backgroundColor: Theme.of(context).colorScheme.primary, colorText: Colors.white);
